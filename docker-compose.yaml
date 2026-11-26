@@ -1,0 +1,25 @@
+# Sequrid: self-hosted, 100% client-side DNI protection.
+#
+#   docker compose up -d          -> http://localhost:8080
+#
+# Set SEQURID_PORT to change the port and SEQURID_VERSION to pin a release.
+# To build from source instead of pulling, run: docker compose up -d --build
+services:
+  sequrid:
+    image: ghcr.io/javsanpae/sequrid:${SEQURID_VERSION:-latest}
+    build:
+      context: .
+    container_name: sequrid
+    restart: unless-stopped
+    ports:
+      - "${SEQURID_PORT:-8080}:8080"
+    # The container only serves static files: it needs no writes besides
+    # nginx's temporary files, no capabilities and no privileges.
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 64m

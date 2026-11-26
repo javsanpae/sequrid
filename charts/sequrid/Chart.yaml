@@ -1,0 +1,17 @@
+apiVersion: v2
+name: sequrid
+description: Protege tu DNI con marca de agua y tapa datos sensibles. Todo se procesa en el navegador; el servidor solo entrega archivos estáticos.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+kubeVersion: ">=1.25.0-0"
+home: https://github.com/javsanpae/sequrid
+sources:
+  - https://github.com/javsanpae/sequrid
+annotations:
+  licenses: AGPL-3.0-or-later
+keywords:
+  - dni
+  - privacy
+  - watermark
+  - self-hosted
