@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Protege tu DNI con marca de agua y tapa datos sensibles. Todo se procesa en tu navegador.",
   "type": "module",
-  "license": "UNLICENSED",
+  "license": "AGPL-3.0-or-later",
   "engines": {
     "node": ">=20.19"
   },

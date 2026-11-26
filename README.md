@@ -127,6 +127,18 @@ git push origin v0.1.0
 
 La primera vez, el paquete de ghcr.io se crea como privado: cámbialo a público en la configuración del paquete en GitHub para que cualquiera pueda descargarlo.
 
+## Licencia
+
+[GNU Affero General Public License v3.0 o posterior](LICENSE) (AGPL-3.0-or-later).
+
+Puedes usar, desplegar, modificar y comercializar Sequrid, también como servicio de pago, siempre que el resultado siga siendo código abierto con la misma licencia. A diferencia de la GPL, la AGPL cubre también el uso a través de la red: si ofreces una versión modificada a otras personas desde un servidor, tienes que darles acceso a su código fuente.
+
+Para cumplirlo en un fork, apunta el enlace «Código fuente» de la interfaz a tu repositorio con el argumento de build `SOURCE_URL` (o `VITE_SOURCE_URL` en desarrollo):
+
+```bash
+docker build --build-arg SOURCE_URL=https://github.com/tu-usuario/tu-fork -t mi-sequrid .
+```
+
 ## Aviso
 
 Las posiciones de las zonas son aproximadas: revisa siempre la vista previa antes de enviar la copia. Esta herramienta no está afiliada a ningún organismo oficial. Si te han suplantado la identidad, en España puedes llamar gratis al 017 (INCIBE).

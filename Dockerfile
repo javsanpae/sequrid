@@ -21,6 +21,7 @@ ARG SOURCE_URL=https://github.com/javsanpae/sequrid
 LABEL org.opencontainers.image.title="sequrid" \
       org.opencontainers.image.description="Protege tu DNI con marca de agua y tapa datos sensibles. Todo se procesa en el navegador." \
       org.opencontainers.image.source="$SOURCE_URL" \
+      org.opencontainers.image.licenses="AGPL-3.0-or-later" \
       org.opencontainers.image.version="$APP_VERSION"
 ENV NGINX_ENTRYPOINT_QUIET_LOGS=1
 COPY nginx/default.conf /etc/nginx/conf.d/default.conf

@@ -8,6 +8,8 @@ kubeVersion: ">=1.25.0-0"
 home: https://github.com/javsanpae/sequrid
 sources:
   - https://github.com/javsanpae/sequrid
+annotations:
+  licenses: AGPL-3.0-or-later
 keywords:
   - dni
   - privacy

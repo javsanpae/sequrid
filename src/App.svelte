@@ -61,7 +61,7 @@
 <footer>
   <p>
     Sequrid procesa todo en tu navegador. Ninguna imagen se envía ni se guarda.
-    <a href={SOURCE_URL} target="_blank" rel="noopener noreferrer">Código fuente</a> · v{VERSION}
+    <a href={SOURCE_URL} target="_blank" rel="noopener noreferrer">Código fuente</a> · Licencia AGPL-3.0 · v{VERSION}
   </p>
 </footer>
 
