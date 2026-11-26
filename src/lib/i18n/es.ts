@@ -52,6 +52,7 @@ export const es: Messages = {
     doc: (n) => `Documento ${n}`,
     country: (n) => `País del documento ${n}`,
     countryChanged: (n, name) => `Documento ${n}: zonas colocadas para ${name}.`,
+    customChosen: (n) => `Documento ${n}: documento personalizado. Dibuja encima de todo lo que quieras tapar.`,
     slot: (face, loaded) => `${face}: ${loaded ? 'cargada, pulsa para editar' : 'vacía, pulsa para subir'}`,
     secondDoc: 'Añadir un segundo documento',
     sample: 'Probar con un ejemplo',
@@ -69,6 +70,8 @@ export const es: Messages = {
     years: (from, until) => (from === until ? `${from}` : `${from}–${until}`),
     option: (country, model, years, current) => `${country}, ${model}, ${years}${current ? ', actual' : ''}`,
     noResults: (query) => `Ningún país ni documento coincide con «${query}»`,
+    customHint: '¿No está en la lista? Usa un documento personalizado y dibuja tú las zonas.',
+    customNote: 'No está en la lista · dibujas tú las zonas',
     results: (count) => (count === 0 ? 'Ningún documento encontrado' : count === 1 ? '1 documento' : `${count} documentos`),
   },
 
@@ -144,6 +147,7 @@ export const es: Messages = {
     alsoOn: (s) => `también en el ${side(s)}`,
     recommended: 'Recomendado',
     manualHelp: 'Elige «Dibujar» en la barra del lienzo y marca con el ratón o el dedo todo lo que quieras tapar.',
+    customHelp: 'Este documento no tiene campos predefinidos. Elige «Dibujar» en la barra del lienzo y marca todo lo que quieras tapar.',
     coverStyle: 'Cómo se tapa',
     black: 'Negro',
     pixelate: 'Pixelado',
@@ -186,6 +190,10 @@ export const es: Messages = {
     manual: (zones) =>
       `Modo manual: ${zones === 1 ? '1 zona dibujada' : `${zones} zonas dibujadas`}. Revisa que tapan lo que quieres.`,
     addWatermark: 'Añade la marca de agua.',
+    drawn: (zones) =>
+      zones === 0
+        ? 'Aún no hay nada tapado: dibuja encima de cada dato que quieras ocultar.'
+        : `${zones === 1 ? '1 zona dibujada' : `${zones} zonas dibujadas`}. Comprueba que tapan lo que quieres.`,
     covered: (covered, total, use) => `Has tapado ${covered} de ${total} datos recomendados para ${use}.`,
     noWatermark: 'Sin marca de agua la copia sirve para cualquier cosa.',
   },
@@ -464,6 +472,16 @@ export const es: Messages = {
         mrz: { label: 'Zona MRZ (líneas inferiores)', hint: 'Las tres líneas legibles por máquina repiten el número, las fechas y el nombre.' },
       },
     },
+    custom: {
+      countryName: 'Personalizado',
+      the: 'del documento',
+      name: 'Otro documento',
+      sides: {
+        front: { label: 'Anverso', hint: 'Primera cara' },
+        back: { label: 'Reverso', hint: 'Segunda cara, si la tiene' },
+      },
+      zones: {},
+    },
   },
 
   usages: {
@@ -572,7 +590,7 @@ export const es: Messages = {
         },
         {
           q: '¿Qué documentos admite?',
-          a: 'El DNI español (modelo 2021), la carte nationale d’identité francesa (desde 2021) la carta d’identità elettronica italiana (CIE 3.0, desde 2022), el permiso de conducir británico con foto (Gran Bretaña e Irlanda del Norte, desde 2021) y la tarjeta de pasaporte estadounidense (passport card). Ni el Reino Unido ni Estados Unidos tienen documento nacional de identidad, así que estas son las tarjetas que se usan para identificarse. Elige el país de cada documento en el panel de fotos y las zonas se colocan sobre sus datos. Iremos añadiendo más países.',
+          a: 'El DNI español (modelo 2021), la carte nationale d’identité francesa (desde 2021), la carta d’identità elettronica italiana (CIE 3.0, desde 2022), el permiso de conducir británico con foto (Gran Bretaña e Irlanda del Norte, desde 2021) y la tarjeta de pasaporte estadounidense (passport card). Ni el Reino Unido ni Estados Unidos tienen documento nacional de identidad, así que estas son las tarjetas que se usan para identificarse. Elige el país de cada documento en el panel de fotos y las zonas se colocan sobre sus datos. Iremos añadiendo más países. Si el tuyo no está en la lista, elige «Personalizado» y dibuja tú las zonas.',
         },
         {
           q: '¿Funciona en el móvil y sin conexión?',

@@ -56,8 +56,10 @@ export type ProtectionLevel = 'low' | 'medium' | 'high';
 export interface ProtectionSummary {
   usage: UsageId;
   manual: boolean;
+  /** Only documents without predefined fields (custom) are in use: the level is judged on drawn zones. */
+  drawn: boolean;
   watermark: boolean;
-  /** Recommended fields covered, or zones drawn in manual mode. */
+  /** Recommended fields covered, or zones drawn in manual mode or on a custom document. */
   covered: number;
   total: number;
   /** 0..1 */
@@ -85,9 +87,11 @@ export function protectionSummary(
   const recommended = preset.cover.filter((k) => available.has(k));
   const total = recommended.length;
   const wm = opts.watermark ? 0.2 : 0;
-  const base = { usage: id, manual: opts.manual, watermark: opts.watermark, total };
+  // Only custom documents in use: nothing is predefined, so judge the drawn zones.
+  const drawn = !opts.manual && opts.available !== undefined && opts.available.length === 0;
+  const base = { usage: id, manual: opts.manual, drawn, watermark: opts.watermark, total };
 
-  if (opts.manual) {
+  if (opts.manual || drawn) {
     const score = Math.min(1, wm + (opts.manualZones > 0 ? 0.4 : 0));
     return { ...base, covered: opts.manualZones, score, level: score >= 0.6 ? 'medium' : 'low' };
   }
@@ -103,5 +107,6 @@ export function protectionSummary(
 export function protectionMessage(s: ProtectionSummary, t: Messages): string {
   const p = t.protection;
   if (s.manual) return p.manual(s.covered) + (s.watermark ? '' : ` ${p.addWatermark}`);
+  if (s.drawn) return p.drawn(s.covered) + (s.watermark ? '' : ` ${p.addWatermark}`);
   return p.covered(s.covered, s.total, t.usages[s.usage].short) + (s.watermark ? '' : ` ${p.noWatermark}`);
 }

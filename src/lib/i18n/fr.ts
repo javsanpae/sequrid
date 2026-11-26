@@ -54,6 +54,7 @@ export const fr: Messages = {
     doc: (n) => `Document ${n}`,
     country: (n) => `Pays du document ${n}`,
     countryChanged: (n, name) => `Document ${n} : zones placées pour ${name}.`,
+    customChosen: (n) => `Document ${n} : document personnalisé. Dessinez sur tout ce que vous voulez masquer.`,
     slot: (face, loaded) => `${face} : ${loaded ? 'chargée, appuyez pour modifier' : 'vide, appuyez pour importer'}`,
     secondDoc: 'Ajouter un second document',
     sample: 'Essayer avec un exemple',
@@ -71,6 +72,8 @@ export const fr: Messages = {
     years: (from, until) => (from === until ? `${from}` : `${from}–${until}`),
     option: (country, model, years, current) => `${country}, ${model}, ${years}${current ? ', modèle actuel' : ''}`,
     noResults: (query) => `Aucun pays ni document ne correspond à « ${query} »`,
+    customHint: 'Il n’est pas dans la liste ? Utilisez un document personnalisé et dessinez vous-même les zones.',
+    customNote: 'Absent de la liste · vous dessinez les zones',
     results: (count) => (count === 0 ? 'Aucun document trouvé' : count === 1 ? '1 document' : `${count} documents`),
   },
 
@@ -147,6 +150,7 @@ export const fr: Messages = {
     alsoOn: (s) => `aussi au ${side(s)}`,
     recommended: 'Recommandé',
     manualHelp: 'Choisissez « Dessiner » dans la barre de l’image et tracez à la souris ou au doigt tout ce que vous voulez masquer.',
+    customHelp: 'Ce document n’a pas de champs prédéfinis. Choisissez « Dessiner » dans la barre de l’image et tracez tout ce que vous voulez masquer.',
     coverStyle: 'Type de masquage',
     black: 'Noir',
     pixelate: 'Pixellisation',
@@ -189,6 +193,10 @@ export const fr: Messages = {
     manual: (zones) =>
       `Mode manuel : ${zones <= 1 ? `${zones} zone dessinée` : `${zones} zones dessinées`}. Vérifiez qu’elles masquent bien ce que vous voulez.`,
     addWatermark: 'Ajoutez le filigrane.',
+    drawn: (zones) =>
+      zones === 0
+        ? 'Rien n’est encore masqué : dessinez sur chaque information à cacher.'
+        : `${zones === 1 ? '1 zone dessinée' : `${zones} zones dessinées`}. Vérifiez qu’elles masquent ce que vous voulez.`,
     covered: (covered, total, use) => `Informations recommandées masquées pour ${use} : ${covered} sur ${total}.`,
     noWatermark: 'Sans filigrane, la copie peut servir à n’importe quoi.',
   },
@@ -478,6 +486,16 @@ export const fr: Messages = {
         mrz: { label: 'Zone MRZ (lignes du bas)', hint: 'Les trois lignes lisibles par machine reprennent le numéro, les dates et le nom.' },
       },
     },
+    custom: {
+      countryName: 'Personnalisé',
+      the: 'du document',
+      name: 'Autre document',
+      sides: {
+        front: { label: 'Recto', hint: 'Première face' },
+        back: { label: 'Verso', hint: 'Deuxième face, s’il y en a une' },
+      },
+      zones: {},
+    },
   },
 
   usages: {
@@ -586,7 +604,7 @@ export const fr: Messages = {
         },
         {
           q: 'Quels documents sont pris en charge ?',
-          a: 'Le DNI espagnol (modèle 2021), la carte nationale d’identité française (depuis 2021) la carte d’identité électronique italienne (CIE 3.0, depuis 2022), le permis de conduire britannique à photo (Grande-Bretagne et Irlande du Nord, depuis 2021) et la carte passeport américaine (passport card). Le Royaume-Uni et les États-Unis n’ont pas de carte nationale d’identité : ce sont donc ces cartes qui servent de pièce d’identité. Choisissez le pays de chaque document dans le panneau des photos et les zones se placent sur ses informations. D’autres pays suivront.',
+          a: 'Le DNI espagnol (modèle 2021), la carte nationale d’identité française (depuis 2021), la carte d’identité électronique italienne (CIE 3.0, depuis 2022), le permis de conduire britannique à photo (Grande-Bretagne et Irlande du Nord, depuis 2021) et la carte passeport américaine (passport card). Le Royaume-Uni et les États-Unis n’ont pas de carte nationale d’identité : ce sont donc ces cartes qui servent de pièce d’identité. Choisissez le pays de chaque document dans le panneau des photos et les zones se placent sur ses informations. D’autres pays suivront. Si le vôtre n’est pas dans la liste, choisissez « Personnalisé » et dessinez vous-même les zones.',
         },
         {
           q: 'Est-ce que ça fonctionne sur mobile et hors connexion ?',

@@ -32,7 +32,9 @@
           onchange={(id) => {
             app.setDocType(doc, id);
             const model = app.docOf(doc === 1 ? 'd1f' : 'd2f');
-            app.status = (t) => t.slots.countryChanged(doc, docText(t, model).name);
+            app.status = model.custom
+              ? (t) => t.slots.customChosen(doc)
+              : (t) => t.slots.countryChanged(doc, docText(t, model).name);
           }}
         />
         <div class="faces">

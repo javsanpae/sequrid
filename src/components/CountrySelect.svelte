@@ -1,7 +1,7 @@
 <script lang="ts">
   import { tick } from 'svelte';
   import { DOCUMENTS, documentType, isCurrent, type DocumentId } from '../lib/documents';
-  import { documentCountryName, searchDocuments } from '../lib/document-search';
+  import { documentCountryName, groupByCountry, searchDocuments } from '../lib/document-search';
   import { getLang, m } from '../lib/i18n/index.svelte';
   import { docText, modelYears } from '../lib/i18n/text';
   import Flag from './Flag.svelte';
@@ -32,7 +32,10 @@
   let input = $state<HTMLInputElement>();
   let popover = $state<HTMLDivElement>();
 
-  const groups = $derived(open ? searchDocuments(query, DOCUMENTS, getLang()) : []);
+  const found = $derived(open ? searchDocuments(query, DOCUMENTS, getLang()) : []);
+  // Nothing matches: offer the custom document instead of a dead end.
+  const noMatch = $derived(open && query.trim() !== '' && found.length === 0);
+  const groups = $derived(noMatch ? groupByCountry(DOCUMENTS.filter((d) => d.custom), getLang()) : found);
   const options = $derived(groups.flatMap((g) => g.documents));
   const activeVisible = $derived(active !== null && options.some((d) => d.id === active));
 
@@ -196,6 +199,12 @@
         {/if}
       </div>
 
+      {#if noMatch}
+        <p class="empty">
+          {m().country.noResults(query.trim())}
+          <span>{m().country.customHint}</span>
+        </p>
+      {/if}
       <div
         id={listId}
         class="list"
@@ -222,14 +231,18 @@
                 role="option"
                 data-id={d.id}
                 aria-selected={d.id === value}
-                aria-label={m().country.option(g.name, text.name, years, isCurrent(d))}
+                aria-label={d.custom ? `${g.name}, ${text.name}` : m().country.option(g.name, text.name, years, isCurrent(d))}
                 class:active={d.id === active}
               >
                 <span class="text">
                   <strong>{text.name}</strong>
                   <small>
-                    <span>{years}</span>
-                    {#if isCurrent(d)}<span class="badge">{m().country.current}</span>{/if}
+                    {#if d.custom}
+                      <span>{m().country.customNote}</span>
+                    {:else}
+                      <span>{years}</span>
+                      {#if isCurrent(d)}<span class="badge">{m().country.current}</span>{/if}
+                    {/if}
                   </small>
                 </span>
                 {#if d.id === value}<span class="tick"><Icon name="check" size={16} stroke={2.5} /></span>{/if}
@@ -239,12 +252,10 @@
         {/each}
       </div>
 
-      {#if options.length === 0}
-        <p class="empty">{m().country.noResults(query.trim())}</p>
-      {/if}
+
       <p class="soon">{m().country.soon}</p>
       <span class="sr-only" aria-live="polite">
-        {query.trim() ? m().country.results(options.length) : ''}
+        {noMatch ? `${m().country.noResults(query.trim())}. ${m().country.customHint}` : query.trim() ? m().country.results(options.length) : ''}
       </span>
     </div>
   {/if}
@@ -438,6 +449,11 @@
     padding-left: 8px;
     display: flex;
     color: var(--accent-text);
+  }
+  .empty span {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted);
   }
   .empty {
     padding: 16px 14px 12px;

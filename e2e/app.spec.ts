@@ -271,7 +271,9 @@ test.describe('countries', () => {
     await expect(listbox.getByRole('group', { name: 'Spain' })).toBeVisible();
     await expect(listbox.getByRole('group', { name: 'United Kingdom' }).getByRole('option')).toHaveCount(2);
     await expect(listbox.getByRole('group', { name: 'United States' })).toBeVisible();
-    await expect(options(page)).toHaveCount(6);
+    // The custom document is listed last.
+    await expect(listbox.getByRole('group').last()).toHaveAccessibleName('Custom');
+    await expect(options(page)).toHaveCount(7);
 
     const spain = listbox.getByRole('group', { name: 'Spain' }).getByRole('option');
     await expect(spain).toHaveAccessibleName('Spain, DNI (2021 model), 2021–present, current');
@@ -293,7 +295,7 @@ test.describe('countries', () => {
     await page.getByRole('button', { name: 'Clear search' }).click();
     await expect(searchBox(page)).toHaveValue('');
     await expect(searchBox(page)).toBeFocused();
-    await expect(options(page)).toHaveCount(6);
+    await expect(options(page)).toHaveCount(7);
   });
 
   test('finds documents by acronym and by name in other languages while in English', async ({ page }) => {
@@ -312,11 +314,16 @@ test.describe('countries', () => {
   test('shows an empty state and keeps the coming soon line', async ({ page }) => {
     await picker(page).click();
     await searchBox(page).fill('narnia');
-    await expect(page.getByText('No country or document matches “narnia”')).toBeVisible();
+    // The visible message (screen readers also get it through the live region).
+    const empty = page.locator('.popover .empty');
+    await expect(empty).toContainText('No country or document matches “narnia”');
     await expect(page.getByText('More countries coming soon')).toBeVisible();
-    await expect(options(page)).toHaveCount(0);
-    await expect(searchBox(page)).toHaveAttribute('aria-expanded', 'false');
-    await expect(searchBox(page)).not.toHaveAttribute('aria-activedescendant');
+    // Instead of a dead end, the custom document is offered and highlighted.
+    await expect(empty).toContainText('Not in the list? Use a custom document and draw the zones yourself.');
+    await expect(options(page)).toHaveCount(1);
+    await expect(options(page)).toHaveAccessibleName(/^Custom,/);
+    await page.keyboard.press('Enter');
+    await expect(picker(page)).toHaveAccessibleName(/^Country of document 1: Custom/);
   });
 
   test('keyboard: type, ArrowDown and Enter pick a document', async ({ page, isMobile }) => {
@@ -343,12 +350,12 @@ test.describe('countries', () => {
     await page.keyboard.press('ArrowDown');
     await expect(searchBox(page)).toBeFocused();
     // Options in English order: France, Italy, Spain (selected), United Kingdom (GB, NI), United States.
-    const [france, italy, spain, gb, us] = await Promise.all([
+    const [france, italy, spain, gb, custom] = await Promise.all([
       page.getByRole('option', { name: /^France/ }).getAttribute('id'),
       page.getByRole('option', { name: /^Italy/ }).getAttribute('id'),
       page.getByRole('option', { name: /^Spain/ }).getAttribute('id'),
       page.getByRole('option', { name: /^United Kingdom, Driving licence \(Great Britain/ }).getAttribute('id'),
-      page.getByRole('option', { name: /^United States/ }).getAttribute('id'),
+      page.getByRole('option', { name: /^Custom,/ }).getAttribute('id'),
     ]);
     const expectActive = (id: string | null) => expect(searchBox(page)).toHaveAttribute('aria-activedescendant', id!);
     await expectActive(spain);
@@ -359,11 +366,11 @@ test.describe('countries', () => {
     await page.keyboard.press('ArrowUp');
     await expectActive(italy);
     await page.keyboard.press('End');
-    await expectActive(us);
+    await expectActive(custom);
     await page.keyboard.press('ArrowDown');
     await expectActive(france);
     await page.keyboard.press('ArrowUp');
-    await expectActive(us);
+    await expectActive(custom);
     await page.keyboard.press('Home');
     await expectActive(france);
     await page.keyboard.press('ArrowDown');
@@ -381,7 +388,7 @@ test.describe('countries', () => {
     await expect(options(page)).toHaveCount(1);
     await page.keyboard.press('Escape');
     await expect(searchBox(page)).toHaveValue('');
-    await expect(options(page)).toHaveCount(6);
+    await expect(options(page)).toHaveCount(7);
     await expect(searchBox(page)).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(page.getByRole('listbox')).toHaveCount(0);
@@ -663,6 +670,33 @@ test.describe('United Kingdom and United States', () => {
     await expect(page.getByText(/You have covered 4 of 4 recommended details/)).toBeVisible();
     const [jpg] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'JPG of this side' }).click()]);
     expect(jpg.suggestedFilename()).toBe('passport-card-protected-passport-card1-front.jpg');
+  });
+});
+
+test.describe('custom document', () => {
+  test('has no predefined fields, starts in Draw mode and judges the drawn zones', async ({ page, isMobile }) => {
+    await page.getByRole('button', { name: /^Country of document 1:/ }).click();
+    await page.getByRole('combobox', { name: 'Search country or document' }).fill('custom');
+    await page.getByRole('option', { name: /^Custom,/ }).click();
+    await expect(page.getByRole('status')).toContainText('Document 1: custom document.');
+    await expect(page.getByText('This document has no predefined fields.', { exact: false })).toBeVisible();
+    await expect(page.getByRole('checkbox', { name: /CAN/ })).toHaveCount(0);
+
+    await loadSampleAs(page, 'ID');
+    await expect(page.locator('.overlay .zone')).toHaveCount(0);
+    await expect(page.getByRole('radio', { name: 'Draw' })).toBeChecked();
+    await expect(page.getByText(/Nothing is covered yet/)).toBeVisible();
+
+    if (!isMobile) {
+      const box = (await page.getByRole('application').boundingBox())!;
+      await page.mouse.move(box.x + box.width * 0.4, box.y + box.height * 0.3);
+      await page.mouse.down();
+      await page.mouse.move(box.x + box.width * 0.7, box.y + box.height * 0.45, { steps: 4 });
+      await page.mouse.up();
+      await expect(page.getByText(/1 zone drawn\./)).toBeVisible();
+    }
+    const [pdf] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Download PDF' }).first().click()]);
+    expect(pdf.suggestedFilename()).toBe('id-protected.pdf');
   });
 });
 

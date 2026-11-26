@@ -50,7 +50,7 @@ src/App.svelte             page layout, paste/drop handling, footer (source link
 src/app.css                design tokens, light/dark themes, global styles
 src/lib/
   config.ts                SOURCE_URL and VERSION from VITE_SOURCE_URL / VITE_APP_VERSION
-  documents.ts             document models: ZoneKey, DocumentType, DNI_ES, CNI_FR, CIE_IT, DL_GB, DL_NI, PPC_US, DOCUMENTS, helpers
+  documents.ts             document models: ZoneKey, DocumentType, DNI_ES, CNI_FR, CIE_IT, DL_GB, DL_NI, PPC_US, CUSTOM_DOC, DOCUMENTS, CATALOG, helpers
   countries.ts             country names via Intl.DisplayNames, native language/name (cached)
   document-search.ts       picker grouping by country and accent-insensitive search
   presets.ts               usage presets (what each use covers) and protection level
@@ -113,6 +113,7 @@ VERSION                    release version, single source of truth
 - `ZoneKey` is a **shared vocabulary across countries** (`number`, `serial`, `birthDate`, `signature`, `can`, `expiry`, `issueDate`, `name`, `photo`, `address`, `birthPlace`, `parents`, `height`, `seal`, `taxCode`, `birthRecord`, `issuer`, `entitlements`, `restrictions`, `mrz`) so presets work for every document. `ZONE_KEYS` order is the display order for mixed-country checklists.
 - A `DocumentType` has `id` (`DocumentId` union), `country` (ISO 3166-1 alpha-2), `short` (acronym used in labels and file names), `issuedFrom`, optional `issuedUntil` (absent = still issued), optional `aliases` (search terms), `widthMm`/`heightMm` (ID-1) and `zones`, each with one or more rects on either side (repeated prints of the same data are extra rects of the same key).
 - `documents.ts` holds **only geometry and identifiers**; display text lives in `t.documents[id]` (`countryName`, `name`, `sides`, per-document `zones` label/hint). `t.fields` holds neutral names used when countries are mixed.
+- **Custom document** (`CUSTOM_DOC`, `custom: true`, pseudo-country `CUSTOM_COUNTRY = 'ZZ'`, ISO user-assigned): no zones, no years; its name comes from the dictionary (`documents.custom.countryName`), never from Intl. The picker lists it last and offers it when a search finds nothing; choosing it (or loading a face of it) switches the tool to Draw; when only custom documents are in use `protectionSummary` returns `drawn: true` and judges the drawn zones. `CATALOG` is `DOCUMENTS` without it: catalog tests and the help-line coverage test iterate `CATALOG`.
 - The picker (`document-search.ts`) groups by country (sorted by localized name with `Intl.Collator`; models current first, then newest via `compareModels`) and searches case- and accent-insensitively: every query word must prefix-match a word among country names (all UI languages, native name, ISO code), acronym, model names (all UI languages), aliases and years; a 4-digit year also matches models issued that year. Country names come from `Intl.DisplayNames` (`countries.ts`), falling back to the dictionary `countryName`, then the code.
 
 ### Usage presets and protection level

@@ -722,6 +722,50 @@ function passportCardBack(): HTMLCanvasElement {
   return c;
 }
 
+/** Generic card for the custom document: plausible fields, no predefined zones. */
+function genericFront(): HTMLCanvasElement {
+  const c = createCanvas(W, H);
+  const ctx = ctx2d(c);
+  cardBase(ctx, ['#eef1f4', '#f8f9fb', '#e9eef3', '#f3f1ee']);
+  text(ctx, 'IDENTITY DOCUMENT · SPECIMEN', 0.06, 0.11, 0.05, { color: '#2b3a55', weight: 800 });
+  text(ctx, 'SAMPLE · FICTITIOUS DATA', 0.06, 0.16, 0.026, { color: '#6a4f3a', weight: 600 });
+  const px = 0.06 * W, py = 0.25 * H, pw = 0.27 * W, ph = 0.6 * H;
+  ctx.save();
+  roundedPath(ctx, px, py, pw, ph, 0.015 * H);
+  ctx.clip();
+  ctx.fillStyle = '#e2e5e9';
+  ctx.fillRect(px, py, pw, ph);
+  portrait(ctx, px, py, pw, ph, '#6b727a');
+  ctx.restore();
+  const rows: [string, string][] = [
+    ['NAME', 'ALEX SAMPLE'],
+    ['DATE OF BIRTH', '01.01.1990'],
+    ['DOCUMENT NO.', 'X0000000'],
+    ['EXPIRY', '01.01.2035'],
+  ];
+  rows.forEach(([k, v], i) => {
+    usLabel(ctx, k, 0.38, 0.3 + i * 0.15);
+    text(ctx, v, 0.38, 0.35 + i * 0.15, 0.045, { color: EN_VALUE, weight: 600 });
+  });
+  ctx.restore();
+  return c;
+}
+
+function genericBack(): HTMLCanvasElement {
+  const c = createCanvas(W, H);
+  const ctx = ctx2d(c);
+  cardBase(ctx, ['#eef1f4', '#f8f9fb', '#e9eef3', '#f3f1ee']);
+  usLabel(ctx, 'ADDRESS', 0.06, 0.15);
+  text(ctx, '1 SAMPLE STREET, SAMPLETOWN', 0.06, 0.2, 0.04, { color: EN_VALUE, weight: 600 });
+  fakeBarcode(ctx, 0.06 * W, 0.32 * H, 0.5 * W, 0.15 * H);
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.fillRect(0, 0.62 * H, W, 0.3 * H);
+  const mrz = ['IDXXXX00000000<<<<<<<<<<<<<<<<', '9001010X3501010XXX<<<<<<<<<<<0', 'SAMPLE<<ALEX<<<<<<<<<<<<<<<<<<'];
+  mrz.forEach((line, i) => text(ctx, line, 0.055, 0.72 + i * 0.075, 0.064, { font: MONO, weight: 700, color: '#20252b' }));
+  ctx.restore();
+  return c;
+}
+
 export function sampleCards(id: DocumentId = 'dni-es'): { front: HTMLCanvasElement; back: HTMLCanvasElement } {
   switch (id) {
     case 'cni-fr':
@@ -734,6 +778,8 @@ export function sampleCards(id: DocumentId = 'dni-es'): { front: HTMLCanvasEleme
       return { front: licenceFront('ni'), back: licenceBack('ni') };
     case 'ppc-us':
       return { front: passportCardFront(), back: passportCardBack() };
+    case 'custom':
+      return { front: genericFront(), back: genericBack() };
     default:
       return { front: dniFront(), back: dniBack() };
   }

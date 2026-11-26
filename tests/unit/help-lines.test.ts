@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DOCUMENTS } from '../../src/lib/documents';
+import { CATALOG } from '../../src/lib/documents';
 import { HELP_LINES, sortHelpLines } from '../../src/lib/help-lines';
 
 const names: Record<string, string> = { ES: 'Spain', FR: 'France', IT: 'Italy', GB: 'United Kingdom', US: 'United States' };
@@ -8,7 +8,7 @@ const name = (code: string) => names[code] ?? code;
 describe('help lines', () => {
   it('cover every country with a supported document', () => {
     const countries = new Set(HELP_LINES.map((l) => l.country));
-    for (const doc of DOCUMENTS) expect(countries.has(doc.country), doc.country).toBe(true);
+    for (const doc of CATALOG) expect(countries.has(doc.country), doc.country).toBe(true);
   });
 
   it('have unique ids, official https sources and usable links', () => {
