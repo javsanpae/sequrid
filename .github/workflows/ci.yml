@@ -101,7 +101,7 @@ jobs:
     needs: version
     steps:
       - uses: actions/checkout@v4
-      - uses: azure/setup-helm@v4
+      - uses: azure/setup-helm@v5
       - run: helm lint charts/sequrid
       - run: helm lint charts/sequrid --set ingress.enabled=true,httpRoute.enabled=true,autoscaling.enabled=true,podDisruptionBudget.enabled=true,networkPolicy.enabled=true
       - run: helm template sequrid charts/sequrid --set ingress.enabled=true,networkPolicy.enabled=true > /dev/null
@@ -213,7 +213,7 @@ jobs:
       VERSION: ${{ needs.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
-      - uses: azure/setup-helm@v4
+      - uses: azure/setup-helm@v5
 
       - name: Package and push the chart to ghcr.io
         run: |
