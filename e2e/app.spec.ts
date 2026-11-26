@@ -23,9 +23,24 @@ async function loadSample(page: Page) {
 const heading = (page: Page) => page.getByRole('heading', { level: 1 });
 const usageSelect = (page: Page) => page.getByRole('combobox', { name: /^Use\b/ });
 
+/**
+ * Picks a document in the first picker without relying on the UI language.
+ * The app starts with the custom document, and the choice is not stored, so
+ * it is lost on reload.
+ */
+async function useDocument(page: Page, id = 'dni-es', query = 'dni') {
+  await page.locator('button[aria-haspopup="listbox"]').first().click();
+  // The search box of the country picker (the usage <select> is a combobox too).
+  await page.locator('input[role="combobox"]').fill(query);
+  await page.locator(`[role="option"][data-id="${id}"]`).click();
+  await expect(page.getByRole('listbox')).toHaveCount(0);
+}
+
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
   await expect(heading(page)).toBeVisible();
+  // Most tests work on the Spanish DNI; tests tagged @default check the initial state.
+  if (!test.info().tags.includes('@default')) await useDocument(page);
 });
 
 test('starts in English for an English browser', async ({ page }) => {
@@ -43,6 +58,7 @@ test('only loads its own static files and never talks to anyone while working', 
     expect(new URL(r.url()).origin, r.url()).toBe(origin);
     expect(r.method()).toBe('GET');
   }
+  await useDocument(page);
 
   const during = trackRequests(page);
   await loadSample(page);
@@ -123,6 +139,9 @@ test('several files fill the free slots and enable the second DNI', async ({ pag
   await expect(page.getByRole('button', { name: /DNI 2 · Front: loaded/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /DNI 2 · Back: empty/ })).toBeVisible();
   await expect(page.getByRole('status')).toContainText('3 photos placed in the free slots.');
+  // The second DNI inherits the first one's document, with its automatic zones.
+  await page.getByRole('button', { name: /DNI 2 · Front: loaded/ }).click();
+  await expect(page.locator('.overlay .zone')).not.toHaveCount(0);
 });
 
 test('zones can be removed with the keyboard and drawn by hand', async ({ page, isMobile }) => {
@@ -208,9 +227,20 @@ test.describe('countries', () => {
     await page.emulateMedia({ colorScheme: null });
   }
 
-  test('defaults to the Spanish DNI', async ({ page }) => {
+  test('starts with the custom document', { tag: '@default' }, async ({ page }) => {
+    await expect(page.getByRole('button', { name: /^Country of document 1: Custom, Other document/ })).toBeVisible();
+    await expect(page.getByText(/This document has no predefined fields/)).toBeVisible();
+    await expect(page.getByRole('checkbox')).toHaveCount(0);
+    // The sample is the generic card, ready to draw on.
+    await loadSampleAs(page, 'ID');
+    await expect(page.getByRole('radio', { name: 'Draw' })).toBeChecked();
+    // A second document starts with the same choice as the first.
+    await page.getByRole('switch', { name: 'Add a second document' }).check({ force: true });
+    await expect(page.getByRole('button', { name: /^Country of document 2: Custom/ })).toBeVisible();
+  });
+
+  test('the Spanish DNI keeps its fields once chosen', async ({ page }) => {
     await expect(page.getByRole('button', { name: /^Country of document 1: Spain/ })).toBeVisible();
-    await expect(picker(page)).toContainText('Spain');
     await expect(picker(page)).toContainText('DNI (2021 model)');
     await expect(page.getByRole('checkbox', { name: /Card serial number/ })).toBeVisible();
     await expect(page.getByRole('checkbox', { name: /2D-Doc code/ })).toHaveCount(0);
