@@ -1,7 +1,7 @@
 {
   "name": "sequrid",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Protege tu DNI con marca de agua y tapa datos sensibles. Todo se procesa en tu navegador.",
   "type": "module",
   "license": "AGPL-3.0-or-later",

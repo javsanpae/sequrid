@@ -1,11 +1,12 @@
 <script lang="ts">
-  import { app, FACE_META, faceName, type FaceId } from '../lib/state.svelte';
+  import { app, FACE_META, faceHint, faceLabel, faceName, type DocNumber, type FaceId } from '../lib/state.svelte';
   import { loadSample, pickFiles } from '../lib/files';
+  import CountrySelect from './CountrySelect.svelte';
   import Icon from './Icon.svelte';
   import Thumb from './Thumb.svelte';
   import Toggle from './Toggle.svelte';
 
-  const docs = $derived(app.twoDocs ? [1, 2] : [1]);
+  const docs = $derived<DocNumber[]>(app.twoDocs ? [1, 2] : [1]);
   const slotsOf = (doc: number) => app.slots.filter((id) => FACE_META[id].doc === doc);
 
   function onSlot(id: FaceId) {
@@ -16,12 +17,20 @@
 </script>
 
 <section class="card slots" aria-labelledby="slots-title">
-  <h2 id="slots-title" class="step"><span class="num">1</span>Fotos del DNI</h2>
+  <h2 id="slots-title" class="step"><span class="num">1</span>Fotos del documento</h2>
 
   <div class="docs">
     {#each docs as doc (doc)}
       <div class="doc">
-        <p class="doc-label">DNI {doc}</p>
+        <p class="doc-label">Documento {doc}</p>
+        <CountrySelect
+          label="País del documento {doc}"
+          value={app.docTypes[doc]}
+          onchange={(id) => {
+            app.setDocType(doc, id);
+            app.status = `Documento ${doc}: zonas colocadas para ${app.docOf(doc === 1 ? 'd1a' : 'd2a').name}.`;
+          }}
+        />
         <div class="faces">
           {#each slotsOf(doc) as id (id)}
             {@const face = app.faces[id]}
@@ -42,10 +51,10 @@
                 {/if}
               </span>
               <span class="meta">
-                <strong>{FACE_META[id].label}</strong>
+                <strong>{faceLabel(id)}</strong>
                 <small>
                   {#if face}<span class="ok"><Icon name="check" size={12} stroke={3} /></span>{/if}
-                  {FACE_META[id].hint}
+                  {faceHint(id)}
                 </small>
               </span>
             </button>
@@ -55,12 +64,12 @@
     {/each}
   </div>
 
-  <Toggle checked={app.twoDocs} onchange={(v) => app.setTwoDocs(v)}>Añadir un segundo DNI</Toggle>
+  <Toggle checked={app.twoDocs} onchange={(v) => app.setTwoDocs(v)}>Añadir un segundo documento</Toggle>
 
   <button type="button" class="btn block" onclick={loadSample}>
     <Icon name="sparkle" size={16} /> Probar con un ejemplo
   </button>
-  <p class="tip">Arrastra varias fotos a la vez y se colocan solas en los huecos libres.<span class="paste"> También puedes pegar con <kbd>Ctrl</kbd>+<kbd>V</kbd>.</span></p>
+  <p class="tip">Arrastra varias fotos a la vez y se colocan solas en los huecos libres.{' '}<span class="paste">También puedes pegar con <kbd>Ctrl</kbd>+<kbd>V</kbd>.</span></p>
 </section>
 
 <style>
@@ -82,6 +91,7 @@
   .faces {
     display: grid;
     gap: 8px;
+    margin-top: 8px;
   }
   .slot {
     display: flex;

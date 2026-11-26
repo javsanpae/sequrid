@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { zoneDef } from '../lib/documents';
+  import { zoneLabel } from '../lib/documents';
   import { renderSettings } from '../lib/export';
   import { clamp, clampRect, moveRect, rectFromPoints, resizeRect, type Handle, type Rect } from '../lib/geometry';
   import { renderOriginal, renderProtected, rotatedImage } from '../lib/render';
@@ -43,7 +43,7 @@
   const zones = $derived(framing ? [] : app.visibleZones(face));
   const selected = $derived(zones.find((z) => z.id === app.selectedZone) ?? null);
 
-  const zoneLabel = (z: ZoneInstance) => (z.key ? zoneDef(z.key).label : 'Zona propia');
+  const labelOf = (z: ZoneInstance) => (z.key ? zoneLabel(z.key, app.docOf(faceId)) : 'Zona propia');
 
   type Drag =
     | { kind: 'move' | 'resize' | 'draw'; zone: ZoneInstance; handle?: Handle; sx: number; sy: number; start: Rect }
@@ -138,7 +138,7 @@
       if (next >= 0 && next < zones.length) {
         e.preventDefault();
         app.selectedZone = zones[next].id;
-        app.status = `${zoneLabel(zones[next])} seleccionada.`;
+        app.status = `${labelOf(zones[next])} seleccionada.`;
       } else {
         app.selectedZone = null;
       }
@@ -207,15 +207,15 @@
             class:selected={z.id === app.selectedZone}
             class:custom={z.key === null}
             style={pct(z.rect)}
-            title={zoneLabel(z)}
+            title={labelOf(z)}
             onpointerdown={(e) => onZoneDown(e, z)}
           >
             {#if z.id === app.selectedZone && app.tool === 'move'}
-              <span class="tag">{zoneLabel(z)}</span>
+              <span class="tag">{labelOf(z)}</span>
               <button
                 type="button"
                 class="remove"
-                aria-label="Quitar {zoneLabel(z)}"
+                aria-label="Quitar {labelOf(z)}"
                 onpointerdown={(e) => e.stopPropagation()}
                 onclick={() => app.removeZone(faceId, z.id)}><Icon name="x" size={12} stroke={3} /></button
               >

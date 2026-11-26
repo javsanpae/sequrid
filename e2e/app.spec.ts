@@ -168,3 +168,83 @@ test('mobile shows a sticky download bar', async ({ page, isMobile }) => {
   const [download] = await Promise.all([page.waitForEvent('download'), bar.getByRole('button', { name: 'Descargar PDF' }).click()]);
   expect(download.suggestedFilename()).toBe('dni-protegido.pdf');
 });
+
+test.describe('countries', () => {
+  async function chooseCountry(page: Page, doc: 1 | 2, country: string) {
+    await page.getByRole('button', { name: new RegExp(`^País del documento ${doc}:`) }).click();
+    await page.getByRole('option', { name: new RegExp(country) }).click();
+    await expect(page.getByRole('button', { name: new RegExp(`^País del documento ${doc}: ${country}`) })).toBeVisible();
+  }
+
+  test('defaults to the Spanish DNI', async ({ page }) => {
+    await expect(page.getByRole('button', { name: /^País del documento 1: España/ })).toBeVisible();
+    await expect(page.getByRole('checkbox', { name: /Número de soporte/ })).toBeVisible();
+    await expect(page.getByRole('checkbox', { name: /Código 2D-Doc/ })).toHaveCount(0);
+  });
+
+  test('French ID: own fields, sample, protection level and file names', async ({ page }) => {
+    await chooseCountry(page, 1, 'Francia');
+    await expect(page.getByRole('checkbox', { name: /Código 2D-Doc/ })).toBeChecked();
+    await expect(page.getByRole('checkbox', { name: /Estatura/ })).toBeChecked();
+    await expect(page.getByRole('checkbox', { name: /Nombre de los padres/ })).toHaveCount(0);
+
+    await loadSampleAs(page, 'CNI');
+    await expect(page.getByText(/Has tapado 8 de 8 datos recomendados/)).toBeVisible();
+    await expect(page.locator('.overlay .zone')).not.toHaveCount(0);
+
+    const [pdf] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Descargar PDF' }).first().click()]);
+    expect(pdf.suggestedFilename()).toBe('cni-protegido.pdf');
+    const [jpg] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'JPG de esta cara' }).click()]);
+    expect(jpg.suggestedFilename()).toBe('cni-protegido-cni1-anverso.jpg');
+  });
+
+  test('switching country moves the automatic zones and keeps drawn ones', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'mouse drawing');
+    await loadSample(page);
+    await page.getByRole('radio', { name: 'Dibujar' }).click();
+    const box = (await page.getByRole('application').boundingBox())!;
+    await page.mouse.move(box.x + box.width * 0.45, box.y + box.height * 0.45);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * 0.6, box.y + box.height * 0.55, { steps: 4 });
+    await page.mouse.up();
+    await expect(page.locator('.zone.custom')).toHaveCount(1);
+
+    await chooseCountry(page, 1, 'Francia');
+    await expect(page.getByRole('button', { name: /CNI 1 · Anverso: cargada/ })).toBeVisible();
+    await expect(page.locator('.zone.custom')).toHaveCount(1);
+    await expect(page.getByRole('status')).toContainText("Carte nationale d'identité");
+  });
+
+  test('documents from different countries use neutral field names', async ({ page }) => {
+    await page.getByRole('switch', { name: 'Añadir un segundo documento' }).check({ force: true });
+    await expect(page.getByRole('button', { name: /^País del documento 2: España/ })).toBeVisible();
+    await chooseCountry(page, 2, 'Francia');
+    await expect(page.getByRole('checkbox', { name: /^Número de documento/ })).toBeVisible();
+    await expect(page.getByRole('checkbox', { name: /Código 2D-Doc/ })).toBeVisible();
+    await expect(page.getByRole('checkbox', { name: /Nombre de los padres/ })).toBeVisible();
+    await loadSample(page);
+    await expect(page.getByText(/Has tapado 9 de 9 datos recomendados/)).toBeVisible();
+  });
+
+  test('country picker works with the keyboard', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'keyboard flow');
+    const trigger = page.getByRole('button', { name: /^País del documento 1:/ });
+    await trigger.focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(page.getByRole('listbox')).toBeVisible();
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('listbox')).toHaveCount(0);
+    await expect(trigger).toHaveAccessibleName(/Francia/);
+    await expect(trigger).toBeFocused();
+    await trigger.click();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('listbox')).toHaveCount(0);
+  });
+});
+
+async function loadSampleAs(page: Page, short: string) {
+  await page.getByRole('button', { name: 'Probar con un ejemplo' }).click();
+  await expect(page.getByRole('button', { name: new RegExp(`${short} 1 · Anverso: cargada`) })).toBeVisible();
+  await expect(page.getByRole('button', { name: new RegExp(`${short} 1 · Reverso: cargada`) })).toBeVisible();
+}

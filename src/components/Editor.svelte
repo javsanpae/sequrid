@@ -123,7 +123,7 @@
         <span class="drop-badge"><Icon name="lock" size={14} /> La imagen no sale de tu dispositivo</span>
       </button>
       <div class="empty-actions">
-        <button type="button" class="link" onclick={loadSample}>o prueba con un DNI de ejemplo</button>
+        <button type="button" class="link" onclick={loadSample}>o prueba con un documento de ejemplo</button>
       </div>
     {/if}
     {#if dragOver}

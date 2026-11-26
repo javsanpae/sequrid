@@ -1,13 +1,30 @@
 import { describe, expect, it } from 'vitest';
-import { DNI_ES, ZONE_KEYS, zoneDef, zonesForSide } from '../../src/lib/documents';
+import {
+  CNI_FR,
+  DNI_ES,
+  DOCUMENTS,
+  documentKeys,
+  documentType,
+  KEY_LABELS,
+  ZONE_KEYS,
+  zoneDef,
+  zoneLabel,
+  zoneSides,
+  zonesForSide,
+} from '../../src/lib/documents';
 import { protectionSummary, selectionFor, usage, USAGES } from '../../src/lib/presets';
 
-describe('DNI zone catalog', () => {
-  it('has unique keys and rects inside the card', () => {
-    expect(new Set(ZONE_KEYS).size).toBe(ZONE_KEYS.length);
-    for (const z of DNI_ES.zones) {
+describe.each(DOCUMENTS.map((d) => [d.id, d] as const))('%s zone catalog', (_, doc) => {
+  it('has unique known keys and rects inside the card', () => {
+    const keys = documentKeys(doc);
+    expect(new Set(keys).size).toBe(keys.length);
+    for (const z of doc.zones) {
+      expect(ZONE_KEYS).toContain(z.key);
+      expect(z.label).not.toBe('');
+      expect(z.hint).not.toBe('');
       expect(z.rects.length).toBeGreaterThan(0);
       for (const r of z.rects) {
+        expect(['anverso', 'reverso']).toContain(r.side);
         expect(r.x).toBeGreaterThanOrEqual(0);
         expect(r.y).toBeGreaterThanOrEqual(0);
         expect(r.x + r.w).toBeLessThanOrEqual(1);
@@ -18,23 +35,43 @@ describe('DNI zone catalog', () => {
     }
   });
 
-  it('splits zones by side', () => {
-    const front = zonesForSide('anverso').map((z) => z.key);
-    const back = zonesForSide('reverso').map((z) => z.key);
-    expect(front).toContain('can');
-    expect(front).toContain('firma');
-    expect(back).toEqual(['domicilio', 'lugar', 'padres', 'mrz']);
-    expect(front.length + back.length).toBe(ZONE_KEYS.length);
+  it('has zones on both sides and the ID-1 card size', () => {
+    expect(zonesForSide('anverso', doc).length).toBeGreaterThan(0);
+    expect(zonesForSide('reverso', doc).length).toBeGreaterThan(0);
+    expect(doc.widthMm).toBeCloseTo(85.6);
+    expect(doc.heightMm).toBeCloseTo(53.98);
   });
 
-  it('finds zone definitions', () => {
-    expect(zoneDef('can').label).toBe('Código CAN');
-    expect(() => zoneDef('nope' as never)).toThrow();
+  it('always lets you cover the riskiest data', () => {
+    for (const k of ['numero', 'nacimiento', 'firma', 'can', 'mrz', 'foto'] as const) expect(zoneDef(k, doc)).toBeDefined();
+  });
+});
+
+describe('documents', () => {
+  it('names every key', () => {
+    expect(Object.keys(KEY_LABELS).sort()).toEqual([...ZONE_KEYS].sort());
   });
 
-  it('has the ID-1 card size', () => {
-    expect(DNI_ES.widthMm).toBeCloseTo(85.6);
-    expect(DNI_ES.heightMm).toBeCloseTo(53.98);
+  it('keeps the Spanish DNI layout', () => {
+    expect(zonesForSide('reverso', DNI_ES).map((z) => z.key)).toEqual(['domicilio', 'lugar', 'padres', 'mrz']);
+    expect(zoneDef('sello', DNI_ES)).toBeUndefined();
+    expect(zoneLabel('numero', DNI_ES)).toBe('Número de DNI');
+  });
+
+  it('describes the French card', () => {
+    expect(documentType('cni-fr')).toBe(CNI_FR);
+    expect(CNI_FR.short).toBe('CNI');
+    // Place of birth is on the front of the French card, unlike the DNI.
+    expect(zoneSides(zoneDef('lugar', CNI_FR)!)).toEqual(['anverso']);
+    expect(zoneSides(zoneDef('foto', CNI_FR)!)).toEqual(['anverso', 'reverso']);
+    expect(zoneSides(zoneDef('sello', CNI_FR)!)).toEqual(['reverso']);
+    expect(zoneDef('padres', CNI_FR)).toBeUndefined();
+  });
+
+  it('falls back to generic labels', () => {
+    expect(zoneLabel('sello', DNI_ES)).toBe(KEY_LABELS.sello);
+    expect(zoneLabel('sello')).toBe('Código 2D-Doc');
+    expect(() => documentType('xx' as never)).toThrow();
   });
 });
 
@@ -66,6 +103,19 @@ describe('usage presets', () => {
 
 describe('protectionSummary', () => {
   const auto = { manual: false, manualZones: 0, watermark: true };
+
+  it('only counts recommendations that exist on the documents in use', () => {
+    const es = protectionSummary('otro', selectionFor('otro'), { ...auto, available: documentKeys(DNI_ES) });
+    const fr = protectionSummary('otro', selectionFor('otro'), { ...auto, available: documentKeys(CNI_FR) });
+    expect(es.total).toBe(7);
+    expect(fr.total).toBe(8);
+    expect(fr.level).toBe('alta');
+    const both = protectionSummary('otro', selectionFor('otro'), {
+      ...auto,
+      available: [...new Set([...documentKeys(DNI_ES), ...documentKeys(CNI_FR)])],
+    });
+    expect(both.total).toBe(9);
+  });
 
   it('is high when following the recommendation with a watermark', () => {
     const s = protectionSummary('otro', selectionFor('otro'), auto);

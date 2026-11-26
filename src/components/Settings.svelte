@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { zonesForSide, type ZoneKey } from '../lib/documents';
+  import { KEY_LABELS, SIDES, ZONE_KEYS, zoneDef, type Side, type ZoneKey } from '../lib/documents';
   import type { CoverStyle } from '../lib/effects';
   import { downloadAllJpg, downloadFaceJpg, downloadPdf } from '../lib/export';
   import type { PdfSize } from '../lib/pdf';
@@ -16,8 +16,26 @@
       manual: app.coverMode === 'manual',
       manualZones: app.manualZoneCount,
       watermark: app.watermark.enabled && app.watermarkText.length > 0,
+      available: app.availableKeys,
     }),
   );
+
+  /**
+   * Checkboxes for the data on the documents in use. With documents from
+   * different countries, fields are merged and shown with neutral names.
+   */
+  const entries = $derived.by(() => {
+    const docs = app.activeDocs;
+    const single = docs.length === 1 ? docs[0] : null;
+    const keys = single ? single.zones.map((z) => z.key) : ZONE_KEYS.filter((k) => docs.some((d) => zoneDef(k, d)));
+    return keys.map((key) => {
+      const defs = docs.map((d) => zoneDef(key, d)).filter((d) => d !== undefined);
+      const sides = SIDES.filter((side) => defs.some((def) => def.rects.some((r) => r.side === side)));
+      return { key, label: single ? defs[0].label : KEY_LABELS[key], hint: defs[0].hint, sides };
+    });
+  });
+  const docWord = $derived(app.activeDocs.length === 1 ? app.activeDocs[0].short : 'documento');
+  const otherSide = (side: Side) => (side === 'anverso' ? 'reverso' : 'anverso');
   const hasFaces = $derived(app.loaded.length > 0);
   let busy = $state<'' | 'pdf' | 'jpg' | 'all'>('');
 
@@ -44,10 +62,7 @@
     if (m === 'auto' && app.tool === 'draw') app.tool = 'move';
   }
 
-  const sides = [
-    { side: 'anverso' as const, label: 'Anverso' },
-    { side: 'reverso' as const, label: 'Reverso' },
-  ];
+  const sides = SIDES.map((side) => ({ side, label: side === 'anverso' ? 'Anverso' : 'Reverso' }));
 </script>
 
 <div class="card settings">
@@ -84,18 +99,24 @@
       ]}
     />
     {#if app.coverMode === 'auto'}
-      <p class="help">Las zonas se colocan sobre los datos del DNI. Comprueba que caen en su sitio; si no, usa «Encuadre».</p>
+      <p class="help">Las zonas se colocan sobre los datos del {docWord}. Comprueba que caen en su sitio; si no, usa «Encuadre».</p>
       {#each sides as s (s.side)}
-        <fieldset class="checks">
-          <legend>{s.label}</legend>
-          {#each zonesForSide(s.side) as z (z.key)}
-            <label class="check" title={z.hint}>
-              <input type="checkbox" bind:checked={app.selection[z.key]} />
-              <span>{z.label}</span>
-              {#if recommended.has(z.key)}<span class="rec">Recomendado</span>{/if}
-            </label>
-          {/each}
-        </fieldset>
+        {@const group = entries.filter((e) => e.sides[0] === s.side)}
+        {#if group.length}
+          <fieldset class="checks">
+            <legend>{s.label}</legend>
+            {#each group as z (z.key)}
+              <label class="check" title={z.hint}>
+                <input type="checkbox" bind:checked={app.selection[z.key]} />
+                <span class="name">
+                  {z.label}
+                  {#if z.sides.length > 1}<small>también en el {otherSide(s.side)}</small>{/if}
+                </span>
+                {#if recommended.has(z.key)}<span class="rec">Recomendado</span>{/if}
+              </label>
+            {/each}
+          </fieldset>
+        {/if}
       {/each}
     {:else}
       <p class="help">Elige «Dibujar» en la barra del lienzo y marca con el ratón o el dedo todo lo que quieras tapar.</p>
@@ -260,6 +281,14 @@
     height: 18px;
     accent-color: var(--accent);
     flex: none;
+  }
+  .name {
+    display: grid;
+    line-height: 1.3;
+  }
+  .name small {
+    font-size: 11.5px;
+    color: var(--muted);
   }
   .rec {
     margin-left: auto;
