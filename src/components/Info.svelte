@@ -1,6 +1,10 @@
 <script lang="ts">
   import { DNI_ES, type ZoneKey } from '../lib/documents';
   import { getLang, m } from '../lib/i18n/index.svelte';
+  import { countryName } from '../lib/countries';
+  import { HELP_LINES, sortHelpLines } from '../lib/help-lines';
+  import { app } from '../lib/state.svelte';
+  import Flag from './Flag.svelte';
   import { zoneText } from '../lib/i18n/text';
   import { USAGES } from '../lib/presets';
   import { SOURCE_URL } from '../lib/config';
@@ -10,6 +14,13 @@
   const KEY_ZONES: ZoneKey[] = ['serial', 'birthDate', 'signature', 'can', 'mrz', 'number'];
   const keyZones = DNI_ES.zones.filter((z) => KEY_ZONES.includes(z.key)).map((z) => z.key);
   const t = $derived(m());
+
+  // Countries of the documents in use first, then the rest by name.
+  const helpLines = $derived.by(() => {
+    const lang = getLang();
+    const first = app.activeDocs.map((d) => d.country);
+    return sortHelpLines(HELP_LINES, first, (code) => countryName(code, lang));
+  });
 </script>
 
 <section id="what-to-cover" class="block">
@@ -76,7 +87,69 @@
       </details>
     {/each}
   </div>
-  <p class="small"><Rich text={t.info.faq.help} /></p>
+</section>
+
+<section id="help" class="block">
+  <p class="eyebrow">{t.info.help.eyebrow}</p>
+  <h2>{t.info.help.title}</h2>
+  <p class="lead">{t.info.help.lead}</p>
+  <div class="table-wrap help-wrap">
+    <table class="help">
+      <thead>
+        <tr>
+          <th scope="col">{t.info.help.country}</th>
+          <th scope="col">{t.info.help.service}</th>
+          <th scope="col">{t.info.help.contact}</th>
+          <th scope="col">{t.info.help.what}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {#each helpLines as line (line.id)}
+          <tr>
+            <th scope="row" class="country">
+              <Flag country={line.country} size={22} />
+              <span>{countryName(line.country, getLang())}</span>
+            </th>
+            <td data-label={t.info.help.service}>
+              <strong lang={line.country.toLowerCase()}>{line.service}</strong>
+              {#if line.operator}<small lang={line.country.toLowerCase()}>{line.operator}</small>{/if}
+            </td>
+            <td data-label={t.info.help.contact}>
+              <ul class="contacts">
+                {#each line.contacts as c (c.href)}
+                  <li>
+                    <span class="kind">{t.info.help.kinds[c.kind]}</span>
+                    {#if c.kind === 'phone'}
+                      <a class="phone" href={c.href}>{c.value}</a>
+                    {:else}
+                      <a href={c.href} target="_blank" rel="noopener noreferrer">
+                        {c.value}<span class="sr-only"> ({t.info.help.newTab})</span>
+                      </a>
+                    {/if}
+                    {#if c.free}<span class="free">{t.info.help.free}</span>{/if}
+                  </li>
+                {/each}
+                <li class="emergency">
+                  <span class="kind">{t.info.help.emergency}</span>
+                  <span class="nums">
+                    {#each line.emergency as n (n)}<a class="phone" href="tel:{n}">{n}</a>{/each}
+                  </span>
+                </li>
+                {#if line.emergencySms}
+                  <li>
+                    <span class="kind">{t.info.help.emergencySms}</span>
+                    <a class="phone" href="sms:{line.emergencySms}">{line.emergencySms}</a>
+                  </li>
+                {/if}
+              </ul>
+            </td>
+            <td data-label={t.info.help.what}>{t.info.help.lines[line.id]}</td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  </div>
+  <p class="small">{t.info.help.note}</p>
 </section>
 
 <style>
@@ -198,6 +271,119 @@
     border-radius: 10px;
     background: var(--accent-soft);
     color: var(--accent-text);
+  }
+  .help th,
+  .help td {
+    vertical-align: top;
+  }
+  .help .country {
+    white-space: nowrap;
+  }
+  .help .country,
+  .help .country span {
+    font-weight: 600;
+  }
+  .help .country :global(.flag) {
+    vertical-align: -4px;
+    margin-right: 8px;
+  }
+  .help td strong {
+    display: block;
+  }
+  .help td small {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 2px;
+  }
+  .contacts {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 4px;
+  }
+  .contacts .kind {
+    display: inline-block;
+    min-width: 84px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .contacts .phone {
+    font: 700 14px var(--mono);
+    text-decoration: none;
+  }
+  .contacts .phone:hover {
+    text-decoration: underline;
+  }
+  .help td:nth-child(3) {
+    min-width: 250px;
+  }
+  .contacts .free {
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--accent-text);
+    background: var(--accent-soft);
+  }
+  .contacts .emergency {
+    margin-top: 4px;
+    padding-top: 6px;
+    border-top: 1px dashed var(--border);
+  }
+  .contacts .nums {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+  }
+  .contacts li {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    column-gap: 8px;
+  }
+  .contacts .kind {
+    flex: none;
+  }
+  /* On narrow screens each row becomes a card. */
+  @media (max-width: 720px) {
+    .help-wrap {
+      border: 0;
+      background: none;
+      overflow: visible;
+    }
+    .help {
+      min-width: 0;
+    }
+    .help thead {
+      display: none;
+    }
+    .help tr {
+      display: grid;
+      gap: 10px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+    }
+    .help th,
+    .help td {
+      display: block;
+      min-width: 0 !important;
+      padding: 0;
+      border: 0;
+    }
+    .help td::before {
+      content: attr(data-label);
+      display: block;
+      margin-bottom: 4px;
+      font: 700 10.5px var(--mono);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
   }
   .faq {
     display: grid;

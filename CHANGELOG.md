@@ -8,6 +8,36 @@ The released version is the one in the [`VERSION`](VERSION) file.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-26
+
+### Added
+
+- Support for the Italian electronic identity card (CIE 3.0) in its current
+  design, issued since September 2022, with its own fields: tax code (codice
+  fiscale) and the barcode that encodes it, birth record details, issuing
+  municipality, height and the small secondary portraits. Place and date of
+  birth share one line on this card, so they are covered together.
+- Fictitious Italian sample card to try the app.
+- The interface is also available in Italian.
+- "Automatic" option in the language menu: the app follows the browser
+  language, and keeps following it if the browser language changes.
+- The identity-theft help lines are now a table by country (Spain, France and
+  Italy), with the official service, how to reach it, what it does and the
+  emergency numbers. The countries of the documents in use come first, and
+  the header links to it. It turns into cards on narrow screens.
+
+### Changed
+
+- Choosing the language your browser already uses no longer saves a
+  preference, so the app keeps detecting your language. Only a different
+  language is remembered.
+- A language chosen with 0.3.0 is forgotten once, because that version saved
+  every pick, including the browser's own language. Everyone starts again from
+  the browser language. The preference is now stored under the
+  `sequrid-language` key.
+- Usage presets also cover the tax code and the birth record details when the
+  document has them, and job and sale cover the issuing authority.
+
 ## [0.3.0] - 2026-11-26
 
 ### Added
@@ -121,7 +151,8 @@ The released version is the one in the [`VERSION`](VERSION) file.
   publishing of the image and chart to `ghcr.io`.
 - Licensed under the GNU Affero General Public License v3.0 or later.
 
-[Unreleased]: https://github.com/javsanpae/sequrid/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/javsanpae/sequrid/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/javsanpae/sequrid/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/javsanpae/sequrid/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/javsanpae/sequrid/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/javsanpae/sequrid/compare/v0.1.0...v0.1.1

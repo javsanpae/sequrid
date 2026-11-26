@@ -7,18 +7,20 @@ export const es: Messages = {
   meta: {
     title: 'Sequrid · Protege tu DNI',
     description:
-      'Tapa los datos sensibles de tu DNI o documento de identidad (España y Francia) y añade una marca de agua con destinatario y fecha. Todo se procesa en tu navegador: la foto nunca sale de tu dispositivo.',
+      'Tapa los datos sensibles de tu DNI o documento de identidad (España, Francia e Italia) y añade una marca de agua con destinatario y fecha. Todo se procesa en tu navegador: la foto nunca sale de tu dispositivo.',
   },
 
   language: {
     label: 'Idioma',
     current: (name) => `Idioma: ${name}`,
+    auto: 'Automático',
+    autoHint: (name) => `Idioma del navegador: ${name}`,
   },
 
   header: {
     home: 'Sequrid, ir al editor',
     sections: 'Secciones',
-    nav: { editor: 'Editor', cover: 'Qué tapar', privacy: 'Privacidad', faq: 'Preguntas' },
+    nav: { editor: 'Editor', cover: 'Qué tapar', privacy: 'Privacidad', faq: 'Preguntas', help: 'Ayuda' },
     localTitle: 'Ninguna foto sale de tu navegador',
     local: '100% en tu dispositivo',
     source: 'Código fuente',
@@ -32,7 +34,7 @@ export const es: Messages = {
     noSignup: 'Sin registro',
     openSource: 'Código abierto',
     title: 'Protege tu DNI antes de enviarlo',
-    lead: 'Tapa los datos que nadie necesita, añade una marca de agua con el destinatario y la fecha, y descarga un PDF o JPG listo para enviar. Funciona con el DNI español y la carte nationale d’identité francesa.',
+    lead: 'Tapa los datos que nadie necesita, añade una marca de agua con el destinatario y la fecha, y descarga un PDF o JPG listo para enviar. Funciona con el DNI español, la carte nationale d’identité francesa y la CIE italiana.',
   },
 
   footer: {
@@ -138,8 +140,7 @@ export const es: Messages = {
     coverMode: 'Modo de tapado',
     auto: 'Automático',
     manual: 'Manual',
-    autoHelp: (doc) =>
-      `Las zonas se colocan sobre los datos ${doc === 'dni-es' ? 'del DNI' : doc === 'cni-fr' ? 'de la tarjeta' : 'de los documentos'}. Comprueba que caen en su sitio; si no, usa «Encuadre».`,
+    autoHelp: (the) => `Las zonas se colocan sobre los datos ${the ?? 'de los documentos'}. Comprueba que caen en su sitio; si no, usa «Encuadre».`,
     alsoOn: (s) => `también en el ${side(s)}`,
     recommended: 'Recomendado',
     manualHelp: 'Elige «Dibujar» en la barra del lienzo y marca con el ratón o el dedo todo lo que quieras tapar.',
@@ -230,12 +231,16 @@ export const es: Messages = {
     parents: 'Nombre de los padres',
     height: 'Estatura',
     seal: 'Código 2D-Doc',
+    taxCode: 'Código fiscal',
+    birthRecord: 'Datos del acta de nacimiento',
+    issuer: 'Autoridad que lo expide',
     mrz: 'Zona MRZ',
   },
 
   documents: {
     'dni-es': {
       countryName: 'España',
+      the: 'del DNI',
       name: 'DNI (modelo 2021)',
       sides: {
         front: { label: 'Anverso', hint: 'Cara con la foto' },
@@ -276,6 +281,7 @@ export const es: Messages = {
     },
     'cni-fr': {
       countryName: 'Francia',
+      the: 'de la tarjeta',
       name: 'Carte nationale d’identité (desde 2021)',
       sides: {
         front: { label: 'Anverso', hint: 'Recto, cara con la foto' },
@@ -322,6 +328,44 @@ export const es: Messages = {
         },
       },
     },
+    'cie-it': {
+      countryName: 'Italia',
+      the: 'de la CIE',
+      name: 'Carta d’identità elettronica (CIE 3.0, desde 2022)',
+      sides: {
+        front: { label: 'Anverso', hint: 'Cara con la foto' },
+        back: { label: 'Reverso', hint: 'Cara con el código fiscal' },
+      },
+      zones: {
+        number: { label: 'Número de la tarjeta', hint: 'Arriba a la derecha en el anverso y otra vez en la MRZ. Identifica la tarjeta.' },
+        issuer: { label: 'Municipio que la expide', hint: 'El ayuntamiento que expidió la tarjeta: suele delatar dónde vives.' },
+        name: { label: 'Apellidos y nombre', hint: 'Casi siempre hace falta: es lo que te identifica.' },
+        birthDate: {
+          label: 'Lugar y fecha de nacimiento',
+          hint: 'Comparten línea, así que se tapan juntos. Son respuestas típicas de las preguntas de seguridad.',
+        },
+        height: { label: 'Estatura', hint: 'Un dato físico que no necesita nadie que reciba una copia.' },
+        issueDate: { label: 'Fecha de expedición', hint: 'Rara vez la necesita quien recibe la copia.' },
+        expiry: { label: 'Fecha de caducidad', hint: 'Rara vez la necesita quien recibe la copia.' },
+        signature: { label: 'Firma', hint: 'Una firma escaneada se puede pegar en cualquier contrato o autorización.' },
+        can: {
+          label: 'Código CAN',
+          hint: 'Las seis cifras de abajo a la derecha dan acceso al chip por NFC. Nadie que reciba una copia lo necesita.',
+        },
+        photo: {
+          label: 'Fotografía (y retratos secundarios)',
+          hint: 'La foto principal y los retratos pequeños dentro de la silueta de Italia y en el reverso.',
+        },
+        parents: { label: 'Nombre de los padres', hint: 'No aporta nada a quien recibe la copia y sí a quien quiere suplantarte.' },
+        taxCode: {
+          label: 'Código fiscal (y su código de barras)',
+          hint: 'Con el codice fiscale se pueden abrir contratos y cuentas a tu nombre. El código de barras del reverso también lo contiene.',
+        },
+        birthRecord: { label: 'Datos del acta de nacimiento', hint: 'La referencia de tu partida de nacimiento. Nadie que reciba una copia la necesita.' },
+        address: { label: 'Domicilio', hint: 'Tu dirección. Solo la necesita quien tenga que enviarte algo o registrarte.' },
+        mrz: { label: 'Zona MRZ (líneas inferiores)', hint: 'Las tres líneas legibles por máquina repiten el número, las fechas y el nombre.' },
+      },
+    },
   },
 
   usages: {
@@ -353,7 +397,7 @@ export const es: Messages = {
       label: 'Hotel o alojamiento',
       short: 'hotel',
       watermark: 'Solo para registro de viajeros',
-      note: 'El registro de viajeros pide número, soporte, fecha de nacimiento y domicilio, así que se quedan visibles.',
+      note: 'El registro de viajeros pide el número de documento, la fecha de nacimiento y el domicilio (en España, también el número de soporte del DNI), así que se quedan visibles.',
     },
     bank: {
       label: 'Banco o financiera',
@@ -381,7 +425,7 @@ export const es: Messages = {
       use: 'Uso',
       covered: 'Se tapa',
       watermark: 'Marca de agua',
-      note: 'Cada documento solo tapa los datos que tiene: el código 2D-Doc y la estatura, por ejemplo, solo existen en la tarjeta francesa. Es una orientación. Si quien te pide la copia necesita algún dato más, destápalo solo para él y deja la marca de agua.',
+      note: 'Cada documento solo tapa los datos que tiene: el código 2D-Doc, por ejemplo, solo existe en la tarjeta francesa y el código fiscal, en la italiana. Es una orientación. Si quien te pide la copia necesita algún dato más, destápalo solo para él y deja la marca de agua.',
     },
     privacy: {
       eyebrow: 'Sin servidores de por medio',
@@ -430,7 +474,7 @@ export const es: Messages = {
         },
         {
           q: '¿Qué documentos admite?',
-          a: 'El DNI español (modelo 2021) y la carte nationale d’identité francesa (desde 2021). Elige el país de cada documento en el panel de fotos y las zonas se colocan sobre sus datos. Iremos añadiendo más países.',
+          a: 'El DNI español (modelo 2021), la carte nationale d’identité francesa (desde 2021) y la carta d’identità elettronica italiana (CIE 3.0, desde 2022). Elige el país de cada documento en el panel de fotos y las zonas se colocan sobre sus datos. Iremos añadiendo más países.',
         },
         {
           q: '¿Funciona en el móvil y sin conexión?',
@@ -441,7 +485,26 @@ export const es: Messages = {
           a: 'Sí, ese es el objetivo: es código abierto y se distribuye como imagen Docker y chart de Helm. Así puedes revisar exactamente qué hace y servirlo tú mismo.',
         },
       ],
-      help: '¿Te han suplantado? En España puedes llamar gratis al **017**, la línea de ayuda en ciberseguridad de INCIBE. En Francia, entra en **17Cyber** (17cyber.gouv.fr).',
+    },
+    help: {
+      eyebrow: 'Si ya ha pasado',
+      title: 'Dónde pedir ayuda si alguien usa tu identidad',
+      lead: 'Servicios oficiales por país. Si el delito está ocurriendo ahora mismo, llama al número de emergencias.',
+      country: 'País',
+      service: 'Servicio',
+      contact: 'Cómo contactar',
+      what: 'Para qué sirve',
+      kinds: { phone: 'Teléfono', whatsapp: 'WhatsApp', telegram: 'Telegram', web: 'Web' },
+      free: 'gratis',
+      emergency: 'Emergencias',
+      emergencySms: 'Emergencias por SMS',
+      newTab: 'se abre en una pestaña nueva',
+      lines: {
+        'es-incibe': 'Línea gratuita y confidencial del Instituto Nacional de Ciberseguridad para cualquier problema de ciberseguridad. Todos los días de 8:00 a 23:00.',
+        'fr-17cyber': 'Asistencia oficial en línea para víctimas de ciberdelitos, con ayuda de la policía o la gendarmería si hace falta.',
+        'it-postale': 'Portal de la Policía Postal y de Ciberseguridad para informarte y avisar de delitos en internet. Las denuncias formales se ponen en una comisaría.',
+      },
+      note: 'Solo aparecen servicios comprobados en sus webs oficiales. Iremos añadiendo países junto con sus documentos.',
     },
   },
 };

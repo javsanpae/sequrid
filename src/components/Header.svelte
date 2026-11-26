@@ -33,6 +33,7 @@
       <a href="#what-to-cover">{m().header.nav.cover}</a>
       <a href="#privacy">{m().header.nav.privacy}</a>
       <a href="#faq">{m().header.nav.faq}</a>
+      <a href="#help">{m().header.nav.help}</a>
     </nav>
     <div class="right">
       <span class="pill" title={m().header.localTitle}><Icon name="lock" size={14} /> <span>{m().header.local}</span></span>

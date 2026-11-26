@@ -1,4 +1,5 @@
 import type { DocumentId, Side, ZoneKey } from '../documents';
+import type { ContactKind, HelpLineId } from '../help-lines';
 import type { UsageId } from '../presets';
 
 /**
@@ -17,6 +18,8 @@ interface ZoneText {
 
 interface DocumentText {
   countryName: string;
+  /** The document inside a sentence: "Zones are placed over the details on {the}". */
+  the: string;
   /** Full name of the document model. */
   name: string;
   sides: Record<Side, { label: string; hint: string }>;
@@ -38,18 +41,20 @@ export const en = {
   meta: {
     title: 'Sequrid · Protect your ID card',
     description:
-      'Cover the sensitive details on your ID card (Spain and France) and add a watermark with the recipient and the date. Everything is processed in your browser: the photo never leaves your device.',
+      'Cover the sensitive details on your ID card (Spain, France and Italy) and add a watermark with the recipient and the date. Everything is processed in your browser: the photo never leaves your device.',
   },
 
   language: {
     label: 'Language',
     current: (name: string) => `Language: ${name}`,
+    auto: 'Automatic',
+    autoHint: (name: string) => `Browser language: ${name}`,
   },
 
   header: {
     home: 'Sequrid, go to the editor',
     sections: 'Sections',
-    nav: { editor: 'Editor', cover: 'What to cover', privacy: 'Privacy', faq: 'FAQ' },
+    nav: { editor: 'Editor', cover: 'What to cover', privacy: 'Privacy', faq: 'FAQ', help: 'Help' },
     localTitle: 'No photo ever leaves your browser',
     local: '100% on your device',
     source: 'Source code',
@@ -63,7 +68,7 @@ export const en = {
     noSignup: 'No sign-up',
     openSource: 'Open source',
     title: 'Protect your ID card before sending it',
-    lead: 'Cover the details nobody needs, add a watermark with the recipient and the date, and download a PDF or JPG ready to send. Works with the Spanish DNI and the French national identity card.',
+    lead: 'Cover the details nobody needs, add a watermark with the recipient and the date, and download a PDF or JPG ready to send. Works with the Spanish DNI, the French national identity card and the Italian CIE.',
   },
 
   footer: {
@@ -177,8 +182,8 @@ export const en = {
     coverMode: 'Cover mode',
     auto: 'Automatic',
     manual: 'Manual',
-    autoHelp: (doc: DocumentId | null) =>
-      `Zones are placed over the details on the ${doc === 'dni-es' ? 'DNI' : doc === 'cni-fr' ? 'ID card' : 'documents'}. Check that they line up; if not, use “Frame”.`,
+    autoHelp: (the: string | null) =>
+      `Zones are placed over the details on ${the ?? 'the documents'}. Check that they line up; if not, use “Frame”.`,
     alsoOn: (s: Side) => `also on the ${side(s)}`,
     recommended: 'Recommended',
     manualHelp: 'Choose “Draw” in the canvas toolbar and mark everything you want to cover with your mouse or finger.',
@@ -273,12 +278,16 @@ export const en = {
     parents: 'Parents’ names',
     height: 'Height',
     seal: '2D-Doc code',
+    taxCode: 'Tax code',
+    birthRecord: 'Birth record details',
+    issuer: 'Issuing authority',
     mrz: 'MRZ',
   } satisfies Record<ZoneKey, string>,
 
   documents: {
     'dni-es': {
       countryName: 'Spain',
+      the: 'the DNI',
       name: 'DNI (2021 model)',
       sides: {
         front: { label: 'Front', hint: 'Side with the photo' },
@@ -319,6 +328,7 @@ export const en = {
     },
     'cni-fr': {
       countryName: 'France',
+      the: 'the ID card',
       name: 'National identity card (since 2021)',
       sides: {
         front: { label: 'Front', hint: 'Side with the photo' },
@@ -359,6 +369,44 @@ export const en = {
         mrz: { label: 'MRZ (bottom lines)', hint: 'The three machine-readable lines repeat the number, the dates and the name.' },
       },
     },
+    'cie-it': {
+      countryName: 'Italy',
+      the: 'the CIE',
+      name: 'Electronic identity card (CIE 3.0, since 2022)',
+      sides: {
+        front: { label: 'Front', hint: 'Side with the photo' },
+        back: { label: 'Back', hint: 'Side with the tax code' },
+      },
+      zones: {
+        number: { label: 'Card number', hint: 'Top right on the front and again in the MRZ. It identifies the card.' },
+        issuer: { label: 'Issuing municipality', hint: 'The town that issued the card: it usually reveals where you live.' },
+        name: { label: 'Surname and name', hint: 'Almost always needed: it is what identifies you.' },
+        birthDate: {
+          label: 'Place and date of birth',
+          hint: 'They share one line, so they are covered together. Classic answers to security questions.',
+        },
+        height: { label: 'Height', hint: 'A physical detail that nobody who receives a copy needs.' },
+        issueDate: { label: 'Date of issue', hint: 'Rarely needed by whoever receives the copy.' },
+        expiry: { label: 'Expiry date', hint: 'Rarely needed by whoever receives the copy.' },
+        signature: { label: 'Signature', hint: 'A scanned signature can be pasted onto any contract or authorization.' },
+        can: {
+          label: 'CAN code',
+          hint: 'The six digits at the bottom right give access to the chip over NFC. Nobody who receives a copy needs it.',
+        },
+        photo: {
+          label: 'Photo (and secondary portraits)',
+          hint: 'The main photo and the small portraits inside the outline of Italy and on the back.',
+        },
+        parents: { label: 'Parents’ names', hint: 'Adds nothing for whoever receives the copy, and helps whoever wants to impersonate you.' },
+        taxCode: {
+          label: 'Tax code (and its barcode)',
+          hint: 'The codice fiscale is enough to open contracts and accounts in your name. The barcode on the back encodes it too.',
+        },
+        birthRecord: { label: 'Birth record details', hint: 'The reference of your birth certificate. Nobody who receives a copy needs it.' },
+        address: { label: 'Address', hint: 'Your address. Only needed by someone who has to send you something or register you.' },
+        mrz: { label: 'MRZ (bottom lines)', hint: 'The three machine-readable lines repeat the number, the dates and the name.' },
+      },
+    },
   } satisfies Record<DocumentId, DocumentText>,
 
   usages: {
@@ -390,7 +438,7 @@ export const en = {
       label: 'Hotel or accommodation',
       short: 'a hotel',
       watermark: 'Only for guest registration',
-      note: 'Guest registration asks for the number, card serial number, date of birth and address, so they stay visible.',
+      note: 'Guest registration needs the document number, date of birth and address (in Spain, also the DNI serial number), so they stay visible.',
     },
     bank: {
       label: 'Bank or lender',
@@ -418,7 +466,7 @@ export const en = {
       use: 'Use',
       covered: 'Covered',
       watermark: 'Watermark',
-      note: 'Each document only covers the details it has: the 2D-Doc code and the height, for example, only exist on the French card. This is guidance. If whoever asks for the copy needs another detail, uncover it just for them and keep the watermark.',
+      note: 'Each document only covers the details it has: the 2D-Doc code, for example, only exists on the French card and the tax code on the Italian one. This is guidance. If whoever asks for the copy needs another detail, uncover it just for them and keep the watermark.',
     },
     privacy: {
       eyebrow: 'No servers involved',
@@ -467,7 +515,7 @@ export const en = {
         },
         {
           q: 'Which documents are supported?',
-          a: 'The Spanish DNI (2021 model) and the French national identity card (since 2021). Choose the country of each document in the photos panel and the zones are placed over its details. More countries will follow.',
+          a: 'The Spanish DNI (2021 model), the French national identity card (since 2021) and the Italian electronic identity card (CIE 3.0, since 2022). Choose the country of each document in the photos panel and the zones are placed over its details. More countries will follow.',
         },
         {
           q: 'Does it work on a phone and offline?',
@@ -478,7 +526,29 @@ export const en = {
           a: 'Yes, that is the point: it is open source and ships as a Docker image and a Helm chart. That way you can check exactly what it does and serve it yourself.',
         },
       ],
-      help: 'Has someone impersonated you? In Spain you can call **017** for free, the INCIBE cybersecurity helpline. In France, go to **17Cyber** (17cyber.gouv.fr).',
+    },
+    help: {
+      eyebrow: 'If it has already happened',
+      title: 'Where to get help if someone uses your identity',
+      lead: 'Official services by country. If a crime is happening right now, call the emergency number.',
+      country: 'Country',
+      service: 'Service',
+      contact: 'How to reach them',
+      what: 'What they do',
+      kinds: { phone: 'Phone', whatsapp: 'WhatsApp', telegram: 'Telegram', web: 'Website' } satisfies Record<
+        ContactKind,
+        string
+      >,
+      free: 'free',
+      emergency: 'Emergencies',
+      emergencySms: 'Emergency SMS',
+      newTab: 'opens in a new tab',
+      lines: {
+        'es-incibe': 'Free and confidential helpline from Spain’s national cybersecurity institute for any cybersecurity problem. Every day from 8:00 to 23:00.',
+        'fr-17cyber': 'Official online assistance for victims of cybercrime, with help from the police or gendarmerie when needed.',
+        'it-postale': 'Portal of the Postal and Cyber Police to get information and report online crime. Formal complaints are filed at a police office.',
+      } satisfies Record<HelpLineId, string>,
+      note: 'Only services checked on their official websites are listed. More countries will be added along with their documents.',
     },
   },
 };

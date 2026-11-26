@@ -6,7 +6,7 @@ Protect your ID card before sending it: cover the data nobody needs, add a water
 
 ## Features
 
-- **Several countries**: Spanish DNI (2021 model) and French carte nationale d'identité (2021 onwards). Each ID has its own country picker, with a search box and documents grouped by country (with room for several models per country), and the zones are placed over the data of that model.
+- **Several countries**: Spanish DNI (2021 model), French carte nationale d'identité (2021 onwards) and Italian carta d'identità elettronica (CIE 3.0, current design since 2022). Each ID has its own country picker, with a search box and documents grouped by country (with room for several models per country), and the zones are placed over the data of that model.
 - **Up to two IDs** (front and back of each), which can be from different countries. Drop several photos at once and they fill the free slots; you can also paste them with <kbd>Ctrl</kbd>+<kbd>V</kbd> or take the photo with your phone.
 - **What the copy is for**: rental, job, sale, hotel, bank, public administration or other. Each use suggests which fields to cover and the watermark text.
 - **What to cover**, in automatic or manual mode (you draw the zones). In automatic mode, the zones depend on the document:
@@ -17,7 +17,8 @@ Protect your ID card before sending it: cover the data nobody needs, add a water
 - **Watermark** tiled diagonally: automatic text (use · recipient · date) or your own, with adjustable intensity, size and light or dark tone. Optional black-and-white copy.
 - **Protection level** based on the recommendations for the chosen use.
 - **Download** as an A4 PDF at real size (85.6 × 54 mm, like a photocopy) or enlarged, a JPG of one side or a JPG with all of them. Downloads carry no metadata (no GPS, no phone model).
-- **Languages**: the interface is available in English, Spanish and French. Pick one with the language selector in the header; on the first visit it follows your browser language and falls back to English.
+- **Languages**: the interface is available in English, Spanish, French and Italian. It follows your browser language automatically (English if it is not one of these); you can pick another one in the header, and choose "Automatic" to go back to following the browser.
+- **Help if your identity is misused**: a table of official services by country (Spain, France, Italy) with how to reach them and the emergency numbers.
 - Mobile-friendly layout, light and dark themes, and sample cards with fictitious data to try it out.
 
 ## Verifiable privacy
@@ -52,7 +53,7 @@ docker run -d --name sequrid -p 8080:8080 --read-only --tmpfs /tmp --cap-drop AL
 The chart lives in [`charts/sequrid`](charts/sequrid) and is also published as an OCI artifact with every release:
 
 ```bash
-helm install sequrid oci://ghcr.io/javsanpae/charts/sequrid --version 0.3.0 \
+helm install sequrid oci://ghcr.io/javsanpae/charts/sequrid --version 0.4.0 \
   --set ingress.enabled=true \
   --set ingress.hosts[0].host=sequrid.example.com \
   --set ingress.hosts[0].paths[0].path=/ \
@@ -101,7 +102,8 @@ src/
     documents.ts       documents per country and their zones (coordinates relative to the card)
     countries.ts       country names from the browser (Intl.DisplayNames)
     document-search.ts picker grouping by country and accent-insensitive search
-    i18n/              interface texts (en, es, fr) and language selection
+    i18n/              interface texts (en, es, fr, it) and language selection
+    help-lines.ts      official identity-theft help services by country
     presets.ts         uses, what each one covers and protection level
     state.svelte.ts    application state (Svelte 5 runes)
     files.ts           loading photos into the slots and the sample cards
@@ -152,7 +154,7 @@ Only add documents whose layout you have checked against an official specimen.
 
 ### Releasing a version
 
-The version lives in the [`VERSION`](VERSION) file, which only contains the number (for example `0.3.0`). It is the single source of truth: the image, the chart (`version` and `appVersion`) and the git tag take it from there. The versions in `Chart.yaml` and `package.json` are not used for publishing.
+The version lives in the [`VERSION`](VERSION) file, which only contains the number (for example `0.4.0`). It is the single source of truth: the image, the chart (`version` and `appVersion`) and the git tag take it from there. The versions in `Chart.yaml` and `package.json` are not used for publishing.
 
 1. On your branch, bump `VERSION` following [semver](https://semver.org/) and move the `[Unreleased]` entries in [`CHANGELOG.md`](CHANGELOG.md) to a section for the new version.
 2. Merge the pull request into `main`.
@@ -178,4 +180,4 @@ docker build --build-arg SOURCE_URL=https://github.com/your-user/your-fork -t my
 
 ## Disclaimer
 
-Zone positions are approximate: always check the preview before sending the copy. This tool is not affiliated with any official body. If your identity has been stolen, in Spain you can call 017 (INCIBE) for free.
+Zone positions are approximate: always check the preview before sending the copy. This tool is not affiliated with any official body. If your identity has been stolen, see the help table in the app for the official services in each supported country.

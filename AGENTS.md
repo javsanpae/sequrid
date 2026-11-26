@@ -4,7 +4,7 @@ Onboarding for AI coding agents (and humans) working on **Sequrid**. Read this b
 
 ## What this project is
 
-Sequrid is a static Svelte 5 + TypeScript web app that protects a photo of an ID card before you send it. It covers sensitive fields (black, pixelated or blurred), adds a tiled diagonal watermark (use · recipient · date) and exports an A4 PDF or JPGs. It supports the Spanish DNI (2021 model) and the French carte nationale d'identité (since 2021), up to two IDs (front and back each), in English, Spanish and French.
+Sequrid is a static Svelte 5 + TypeScript web app that protects a photo of an ID card before you send it. It covers sensitive fields (black, pixelated or blurred), adds a tiled diagonal watermark (use · recipient · date) and exports an A4 PDF or JPGs. It supports the Spanish DNI (2021 model), the French carte nationale d'identité (since 2021) and the Italian CIE 3.0 (current design, since 2022), up to two IDs (front and back each), in English, Spanish, French and Italian.
 
 It ships as an nginx container image (`ghcr.io/javsanpae/sequrid`) and a Helm chart. Licensed **AGPL-3.0-or-later** ([`LICENSE`](LICENSE)).
 
@@ -13,7 +13,7 @@ It ships as an nginx container image (`ghcr.io/javsanpae/sequrid`) and a Helm ch
 These come before any feature request. If a task conflicts with them, stop and say so.
 
 - **100% client-side.** There is no backend, no API, no database and no upload. The server only delivers static files. Photos are decoded with `createImageBitmap` (falling back to `<img>`), drawn on a `<canvas>` and exported with `canvas.toBlob`.
-- **Nothing is stored.** Photos and settings live only in memory; a reload starts from scratch. The only `localStorage` keys are `sequrid-theme` (light/dark, written in `src/components/Header.svelte`) and `sequrid-lang` (`LANG_STORAGE_KEY` in `src/lib/i18n/lang.ts`). Both are read before first paint by `public/theme-init.js`. Do not add more persisted state.
+- **Nothing is stored.** Photos and settings live only in memory; a reload starts from scratch. The only `localStorage` keys are `sequrid-theme` (light/dark, written in `src/components/Header.svelte`) and `sequrid-language` (`LANG_STORAGE_KEY` in `src/lib/i18n/lang.ts`), which only exists when the user picked a language different from the browser's (absent = automatic). The legacy `sequrid-lang` key from 0.3.0 is removed on load. Both are read before first paint by `public/theme-init.js`. Do not add more persisted state.
 - **No network, ever.** [`nginx/security-headers.conf`](nginx/security-headers.conf) sends a strict CSP: `default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self'; manifest-src 'self'; connect-src 'none'; worker-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'`, plus `Referrer-Policy: no-referrer`, `X-Frame-Options: DENY`, COOP/CORP `same-origin` and a restrictive `Permissions-Policy`. So:
   - no `fetch`/XHR/WebSocket/beacons, no analytics or telemetry, no error reporting services;
   - no external fonts, CDNs, images or scripts (system font stacks only, see `--font`/`--mono` in `src/app.css`);
@@ -28,7 +28,7 @@ These come before any feature request. If a task conflicts with them, stop and s
 ## Repository conventions
 
 - **Language:** English for code, comments, docs, commit messages and PRs. Commit subjects are imperative and concise (e.g. "Add a country picker and support for the French ID card (0.2.0)").
-- **UI copy only through i18n.** No user-visible string in components or `lib` code: everything comes from the dictionaries in `src/lib/i18n/`. `en.ts` is the source of truth; `es.ts` and `fr.ts` are typed as `Messages` (`typeof en`) and must have the identical shape (same keys, functions stay functions, same array lengths), enforced by `tests/unit/i18n.test.ts`.
+- **UI copy only through i18n.** No user-visible string in components or `lib` code: everything comes from the dictionaries in `src/lib/i18n/`. `en.ts` is the source of truth; `es.ts`, `fr.ts` and `it.ts` are typed as `Messages` (`typeof en`) and must have the identical shape (same keys, functions stay functions, same array lengths), enforced by `tests/unit/i18n.test.ts`.
 - **Typography in dictionaries:** typographic quotes and apostrophes (`“ ”`, `’`, `«  »` in es/fr). French puts a no-break space (U+00A0) before `:` `;` `?` `!` `%` and inside `« »`. `tests/unit/i18n.test.ts` fails on a regular space before `? ! : ; » %` (after a digit) or after `«`, and on a straight apostrophe between letters in any language (outside `` `code` ``).
 - **Svelte 5 runes only** (`$state`, `$derived`, `$derived.by`, `$effect`, `$props`, `$bindable`). No legacy `export let`, stores or `$:`.
 - **TypeScript strict** (`tsconfig.json`: `strict`, `noUnusedLocals`, `noUnusedParameters`, `verbatimModuleSyntax`, so use `import type` for types). `npm run check` runs `svelte-check --fail-on-warnings`: it must report **0 errors and 0 warnings** (Svelte a11y warnings included).
@@ -50,10 +50,11 @@ src/App.svelte             page layout, paste/drop handling, footer (source link
 src/app.css                design tokens, light/dark themes, global styles
 src/lib/
   config.ts                SOURCE_URL and VERSION from VITE_SOURCE_URL / VITE_APP_VERSION
-  documents.ts             document models: ZoneKey, DocumentType, DNI_ES, CNI_FR, DOCUMENTS, helpers
+  documents.ts             document models: ZoneKey, DocumentType, DNI_ES, CNI_FR, CIE_IT, DOCUMENTS, helpers
   countries.ts             country names via Intl.DisplayNames, native language/name (cached)
   document-search.ts       picker grouping by country and accent-insensitive search
   presets.ts               usage presets (what each use covers) and protection level
+  help-lines.ts            official identity-theft help services by country (data; texts in i18n)
   state.svelte.ts          AppState (runes): faces, zones, frame, settings, status
   files.ts                 load files into slots, file picker, sample loading
   image.ts                 decode (EXIF orientation), downscale, canvas helpers, download
@@ -66,8 +67,8 @@ src/lib/
   sample.ts                fictitious sample cards drawn on canvas
   i18n/
     en.ts                  English messages, source of truth; exports `Messages`
-    es.ts, fr.ts           translations typed as Messages
-    lang.ts                Lang, LANGUAGES, DICTIONARIES, detectLang, isLang (pure)
+    es.ts, fr.ts, it.ts    translations typed as Messages
+    lang.ts                Lang, LANGUAGES, DICTIONARIES, browserLang, detectLang, preferenceFor, isLang (pure)
     index.svelte.ts        reactive current language: m(), getLang(), setLang(), syncDocument()
     text.ts                pure helpers: docText, zoneText, zoneLabel, faceTitle, modelYears, downloadBase…
 src/components/
@@ -109,7 +110,7 @@ VERSION                    release version, single source of truth
 
 ### Document model
 
-- `ZoneKey` is a **shared vocabulary across countries** (`number`, `serial`, `birthDate`, `signature`, `can`, `expiry`, `issueDate`, `name`, `photo`, `address`, `birthPlace`, `parents`, `height`, `seal`, `mrz`) so presets work for every document. `ZONE_KEYS` order is the display order for mixed-country checklists.
+- `ZoneKey` is a **shared vocabulary across countries** (`number`, `serial`, `birthDate`, `signature`, `can`, `expiry`, `issueDate`, `name`, `photo`, `address`, `birthPlace`, `parents`, `height`, `seal`, `taxCode`, `birthRecord`, `issuer`, `mrz`) so presets work for every document. `ZONE_KEYS` order is the display order for mixed-country checklists.
 - A `DocumentType` has `id` (`DocumentId` union), `country` (ISO 3166-1 alpha-2), `short` (acronym used in labels and file names), `issuedFrom`, optional `issuedUntil` (absent = still issued), optional `aliases` (search terms), `widthMm`/`heightMm` (ID-1) and `zones`, each with one or more rects on either side (repeated prints of the same data are extra rects of the same key).
 - `documents.ts` holds **only geometry and identifiers**; display text lives in `t.documents[id]` (`countryName`, `name`, `sides`, per-document `zones` label/hint). `t.fields` holds neutral names used when countries are mixed.
 - The picker (`document-search.ts`) groups by country (sorted by localized name with `Intl.Collator`; models current first, then newest via `compareModels`) and searches case- and accent-insensitively: every query word must prefix-match a word among country names (all UI languages, native name, ISO code), acronym, model names (all UI languages), aliases and years; a 4-digit year also matches models issued that year. Country names come from `Intl.DisplayNames` (`countries.ts`), falling back to the dictionary `countryName`, then the code.
@@ -122,7 +123,8 @@ VERSION                    release version, single source of truth
 
 - `m()` returns the current `Messages` and `getLang()` the current `Lang`; both are reactive (reading them in templates or `$derived` tracks language changes).
 - `setLang(lang)` switches, persists to `localStorage` and calls `syncDocument()` (updates `<html lang>`, title and meta description).
-- `detectLang(saved, preferred)`: valid saved choice, else first browser language whose primary subtag is supported, else `en`. `public/theme-init.js` duplicates this logic and its `supported` list.
+- `detectLang(saved, preferred)`: valid saved choice, else `browserLang(preferred)` (first browser language whose primary subtag is supported, else `en`). `public/theme-init.js` duplicates this logic and its `supported` list.
+- `setLang(choice)` accepts a language or `'auto'`. `preferenceFor()` decides what to store: nothing for `'auto'` or for the browser's own language (so the app keeps following the browser), the language otherwise. While nothing is stored, a `languagechange` event updates the UI. The header menu offers "Automatic" first.
 - Dynamic text is a function in the dictionary (`status.loadedOne(face)`, `country.results(count)`…). **Status messages are stored as functions of the dictionary** (`StatusMessage = (t: Messages) => string`), e.g. `app.status = (t) => t.status.zoneAdded`, so they re-render when the language changes. Do not store a pre-rendered string.
 - Pure helpers in `text.ts` take `t` as an argument; use them instead of formatting labels or file names by hand.
 - Inline markup rendered by `Rich.svelte`: `[Key]` → `<kbd>`, `**text**` → `<strong>`, `` `text` `` → `<code>`. Never use `{@html}`.
@@ -133,27 +135,32 @@ VERSION                    release version, single source of truth
 ### Add a country or document model
 
 1. **Geometry** in `src/lib/documents.ts`: add the id to `DocumentId`, define a `DocumentType` with measured rects (fractions of the card, from an official specimen), `short`, `issuedFrom`/`issuedUntil`, `aliases`, ID-1 size, and add it to `DOCUMENTS`. Reuse existing `ZoneKey`s; only add a key if the data is genuinely new (see below). The unit tests require: unique keys, rects inside the card, zones on both sides, ID-1 size, and `number`, `birthDate`, `signature`, `can`, `mrz`, `photo` present.
-2. **Dictionaries** (`en.ts`, `es.ts`, `fr.ts`): `documents[id]` with `countryName`, `name`, `sides` (label + hint) and a `zones` entry for exactly the keys the document has (tested). Update `settings.autoHelp` (it branches on document ids) and copy that lists supported documents: `meta.description`, `hero.lead`, the FAQ item "Which documents are supported?", `info.usage.note` if relevant, plus the static `<meta name="description">` in `index.html` and README "Features".
+2. **Dictionaries** (`en.ts`, `es.ts`, `fr.ts`, `it.ts`): `documents[id]` with `countryName`, `name`, `sides` (label + hint) and a `zones` entry for exactly the keys the document has (tested). Add `the` (the document inside a sentence, used by `settings.autoHelp`) and update the copy that lists supported documents: `meta.description`, `hero.lead`, the FAQ item "Which documents are supported?", `info.usage.note` if relevant, plus the static `<meta name="description">` in `index.html` and README "Features".
 3. **Flag** in `src/components/Flag.svelte`: add a simplified SVG (viewBox `0 0 3 2`) to the `{#if}` branch, or rely on the ISO-code badge fallback.
 4. **Sample** in `src/lib/sample.ts`: draw a fictitious card with data where the real one has it, no official emblems, and add it to `sampleCards()`. Without it, `sampleCards()` falls back to the DNI drawing, which will not match the new zones.
 5. **Tests:** `presets.test.ts` checks every document automatically; update the exact-list assertions in `document-search.test.ts` (catalog order, ids per query, `isCurrent` for every document) and `presets.test.ts` (`protectionSummary` totals), and add e2e coverage in the `countries` describe of `e2e/app.spec.ts` (fields, sample, protection level, file names).
-6. CHANGELOG entry under `[Unreleased]`.
+6. **Help line:** a new country also needs at least one official help service (see below).
+7. CHANGELOG entry under `[Unreleased]`.
+
+### Add an identity-theft help line
+
+Only add services checked on their official website. Add an entry to `HELP_LINES` in `src/lib/help-lines.ts` (service name and operator as proper nouns, contacts with `kind`/`value`/`href`, `free` only when the service says so, national `emergency` numbers, `source` URL) and extend `HelpLineId`; then add `info.help.lines[id]` (what the service does) in every dictionary. The Info table sorts the countries of the documents in use first. Every country with a supported document must have at least one line (tested in `tests/unit/help-lines.test.ts`).
 
 ### Add a UI language
 
 1. Create `src/lib/i18n/<code>.ts` exporting `const <code>: Messages = { … }` with the exact shape of `en.ts`.
 2. In `src/lib/i18n/lang.ts`: extend `Lang`, add `{ code, name }` (native name) to `LANGUAGES` and the dictionary to `DICTIONARIES`.
 3. Add the code to the `supported` array in `public/theme-init.js`.
-4. Tests: update the `LANGUAGES` expectation in `tests/unit/i18n.test.ts`, add helper/download-name cases, and extend the e2e `languages` tests (the trigger regex `/^(Language|Idioma|Langue)/` must include the new label). Search and picker pick up the new language automatically via `LANGUAGES`.
+4. Tests: update the `LANGUAGES` expectation in `tests/unit/i18n.test.ts`, add helper/download-name cases, and extend the e2e `languages` tests (the trigger regexes such as `/^(Language|Idioma|Langue|Lingua)/` must include the new label). Search and picker pick up the new language automatically via `LANGUAGES`.
 5. README "Languages" feature line and CHANGELOG.
 
 ### Add a UI string
 
-Add the key to `en.ts` (with a doc comment if it is used as an accessible name or in a sentence), then the same key in `es.ts` and `fr.ts` (TypeScript and the shape test fail otherwise). Use parameters through functions, never string concatenation in components. Read it with `m().section.key` (or `t` from `$derived(m())`), and use `<Rich text=… />` if it has markup.
+Add the key to `en.ts` (with a doc comment if it is used as an accessible name or in a sentence), then the same key in `es.ts`, `fr.ts` and `it.ts` (TypeScript and the shape test fail otherwise). Use parameters through functions, never string concatenation in components. Read it with `m().section.key` (or `t` from `$derived(m())`), and use `<Rich text=… />` if it has markup.
 
 ### Add a usage preset
 
-Add the id to `UsageId` and an entry to `USAGES` in `presets.ts` (cover must include `can`), then `usages[id]` (`label`, `short`, `watermark`, `note`) in all three dictionaries. Settings and the Info table iterate `USAGES` automatically. Update `presets.test.ts`.
+Add the id to `UsageId` and an entry to `USAGES` in `presets.ts` (cover must include `can`), then `usages[id]` (`label`, `short`, `watermark`, `note`) in all four dictionaries. Settings and the Info table iterate `USAGES` automatically. Update `presets.test.ts`.
 
 ### Add a zone key
 
@@ -200,7 +207,7 @@ docker run --rm -it --ipc=host -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD":/ap
 ### Playwright
 
 - Projects: `desktop` (Desktop Chrome) and `mobile` (Pixel 7). Some tests skip on one of them (`isMobile`).
-- No locale is configured, so Playwright's default `en-US` applies and the app starts in English; the `French browser` describe uses `test.use({ locale: 'fr-FR' })`.
+- No locale is configured, so Playwright's default `en-US` applies and the app starts in English; the `French browser` and `Italian browser` describes use `test.use({ locale: ... })`.
 - Without `E2E_BASE_URL` it runs `npm run build && npm run preview` on port 4173. With `E2E_BASE_URL=http://localhost:8080` it tests an already running container instead:
 
   ```bash
@@ -254,7 +261,7 @@ docker run --rm -it --ipc=host -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD":/ap
 
 - [ ] No network requests, external resources, runtime dependencies, inline scripts or new persisted state; CSP untouched (or tightened).
 - [ ] No real personal data; samples stay fictitious and emblem-free.
-- [ ] All new UI text is in `en.ts`, `es.ts` and `fr.ts` with matching shape and correct typography.
+- [ ] All new UI text is in `en.ts`, `es.ts`, `fr.ts` and `it.ts` with matching shape and correct typography.
 - [ ] Keyboard, focus and ARIA work; no horizontal overflow on mobile; light and dark themes look right.
 - [ ] `npm run check` reports 0 errors and 0 warnings; `npm test` and `npm run test:e2e` pass; new behavior has tests.
 - [ ] `CHANGELOG.md` updated under `[Unreleased]` for user-facing changes.

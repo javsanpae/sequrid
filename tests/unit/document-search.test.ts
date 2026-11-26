@@ -71,9 +71,9 @@ describe('normalizeText', () => {
 
 describe('searchDocuments with the real catalog', () => {
   it('returns everything, grouped and sorted by localized name, for an empty query', () => {
-    expect(countries(search(''))).toEqual(['FR', 'ES']); // France, Spain
-    expect(countries(search('   ', 'es'))).toEqual(['ES', 'FR']); // España, Francia
-    expect(countries(search('', 'fr'))).toEqual(['ES', 'FR']); // Espagne, France
+    expect(countries(search(''))).toEqual(['FR', 'IT', 'ES']); // France, Italy, Spain
+    expect(countries(search('   ', 'es'))).toEqual(['ES', 'FR', 'IT']); // España, Francia, Italia
+    expect(countries(search('', 'fr'))).toEqual(['ES', 'FR', 'IT']); // Espagne, France, Italie
     expect(search('')[0].name).toBe('France');
   });
 
@@ -94,7 +94,17 @@ describe('searchDocuments with the real catalog', () => {
     expect(ids(search('dnie'))).toEqual(['dni-es']);
     expect(ids(search('DNI 4.0'))).toEqual(['dni-es']);
     expect(ids(search('CNIe'))).toEqual(['cni-fr']);
-    expect(ids(search("carte d'identite"))).toEqual(['cni-fr']);
+    // The French name of the Italian card also says "carte d'identité".
+    expect(ids(search("carte d'identite"))).toEqual(['cni-fr', 'cie-it']);
+    expect(ids(search('carte nationale'))).toEqual(['cni-fr']);
+  });
+
+  it('finds the Italian CIE', () => {
+    for (const q of ['italy', 'Italia', 'italie', 'IT', 'cie', 'CIE 3.0', 'carta d’identità', 'carta di identita', 'italy 2022']) {
+      expect(ids(search(q)), q).toEqual(['cie-it']);
+    }
+    // Issued since 2022, so a 2021 search does not include it.
+    expect(ids(search('2021')).sort()).toEqual(['cni-fr', 'dni-es']);
   });
 
   it('matches model names in every language', () => {

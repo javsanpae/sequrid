@@ -39,7 +39,8 @@
       return { key, label, hint: zoneText(t, key, owners[0]).hint, sides };
     });
   });
-  const docId = $derived(app.activeDocs.length === 1 ? app.activeDocs[0].id : null);
+  /** "the DNI", "del DNI"… for a single document, null when several are mixed. */
+  const docPhrase = $derived(app.activeDocs.length === 1 ? t.documents[app.activeDocs[0].id].the : null);
   const otherSide = (side: Side): Side => (side === 'front' ? 'back' : 'front');
   /** Side headings use the first document's wording ("Front", "Anverso", "Recto"…). */
   const sideTitle = (side: Side) => docText(t, app.activeDocs[0]).sides[side].label;
@@ -105,7 +106,7 @@
       ]}
     />
     {#if app.coverMode === 'auto'}
-      <p class="help">{t.settings.autoHelp(docId)}</p>
+      <p class="help">{t.settings.autoHelp(docPhrase)}</p>
       {#each SIDES as side (side)}
         {@const group = entries.filter((e) => e.sides[0] === side)}
         {#if group.length}

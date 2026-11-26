@@ -9,18 +9,20 @@ export const fr: Messages = {
   meta: {
     title: 'Sequrid · Protégez votre carte d’identité',
     description:
-      'Masquez les informations sensibles de votre carte d’identité (Espagne et France) et ajoutez un filigrane avec le destinataire et la date. Tout est traité dans votre navigateur : la photo ne quitte jamais votre appareil.',
+      'Masquez les informations sensibles de votre carte d’identité (Espagne, France et Italie) et ajoutez un filigrane avec le destinataire et la date. Tout est traité dans votre navigateur : la photo ne quitte jamais votre appareil.',
   },
 
   language: {
     label: 'Langue',
     current: (name) => `Langue : ${name}`,
+    auto: 'Automatique',
+    autoHint: (name) => `Langue du navigateur : ${name}`,
   },
 
   header: {
     home: 'Sequrid, aller à l’éditeur',
     sections: 'Sections',
-    nav: { editor: 'Éditeur', cover: 'Que masquer', privacy: 'Confidentialité', faq: 'Questions' },
+    nav: { editor: 'Éditeur', cover: 'Que masquer', privacy: 'Confidentialité', faq: 'Questions', help: 'Aide' },
     localTitle: 'Aucune photo ne quitte votre navigateur',
     local: '100 % sur votre appareil',
     source: 'Code source',
@@ -34,7 +36,7 @@ export const fr: Messages = {
     noSignup: 'Sans inscription',
     openSource: 'Open source',
     title: 'Protégez votre carte d’identité avant de l’envoyer',
-    lead: 'Masquez les informations dont personne n’a besoin, ajoutez un filigrane avec le destinataire et la date, puis téléchargez un PDF ou un JPG prêt à envoyer. Compatible avec le DNI espagnol et la carte nationale d’identité française.',
+    lead: 'Masquez les informations dont personne n’a besoin, ajoutez un filigrane avec le destinataire et la date, puis téléchargez un PDF ou un JPG prêt à envoyer. Compatible avec le DNI espagnol, la carte nationale d’identité française et la CIE italienne.',
   },
 
   footer: {
@@ -140,8 +142,8 @@ export const fr: Messages = {
     coverMode: 'Mode de masquage',
     auto: 'Automatique',
     manual: 'Manuel',
-    autoHelp: (doc) =>
-      `Les zones se placent sur les informations ${doc === 'dni-es' ? 'du DNI' : doc === 'cni-fr' ? 'de la carte' : 'des documents'}. Vérifiez qu’elles tombent au bon endroit ; sinon, utilisez « Cadrage ».`,
+    autoHelp: (the) =>
+      `Les zones se placent sur les informations ${the ?? 'des documents'}. Vérifiez qu’elles tombent au bon endroit ; sinon, utilisez « Cadrage ».`,
     alsoOn: (s) => `aussi au ${side(s)}`,
     recommended: 'Recommandé',
     manualHelp: 'Choisissez « Dessiner » dans la barre de l’image et tracez à la souris ou au doigt tout ce que vous voulez masquer.',
@@ -234,12 +236,16 @@ export const fr: Messages = {
     parents: 'Noms des parents',
     height: 'Taille',
     seal: 'Code 2D-Doc',
+    taxCode: 'Code fiscal',
+    birthRecord: 'Références de l’acte de naissance',
+    issuer: 'Autorité de délivrance',
     mrz: 'Zone MRZ',
   },
 
   documents: {
     'dni-es': {
       countryName: 'Espagne',
+      the: 'du DNI',
       name: 'DNI (modèle 2021)',
       sides: {
         front: { label: 'Recto', hint: 'Face avec la photo' },
@@ -286,6 +292,7 @@ export const fr: Messages = {
     },
     'cni-fr': {
       countryName: 'France',
+      the: 'de la carte',
       name: 'Carte nationale d’identité (depuis 2021)',
       sides: {
         front: { label: 'Recto', hint: 'Face avec la photo' },
@@ -338,6 +345,44 @@ export const fr: Messages = {
         },
       },
     },
+    'cie-it': {
+      countryName: 'Italie',
+      the: 'de la CIE',
+      name: 'Carte d’identité électronique italienne (CIE 3.0, depuis 2022)',
+      sides: {
+        front: { label: 'Recto', hint: 'Face avec la photo' },
+        back: { label: 'Verso', hint: 'Face avec le code fiscal' },
+      },
+      zones: {
+        number: { label: 'Numéro de la carte', hint: 'En haut à droite au recto et à nouveau dans la MRZ. Il identifie la carte.' },
+        issuer: { label: 'Commune de délivrance', hint: 'La commune qui a délivré la carte : elle indique souvent où vous habitez.' },
+        name: { label: 'Nom et prénom', hint: 'Presque toujours nécessaire : c’est ce qui vous identifie.' },
+        birthDate: {
+          label: 'Lieu et date de naissance',
+          hint: 'Ils partagent une ligne, ils sont donc masqués ensemble. Ce sont des réponses classiques aux questions de sécurité.',
+        },
+        height: { label: 'Taille', hint: 'Une donnée physique dont personne qui reçoit une copie n’a besoin.' },
+        issueDate: { label: 'Date de délivrance', hint: 'Rarement utile à qui reçoit la copie.' },
+        expiry: { label: 'Date d’expiration', hint: 'Rarement utile à qui reçoit la copie.' },
+        signature: { label: 'Signature', hint: 'Une signature numérisée peut être collée sur n’importe quel contrat ou autorisation.' },
+        can: {
+          label: 'Code CAN',
+          hint: 'Les six chiffres en bas à droite donnent accès à la puce par NFC. Personne qui reçoit une copie n’en a besoin.',
+        },
+        photo: {
+          label: 'Photo (et portraits secondaires)',
+          hint: 'La photo principale et les petits portraits dans la silhouette de l’Italie et au verso.',
+        },
+        parents: { label: 'Nom des parents', hint: 'N’apporte rien à qui reçoit la copie, mais aide qui veut usurper votre identité.' },
+        taxCode: {
+          label: 'Code fiscal (et son code-barres)',
+          hint: 'Le codice fiscale suffit pour ouvrir des contrats et des comptes à votre nom. Le code-barres du verso le contient aussi.',
+        },
+        birthRecord: { label: 'Références de l’acte de naissance', hint: 'La référence de votre acte de naissance. Personne qui reçoit une copie n’en a besoin.' },
+        address: { label: 'Adresse', hint: 'Votre adresse. Seule une personne qui doit vous envoyer quelque chose ou vous enregistrer en a besoin.' },
+        mrz: { label: 'Zone MRZ (lignes du bas)', hint: 'Les trois lignes lisibles par machine reprennent le numéro, les dates et le nom.' },
+      },
+    },
   },
 
   usages: {
@@ -369,7 +414,7 @@ export const fr: Messages = {
       label: 'Hôtel ou hébergement',
       short: 'un hôtel',
       watermark: 'Uniquement pour l’enregistrement des voyageurs',
-      note: 'L’enregistrement des voyageurs demande le numéro, le support, la date de naissance et l’adresse : ils restent donc visibles.',
+      note: 'L’enregistrement des voyageurs demande le numéro du document, la date de naissance et l’adresse (en Espagne, aussi le numéro de support du DNI) : ils restent donc visibles.',
     },
     bank: {
       label: 'Banque ou organisme de crédit',
@@ -397,7 +442,7 @@ export const fr: Messages = {
       use: 'Usage',
       covered: 'Masqué',
       watermark: 'Filigrane',
-      note: 'Chaque document ne masque que les informations qu’il contient : le code 2D-Doc et la taille, par exemple, n’existent que sur la carte française. Ce n’est qu’une indication. Si la personne qui demande la copie a besoin d’une autre information, démasquez-la uniquement pour elle et gardez le filigrane.',
+      note: 'Chaque document ne masque que les informations qu’il contient : le code 2D-Doc, par exemple, n’existe que sur la carte française et le code fiscal, que sur la carte italienne. Ce n’est qu’une indication. Si la personne qui demande la copie a besoin d’une autre information, démasquez-la uniquement pour elle et gardez le filigrane.',
     },
     privacy: {
       eyebrow: 'Aucun serveur entre vous et votre copie',
@@ -446,7 +491,7 @@ export const fr: Messages = {
         },
         {
           q: 'Quels documents sont pris en charge ?',
-          a: 'Le DNI espagnol (modèle 2021) et la carte nationale d’identité française (depuis 2021). Choisissez le pays de chaque document dans le panneau des photos et les zones se placent sur ses informations. D’autres pays suivront.',
+          a: 'Le DNI espagnol (modèle 2021), la carte nationale d’identité française (depuis 2021) et la carte d’identité électronique italienne (CIE 3.0, depuis 2022). Choisissez le pays de chaque document dans le panneau des photos et les zones se placent sur ses informations. D’autres pays suivront.',
         },
         {
           q: 'Est-ce que ça fonctionne sur mobile et hors connexion ?',
@@ -457,7 +502,26 @@ export const fr: Messages = {
           a: 'Oui, c’est tout l’intérêt : le code est ouvert et distribué sous forme d’image Docker et de chart Helm. Vous pouvez ainsi vérifier exactement ce qu’il fait et l’héberger vous-même.',
         },
       ],
-      help: 'Victime d’usurpation d’identité ? En France, rendez-vous sur **17Cyber** (17cyber.gouv.fr) ; en Espagne, appelez gratuitement le **017**, la ligne d’assistance en cybersécurité de l’INCIBE.',
+    },
+    help: {
+      eyebrow: 'Si c’est déjà arrivé',
+      title: 'Où trouver de l’aide si quelqu’un utilise votre identité',
+      lead: 'Services officiels par pays. Si une infraction est en cours, appelez le numéro d’urgence.',
+      country: 'Pays',
+      service: 'Service',
+      contact: 'Comment les joindre',
+      what: 'À quoi ça sert',
+      kinds: { phone: 'Téléphone', whatsapp: 'WhatsApp', telegram: 'Telegram', web: 'Site web' },
+      free: 'gratuit',
+      emergency: 'Urgences',
+      emergencySms: 'Urgences par SMS',
+      newTab: 's’ouvre dans un nouvel onglet',
+      lines: {
+        'es-incibe': 'Ligne gratuite et confidentielle de l’Institut national de cybersécurité espagnol pour tout problème de cybersécurité. Tous les jours de 8 h à 23 h.',
+        'fr-17cyber': 'Assistance officielle en ligne pour les victimes de cybermalveillance, avec l’aide d’un policier ou d’un gendarme si nécessaire.',
+        'it-postale': 'Portail de la police postale et de la cybersécurité italienne pour s’informer et signaler des délits en ligne. Les plaintes se déposent dans un commissariat.',
+      },
+      note: 'Seuls les services vérifiés sur leurs sites officiels sont listés. D’autres pays seront ajoutés avec leurs documents.',
     },
   },
 };

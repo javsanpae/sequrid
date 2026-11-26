@@ -9,15 +9,19 @@
 
 <!-- Simplified flags, drawn here so they look the same on every system.
      Countries without a drawn flag get a neutral badge with their ISO code. -->
-{#if code === 'ES' || code === 'FR'}
+{#if code === 'ES' || code === 'FR' || code === 'IT'}
   <svg class="flag" width={size} {height} viewBox="0 0 3 2" aria-hidden="true" focusable="false">
     {#if code === 'ES'}
       <rect width="3" height="2" fill="#c60b1e" />
       <rect y="0.5" width="3" height="1" fill="#ffc400" />
-    {:else}
+    {:else if code === 'FR'}
       <rect width="1" height="2" fill="#002395" />
       <rect x="1" width="1" height="2" fill="#ffffff" />
       <rect x="2" width="1" height="2" fill="#ed2939" />
+    {:else}
+      <rect width="1" height="2" fill="#009246" />
+      <rect x="1" width="1" height="2" fill="#ffffff" />
+      <rect x="2" width="1" height="2" fill="#ce2b37" />
     {/if}
   </svg>
 {:else}
