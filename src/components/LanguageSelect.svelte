@@ -1,10 +1,14 @@
 <script lang="ts">
   import { tick } from 'svelte';
-  import { getLang, LANGUAGES, m, setLang, type Lang } from '../lib/i18n/index.svelte';
+  import { getBrowserLang, getLang, isAutoLang, LANGUAGES, m, setLang, type Lang } from '../lib/i18n/index.svelte';
   import Icon from './Icon.svelte';
 
   const uid = `lang-${Math.random().toString(36).slice(2, 8)}`;
   const current = $derived(LANGUAGES.find((l) => l.code === getLang()) ?? LANGUAGES[0]);
+  const browserName = $derived(LANGUAGES.find((l) => l.code === getBrowserLang())?.name ?? '');
+  /** Menu entries: "Automatic" (follow the browser) first, then every language. */
+  const choices: (Lang | 'auto')[] = ['auto', ...LANGUAGES.map((l) => l.code)];
+  const checked = (choice: Lang | 'auto') => (choice === 'auto' ? isAutoLang() : !isAutoLang() && choice === getLang());
   let open = $state(false);
   let root: HTMLDivElement;
   let button: HTMLButtonElement;
@@ -13,8 +17,7 @@
   async function show(focus: 'current' | 'first' | 'last' = 'current') {
     open = true;
     await tick();
-    const i =
-      focus === 'first' ? 0 : focus === 'last' ? LANGUAGES.length - 1 : LANGUAGES.findIndex((l) => l.code === getLang());
+    const i = focus === 'first' ? 0 : focus === 'last' ? choices.length - 1 : choices.findIndex(checked);
     items[Math.max(0, i)]?.focus();
   }
 
@@ -23,8 +26,8 @@
     if (focusButton) button.focus();
   }
 
-  function pick(code: Lang) {
-    if (code !== getLang()) setLang(code);
+  function pick(choice: Lang | 'auto') {
+    setLang(choice);
     close();
   }
 
@@ -37,7 +40,7 @@
 
   function onMenuKey(e: KeyboardEvent) {
     const i = items.indexOf(document.activeElement as HTMLButtonElement);
-    const last = LANGUAGES.length - 1;
+    const last = choices.length - 1;
     if (e.key === 'ArrowDown') items[i >= last ? 0 : i + 1]?.focus();
     else if (e.key === 'ArrowUp') items[i <= 0 ? last : i - 1]?.focus();
     else if (e.key === 'Home') items[0]?.focus();
@@ -76,20 +79,37 @@
 
   {#if open}
     <ul id="{uid}-menu" class="menu" role="menu" tabindex="-1" aria-label={m().language.label} onkeydown={onMenuKey}>
+      <li role="none">
+        <button
+          bind:this={items[0]}
+          type="button"
+          role="menuitemradio"
+          aria-checked={checked('auto')}
+          tabindex="-1"
+          onclick={() => pick('auto')}
+        >
+          <span class="name auto">
+            {m().language.auto}
+            <small>{m().language.autoHint(browserName)}</small>
+          </span>
+          <span class="tick">{#if checked('auto')}<Icon name="check" size={16} stroke={2.5} />{/if}</span>
+        </button>
+      </li>
+      <li role="separator" class="sep"></li>
       {#each LANGUAGES as l, i (l.code)}
         <li role="none">
           <button
-            bind:this={items[i]}
+            bind:this={items[i + 1]}
             type="button"
             role="menuitemradio"
-            aria-checked={l.code === current.code}
+            aria-checked={checked(l.code)}
             tabindex="-1"
             lang={l.code}
             onclick={() => pick(l.code)}
           >
             <span class="name">{l.name}</span>
             <span class="tag" aria-hidden="true">{l.code.toUpperCase()}</span>
-            <span class="tick">{#if l.code === current.code}<Icon name="check" size={16} stroke={2.5} />{/if}</span>
+            <span class="tick">{#if checked(l.code)}<Icon name="check" size={16} stroke={2.5} />{/if}</span>
           </button>
         </li>
       {/each}
@@ -126,7 +146,7 @@
     z-index: 25;
     top: calc(100% + 6px);
     right: 0;
-    min-width: 180px;
+    min-width: 210px;
     margin: 0;
     padding: 6px;
     list-style: none;
@@ -157,6 +177,20 @@
   .menu button[aria-checked='true'] .name {
     color: var(--accent-text);
     font-weight: 700;
+  }
+  .name.auto {
+    display: grid;
+    line-height: 1.25;
+  }
+  .name.auto small {
+    font-size: 11.5px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .sep {
+    height: 1px;
+    margin: 4px 6px;
+    background: var(--border);
   }
   .tag {
     margin-left: auto;

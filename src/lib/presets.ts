@@ -11,15 +11,27 @@ export interface UsagePreset {
 }
 
 // Keys a document does not have are simply ignored (e.g. the 2D-Doc seal on a DNI).
-const PRUDENT: ZoneKey[] = ['serial', 'birthDate', 'signature', 'can', 'birthPlace', 'parents', 'height', 'seal', 'mrz'];
-const STRICT: ZoneKey[] = ['number', ...PRUDENT, 'address'];
+const PRUDENT: ZoneKey[] = [
+  'serial',
+  'birthDate',
+  'signature',
+  'can',
+  'birthPlace',
+  'parents',
+  'height',
+  'seal',
+  'taxCode',
+  'birthRecord',
+  'mrz',
+];
+const STRICT: ZoneKey[] = ['number', ...PRUDENT, 'address', 'issuer'];
 
 export const USAGES: UsagePreset[] = [
   { id: 'other', cover: PRUDENT },
   { id: 'rental', cover: PRUDENT },
   { id: 'job', cover: STRICT },
   { id: 'sale', cover: STRICT },
-  { id: 'hotel', cover: ['signature', 'can', 'birthPlace', 'parents', 'height', 'seal', 'mrz'] },
+  { id: 'hotel', cover: ['signature', 'can', 'birthPlace', 'parents', 'height', 'seal', 'taxCode', 'birthRecord', 'mrz'] },
   { id: 'bank', cover: ['can'] },
   { id: 'government', cover: ['can'] },
 ];

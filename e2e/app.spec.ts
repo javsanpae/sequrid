@@ -267,8 +267,9 @@ test.describe('countries', () => {
     await expect(picker(page)).toHaveAttribute('aria-expanded', 'true');
     const listbox = page.getByRole('listbox', { name: 'Country of document 1' });
     await expect(listbox.getByRole('group', { name: 'France' })).toBeVisible();
+    await expect(listbox.getByRole('group', { name: 'Italy' })).toBeVisible();
     await expect(listbox.getByRole('group', { name: 'Spain' })).toBeVisible();
-    await expect(options(page)).toHaveCount(2);
+    await expect(options(page)).toHaveCount(3);
 
     const spain = listbox.getByRole('group', { name: 'Spain' }).getByRole('option');
     await expect(spain).toHaveAccessibleName('Spain, DNI (2021 model), 2021–present, current');
@@ -290,7 +291,7 @@ test.describe('countries', () => {
     await page.getByRole('button', { name: 'Clear search' }).click();
     await expect(searchBox(page)).toHaveValue('');
     await expect(searchBox(page)).toBeFocused();
-    await expect(options(page)).toHaveCount(2);
+    await expect(options(page)).toHaveCount(3);
   });
 
   test('finds documents by acronym and by name in other languages while in English', async ({ page }) => {
@@ -339,8 +340,10 @@ test.describe('countries', () => {
     await trigger.focus();
     await page.keyboard.press('ArrowDown');
     await expect(searchBox(page)).toBeFocused();
-    const [france, spain] = await Promise.all([
+    // Options in English order: France, Italy, Spain (selected).
+    const [france, italy, spain] = await Promise.all([
       page.getByRole('option', { name: /^France/ }).getAttribute('id'),
+      page.getByRole('option', { name: /^Italy/ }).getAttribute('id'),
       page.getByRole('option', { name: /^Spain/ }).getAttribute('id'),
     ]);
     const expectActive = (id: string | null) => expect(searchBox(page)).toHaveAttribute('aria-activedescendant', id!);
@@ -350,16 +353,16 @@ test.describe('countries', () => {
     await page.keyboard.press('ArrowUp');
     await expectActive(spain);
     await page.keyboard.press('ArrowUp');
-    await expectActive(france);
+    await expectActive(italy);
     await page.keyboard.press('End');
     await expectActive(spain);
     await page.keyboard.press('Home');
     await expectActive(france);
     await page.keyboard.press('ArrowDown');
-    await expectActive(spain);
+    await expectActive(italy);
     await page.keyboard.press('Enter');
     await expect(page.getByRole('listbox')).toHaveCount(0);
-    await expect(trigger).toHaveAccessibleName(/Spain/);
+    await expect(trigger).toHaveAccessibleName(/Italy/);
   });
 
   test('Escape clears the search first, then closes', async ({ page, isMobile }) => {
@@ -370,7 +373,7 @@ test.describe('countries', () => {
     await expect(options(page)).toHaveCount(1);
     await page.keyboard.press('Escape');
     await expect(searchBox(page)).toHaveValue('');
-    await expect(options(page)).toHaveCount(2);
+    await expect(options(page)).toHaveCount(3);
     await expect(searchBox(page)).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(page.getByRole('listbox')).toHaveCount(0);
@@ -391,7 +394,7 @@ test.describe('countries', () => {
   test('the open picker fits the screen', async ({ page }) => {
     await picker(page).click();
     await searchBox(page).fill('ident');
-    await expect(options(page)).toHaveCount(2);
+    await expect(options(page)).toHaveCount(3);
     const width = page.viewportSize()!.width;
     for (const box of [await searchBox(page).boundingBox(), await page.getByRole('listbox').boundingBox()]) {
       expect(box!.x).toBeGreaterThanOrEqual(0);
@@ -406,12 +409,12 @@ test.describe('countries', () => {
 });
 
 test.describe('languages', () => {
-  const trigger = (page: Page) => page.getByRole('button', { name: /^(Language|Idioma|Langue)/ });
+  const trigger = (page: Page) => page.getByRole('button', { name: /^(Language|Idioma|Langue|Lingua)/ });
 
   async function chooseLanguage(page: Page, name: string) {
     await trigger(page).click();
     await expect(page.getByRole('menu')).toBeVisible();
-    await page.getByRole('menuitemradio', { name }).click();
+    await page.getByRole('menuitemradio', { name, exact: true }).click();
     await expect(page.getByRole('menu')).toHaveCount(0);
   }
 
@@ -476,20 +479,26 @@ test.describe('languages', () => {
     await button.focus();
     await page.keyboard.press('ArrowDown');
     await expect(page.getByRole('menu')).toBeVisible();
-    await expect(page.getByRole('menuitemradio', { name: 'English' })).toBeFocused();
-    await expect(page.getByRole('menuitemradio', { name: 'English' })).toHaveAttribute('aria-checked', 'true');
+    // "Automatic" comes first and is selected: nothing has been chosen yet.
+    const auto = page.getByRole('menuitemradio', { name: /^Automatic/ });
+    await expect(auto).toBeFocused();
+    await expect(auto).toHaveAttribute('aria-checked', 'true');
+    await expect(auto).toContainText('Browser language: English');
     // Native names only: the decorative language code is hidden from screen readers.
-    for (const name of ['English', 'Español', 'Français']) {
+    for (const name of ['English', 'Español', 'Français', 'Italiano']) {
       await expect(page.getByRole('menuitemradio', { name, exact: true })).toBeVisible();
     }
+    await expect(page.getByRole('menuitemradio', { name: 'English', exact: true })).toHaveAttribute('aria-checked', 'false');
     await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowDown');
+    await expect(page.getByRole('menuitemradio', { name: 'Español' })).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(page.getByRole('menu')).toHaveCount(0);
     await expect(button).toHaveAccessibleName('Idioma: Español');
     await expect(button).toBeFocused();
 
     await page.keyboard.press('ArrowUp');
-    await expect(page.getByRole('menuitemradio', { name: 'Français' })).toBeFocused();
+    await expect(page.getByRole('menuitemradio', { name: 'Italiano' })).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(page.getByRole('menu')).toHaveCount(0);
     await expect(button).toBeFocused();
@@ -502,6 +511,59 @@ test.describe('languages', () => {
   });
 });
 
+test.describe('automatic language', () => {
+  const trigger = (page: Page) => page.getByRole('button', { name: /^(Language|Idioma|Langue|Lingua)/ });
+  const saved = (page: Page) => page.evaluate(() => localStorage.getItem('sequrid-language'));
+
+  async function choose(page: Page, name: string | RegExp) {
+    await trigger(page).click();
+    await page.getByRole('menuitemradio', typeof name === 'string' ? { name, exact: true } : { name }).click();
+    await expect(page.getByRole('menu')).toHaveCount(0);
+  }
+
+  test('picking the browser language keeps following the browser', async ({ page }) => {
+    await choose(page, 'English');
+    expect(await saved(page)).toBeNull();
+    await trigger(page).click();
+    await expect(page.getByRole('menuitemradio', { name: /^Automatic/ })).toHaveAttribute('aria-checked', 'true');
+  });
+
+  test('another language is remembered until you go back to Automatic', async ({ page }) => {
+    await choose(page, 'Español');
+    expect(await saved(page)).toBe('es');
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('lang', 'es');
+    await choose(page, /^Automático/);
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    expect(await saved(page)).toBeNull();
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  });
+
+  test('a choice saved by 0.3.0 is dropped so the browser language wins again', async ({ page }) => {
+    await page.addInitScript(() => {
+      if (!sessionStorage.getItem('seeded')) {
+        localStorage.setItem('sequrid-lang', 'fr');
+        sessionStorage.setItem('seeded', '1');
+      }
+    });
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    await expect(heading(page)).toHaveText('Protect your ID card before sending it');
+    expect(await page.evaluate(() => localStorage.getItem('sequrid-lang'))).toBeNull();
+  });
+});
+
+test.describe('Italian browser', () => {
+  test.use({ locale: 'it-IT' });
+
+  test('starts in Italian and offers the Italian CIE', async ({ page }) => {
+    await expect(page.locator('html')).toHaveAttribute('lang', 'it');
+    await expect(heading(page)).not.toHaveText('Protect your ID card before sending it');
+    await expect(page.getByRole('button', { name: /^Lingua/ })).toHaveAccessibleName(/Italiano$/);
+  });
+});
+
 test.describe('French browser', () => {
   test.use({ locale: 'fr-FR' });
 
@@ -511,6 +573,52 @@ test.describe('French browser', () => {
     await expect(page).toHaveTitle('Sequrid · Protégez votre carte d’identité');
     await expect(page.getByRole('button', { name: /^Langue/ })).toHaveAccessibleName(/^Langue\s:\sFrançais$/);
     await expect(page.getByRole('button', { name: /^Pays du document 1/ })).toContainText('Espagne');
+  });
+});
+
+test.describe('Italy', () => {
+  test('Italian CIE: own fields, sample, protection level and file names', async ({ page }) => {
+    await page.getByRole('button', { name: /^Country of document 1:/ }).click();
+    await page.getByRole('combobox', { name: 'Search country or document' }).fill('ital');
+    await page.getByRole('option', { name: /^Italy,/ }).click();
+    await expect(page.getByRole('button', { name: /^Country of document 1: Italy/ })).toBeVisible();
+
+    await expect(page.getByRole('checkbox', { name: /Tax code/ })).toBeChecked();
+    await expect(page.getByRole('checkbox', { name: /Birth record details/ })).toBeChecked();
+    await expect(page.getByRole('checkbox', { name: /Place and date of birth/ })).toBeChecked();
+    await expect(page.getByRole('checkbox', { name: /Issuing municipality/ })).not.toBeChecked();
+    await expect(page.getByRole('checkbox', { name: /2D-Doc/ })).toHaveCount(0);
+
+    await loadSampleAs(page, 'CIE');
+    await expect(page.getByRole('status')).toContainText('Sample CIE (Italy)');
+    await expect(page.getByText(/You have covered 8 of 8 recommended details/)).toBeVisible();
+    const [pdf] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Download PDF' }).first().click()]);
+    expect(pdf.suggestedFilename()).toBe('cie-protected.pdf');
+  });
+});
+
+test.describe('help lines', () => {
+  test('are shown as a table with official contacts', async ({ page }) => {
+    const section = page.locator('#help');
+    await expect(section.getByRole('heading', { level: 2 })).toHaveText('Where to get help if someone uses your identity');
+    const rows = section.locator('tbody tr');
+    await expect(rows).toHaveCount(3);
+    await expect(section.getByRole('link', { name: '017', exact: true })).toHaveAttribute('href', 'tel:017');
+    await expect(section.getByRole('link', { name: /17cyber\.gouv\.fr/ })).toHaveAttribute('href', 'https://www.17cyber.gouv.fr/');
+    await expect(section.getByRole('link', { name: /commissariatodips\.it/ })).toHaveAttribute('target', '_blank');
+    // The country of the document in use comes first.
+    await expect(rows.first()).toContainText('Spain');
+  });
+
+  test('put the countries in use first and follow the language', async ({ page }) => {
+    await page.getByRole('button', { name: /^Country of document 1:/ }).click();
+    await page.getByRole('option', { name: /^Italy,/ }).click();
+    const rows = page.locator('#help tbody tr');
+    await expect(rows.first()).toContainText('Italy');
+    await page.getByRole('button', { name: /^Language/ }).click();
+    await page.getByRole('menuitemradio', { name: 'Español', exact: true }).click();
+    await expect(page.locator('#help h2')).toHaveText('Dónde pedir ayuda si alguien usa tu identidad');
+    await expect(rows.first()).toContainText('Italia');
   });
 });
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  CIE_IT,
   CNI_FR,
   DNI_ES,
   DOCUMENTS,
@@ -62,6 +63,20 @@ describe('documents', () => {
     expect(zoneDef('parents', CNI_FR)).toBeUndefined();
   });
 
+  it('describes the Italian CIE', () => {
+    expect(documentType('cie-it')).toBe(CIE_IT);
+    expect(CIE_IT.short).toBe('CIE');
+    expect(CIE_IT.issuedFrom).toBe(2022);
+    // Place and date of birth share one line: a single zone covers both.
+    expect(zoneDef('birthDate', CIE_IT)).toBeDefined();
+    expect(zoneDef('birthPlace', CIE_IT)).toBeUndefined();
+    // The tax code is printed and also encoded in the barcode on the back.
+    expect(zoneDef('taxCode', CIE_IT)!.rects.map((r) => r.side)).toEqual(['back', 'back']);
+    expect(zoneSides(zoneDef('photo', CIE_IT)!)).toEqual(['front', 'back']);
+    expect(zoneSides(zoneDef('issuer', CIE_IT)!)).toEqual(['front']);
+    expect(zoneDef('seal', CIE_IT)).toBeUndefined();
+  });
+
   it('rejects unknown documents', () => {
     expect(() => documentType('xx' as never)).toThrow();
   });
@@ -108,6 +123,16 @@ describe('protectionSummary', () => {
       available: [...new Set([...documentKeys(DNI_ES), ...documentKeys(CNI_FR)])],
     });
     expect(both.total).toBe(9);
+    const itDoc = protectionSummary('other', selectionFor('other'), { ...auto, available: documentKeys(CIE_IT) });
+    expect(itDoc.total).toBe(8);
+  });
+
+  it('covers the Italian tax code by default except where the full copy is needed', () => {
+    expect(selectionFor('other').taxCode).toBe(true);
+    expect(selectionFor('hotel').taxCode).toBe(true);
+    expect(selectionFor('bank').taxCode).toBe(false);
+    expect(selectionFor('job').issuer).toBe(true);
+    expect(selectionFor('other').issuer).toBe(false);
   });
 
   it('is high when following the recommendation with a watermark', () => {

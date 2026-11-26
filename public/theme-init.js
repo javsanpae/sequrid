@@ -7,9 +7,9 @@
   try {
     var t = localStorage.getItem('sequrid-theme');
     if (t === 'light' || t === 'dark') root.dataset.theme = t;
-    saved = localStorage.getItem('sequrid-lang');
+    saved = localStorage.getItem('sequrid-language');
   } catch (e) {}
-  var supported = ['en', 'es', 'fr'];
+  var supported = ['en', 'es', 'fr', 'it'];
   var lang = supported.indexOf(saved) >= 0 ? saved : null;
   var prefs = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || ''];
   for (var i = 0; !lang && i < prefs.length; i++) {

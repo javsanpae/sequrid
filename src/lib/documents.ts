@@ -23,6 +23,9 @@ export type ZoneKey =
   | 'parents'
   | 'height'
   | 'seal'
+  | 'taxCode'
+  | 'birthRecord'
+  | 'issuer'
   | 'mrz';
 
 export const ZONE_KEYS: ZoneKey[] = [
@@ -40,6 +43,9 @@ export const ZONE_KEYS: ZoneKey[] = [
   'parents',
   'height',
   'seal',
+  'taxCode',
+  'birthRecord',
+  'issuer',
   'mrz',
 ];
 
@@ -58,7 +64,7 @@ export interface ZoneDef {
  * any nation can be added without touching this type.
  */
 export type CountryCode = string;
-export type DocumentId = 'dni-es' | 'cni-fr';
+export type DocumentId = 'dni-es' | 'cni-fr' | 'cie-it';
 
 /**
  * What the picker needs to list and search a document model. Countries can
@@ -157,7 +163,52 @@ export const CNI_FR: DocumentType = {
   ],
 };
 
-export const DOCUMENTS: DocumentType[] = [DNI_ES, CNI_FR];
+/**
+ * Italian electronic identity card (Carta d'Identità Elettronica, CIE 3.0),
+ * in the design used since 29 September 2022 to comply with Regulation (EU)
+ * 2019/1157 ("IT" inside the EU flag and in an optically variable square).
+ * Positions follow the official specimen. The barcode on the back encodes
+ * the tax code, so it belongs to the tax code zone.
+ */
+export const CIE_IT: DocumentType = {
+  id: 'cie-it',
+  country: 'IT',
+  short: 'CIE',
+  issuedFrom: 2022,
+  aliases: [
+    'CIE 3.0',
+    'carta d’identità elettronica',
+    'carta di identità elettronica',
+    'carta d’identità',
+    'carta di identità',
+  ],
+  widthMm: 85.6,
+  heightMm: 53.98,
+  zones: [
+    { key: 'number', rects: [front(0.755, 0.045, 0.214, 0.06)] },
+    { key: 'issuer', rects: [front(0.145, 0.205, 0.26, 0.073)] },
+    { key: 'name', rects: [front(0.323, 0.292, 0.42, 0.137)] },
+    // Place and date of birth share one line whose split depends on the
+    // place's length, so a single zone covers both.
+    { key: 'birthDate', rects: [front(0.323, 0.45, 0.62, 0.092)] },
+    { key: 'height', rects: [front(0.474, 0.55, 0.084, 0.092)] },
+    { key: 'issueDate', rects: [front(0.323, 0.655, 0.148, 0.07)] },
+    { key: 'expiry', rects: [front(0.65, 0.655, 0.128, 0.07)] },
+    { key: 'signature', rects: [front(0.323, 0.783, 0.265, 0.12)] },
+    { key: 'can', rects: [front(0.755, 0.805, 0.175, 0.072)] },
+    {
+      key: 'photo',
+      rects: [front(0.026, 0.317, 0.284, 0.542), front(0.789, 0.158, 0.163, 0.25), back(0.816, 0.133, 0.126, 0.245)],
+    },
+    { key: 'parents', rects: [back(0.047, 0.062, 0.621, 0.097)] },
+    { key: 'taxCode', rects: [back(0.047, 0.163, 0.26, 0.098), back(0.045, 0.467, 0.907, 0.208)] },
+    { key: 'birthRecord', rects: [back(0.447, 0.163, 0.23, 0.07)] },
+    { key: 'address', rects: [back(0.047, 0.272, 0.6, 0.065)] },
+    { key: 'mrz', rects: [back(0.053, 0.725, 0.9, 0.245)] },
+  ],
+};
+
+export const DOCUMENTS: DocumentType[] = [DNI_ES, CNI_FR, CIE_IT];
 
 /** True while the model is still being issued. */
 export const isCurrent = (doc: DocumentInfo): boolean => doc.issuedUntil === undefined;

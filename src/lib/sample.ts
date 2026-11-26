@@ -392,8 +392,151 @@ function cniBack(): HTMLCanvasElement {
   return c;
 }
 
+const itLabel = (ctx: Ctx, t: string, fx: number, fy: number) => text(ctx, t, fx, fy, 0.022, { color: '#33465e', weight: 500 });
+const IT_VALUE = '#141c26';
+
+function cieFront(): HTMLCanvasElement {
+  const c = createCanvas(W, H);
+  const ctx = ctx2d(c);
+  cardBase(ctx, ['#e7f1ef', '#f6f9f4', '#eaf1f6', '#f4f1ea']);
+
+  // Header: tricolour block and title (no official emblems).
+  ctx.fillStyle = '#009246';
+  ctx.fillRect(0.035 * W, 0.05 * H, 0.03 * W, 0.08 * H);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0.065 * W, 0.05 * H, 0.03 * W, 0.08 * H);
+  ctx.fillStyle = '#ce2b37';
+  ctx.fillRect(0.095 * W, 0.05 * H, 0.03 * W, 0.08 * H);
+  text(ctx, 'CARTA DI IDENTITÀ · FACSIMILE', 0.15, 0.1, 0.048, { color: '#1c3a7a', weight: 800 });
+  text(ctx, 'SAMPLE IDENTITY CARD · DATI FITTIZI', 0.15, 0.14, 0.024, { color: '#33465e', weight: 600 });
+
+  // Card number (top right) and issuing municipality.
+  text(ctx, 'CA00000ZZ', 0.76, 0.095, 0.045, { color: IT_VALUE, weight: 600 });
+  itLabel(ctx, 'COMUNE DI / MUNICIPALITY', 0.15, 0.228);
+  text(ctx, 'BORGO ESEMPIO', 0.15, 0.266, 0.034, { color: IT_VALUE, weight: 700 });
+
+  // Photo and the small portrait in the top right area.
+  const px = 0.035 * W, py = 0.33 * H, pw = 0.265 * W, ph = 0.52 * H;
+  ctx.save();
+  roundedPath(ctx, px, py, pw, ph, 0.02 * H);
+  ctx.clip();
+  ctx.fillStyle = '#e4e9ec';
+  ctx.fillRect(px, py, pw, ph);
+  portrait(ctx, px, py, pw, ph, '#68727c');
+  ctx.restore();
+  ctx.save();
+  ctx.globalAlpha = 0.4;
+  ctx.fillStyle = '#d7dde2';
+  ctx.fillRect(0.8 * W, 0.17 * H, 0.14 * W, 0.22 * H);
+  portrait(ctx, 0.8 * W, 0.17 * H, 0.14 * W, 0.22 * H, '#5b6670');
+  ctx.restore();
+
+  itLabel(ctx, 'COGNOME / SURNAME', 0.328, 0.315);
+  text(ctx, 'VERDI', 0.328, 0.355, 0.042, { color: IT_VALUE, weight: 700 });
+  itLabel(ctx, 'NOME / NAME', 0.328, 0.385);
+  text(ctx, 'GIULIA', 0.328, 0.422, 0.042, { color: IT_VALUE, weight: 700 });
+
+  itLabel(ctx, 'LUOGO E DATA DI NASCITA / PLACE AND DATE OF BIRTH', 0.328, 0.475);
+  text(ctx, 'FIRENZE (FI) 15.03.1992', 0.328, 0.528, 0.042, { color: IT_VALUE, weight: 700 });
+
+  itLabel(ctx, 'SESSO / SEX', 0.328, 0.578);
+  text(ctx, 'F', 0.328, 0.625, 0.04, { color: IT_VALUE, weight: 700 });
+  itLabel(ctx, 'STATURA', 0.48, 0.578);
+  text(ctx, '168', 0.48, 0.625, 0.04, { color: IT_VALUE, weight: 700 });
+  itLabel(ctx, 'CITTADINANZA', 0.65, 0.578);
+  text(ctx, 'ITA', 0.65, 0.625, 0.04, { color: IT_VALUE, weight: 700 });
+
+  itLabel(ctx, 'EMISSIONE / ISSUING', 0.328, 0.68);
+  text(ctx, '01.06.2023', 0.328, 0.716, 0.03, { color: IT_VALUE, weight: 700 });
+  itLabel(ctx, 'SCADENZA / EXPIRY', 0.655, 0.68);
+  text(ctx, '15.03.2034', 0.655, 0.716, 0.03, { color: IT_VALUE, weight: 700 });
+
+  // Signature.
+  itLabel(ctx, 'FIRMA DEL TITOLARE', 0.328, 0.77);
+  ctx.strokeStyle = '#18233f';
+  ctx.lineWidth = 5;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  const sx = 0.335 * W, sy = 0.865 * H;
+  ctx.moveTo(sx, sy);
+  for (let i = 0; i <= 50; i++) {
+    const t = i / 50;
+    ctx.lineTo(sx + t * 0.23 * W, sy - Math.sin(t * 12) * 0.03 * H - t * 0.02 * H);
+  }
+  ctx.stroke();
+
+  // CAN.
+  text(ctx, '654321', 0.76, 0.868, 0.055, { color: IT_VALUE, weight: 700, font: MONO });
+
+  // Tricolour line at the bottom.
+  ctx.fillStyle = '#009246';
+  ctx.fillRect(0, 0.93 * H, W / 3, 0.012 * H);
+  ctx.fillStyle = '#ce2b37';
+  ctx.fillRect((2 * W) / 3, 0.93 * H, W / 3, 0.012 * H);
+
+  ctx.save();
+  ctx.translate(0.2 * W, 0.86 * H);
+  ctx.rotate(-0.55);
+  text(ctx, 'FACSIMILE', 0, 0, 0.11, { color: 'rgba(206, 43, 55, 0.18)', weight: 900 });
+  ctx.restore();
+  ctx.restore();
+  return c;
+}
+
+/** Deterministic bars that look like the tax code barcode. */
+function fakeBarcode(ctx: Ctx, x: number, y: number, w: number, h: number) {
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(x, y, w, h);
+  let seed = 7654321;
+  const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648);
+  ctx.fillStyle = '#111111';
+  const pad = w * 0.05;
+  for (let bx = x + pad; bx < x + w - pad; ) {
+    const bar = 2 + Math.floor(rnd() * 3) * 2;
+    ctx.fillRect(bx, y + h * 0.1, bar, h * 0.8);
+    bx += bar + 2 + Math.floor(rnd() * 3) * 2;
+  }
+}
+
+function cieBack(): HTMLCanvasElement {
+  const c = createCanvas(W, H);
+  const ctx = ctx2d(c);
+  cardBase(ctx, ['#e3f0f2', '#f4f8f6', '#e9f2f4', '#f2f4ef']);
+
+  itLabel(ctx, 'COGNOME E NOME DEI GENITORI / PARENTS’ NAMES', 0.05, 0.085);
+  text(ctx, 'VERDI MARIO · BIANCHI ANNA', 0.05, 0.135, 0.036, { color: IT_VALUE, weight: 700 });
+  itLabel(ctx, 'CODICE FISCALE / FISCAL CODE', 0.05, 0.19);
+  text(ctx, 'VRDGLI92C55D612X', 0.05, 0.245, 0.04, { color: IT_VALUE, weight: 700, font: MONO });
+  itLabel(ctx, 'ESTREMI ATTO DI NASCITA', 0.45, 0.19);
+  text(ctx, '00000.0.A00', 0.45, 0.226, 0.032, { color: IT_VALUE, weight: 700 });
+  itLabel(ctx, 'INDIRIZZO DI RESIDENZA / RESIDENCE', 0.05, 0.29);
+  text(ctx, 'VIA DELL’ESEMPIO, 1 · BORGO ESEMPIO', 0.05, 0.328, 0.032, { color: IT_VALUE, weight: 700 });
+
+  ctx.save();
+  ctx.globalAlpha = 0.4;
+  ctx.fillStyle = '#d7dde2';
+  ctx.fillRect(0.82 * W, 0.14 * H, 0.12 * W, 0.23 * H);
+  portrait(ctx, 0.82 * W, 0.14 * H, 0.12 * W, 0.23 * H, '#5b6670');
+  ctx.restore();
+
+  fakeBarcode(ctx, 0.05 * W, 0.475 * H, 0.9 * W, 0.19 * H);
+
+  // Machine readable zone (fictitious data).
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.fillRect(0, 0.7 * H, W, 0.28 * H);
+  const mrz = ['C<ITACA00000ZZ4<<<<<<<<<<<<<<<', '9203151F3403152ITA<<<<<<<<<<<6', 'VERDI<<GIULIA<<<<<<<<<<<<<<<<<'];
+  mrz.forEach((line, i) => text(ctx, line, 0.06, 0.79 + i * 0.075, 0.068, { font: MONO, weight: 700, color: '#20252b' }));
+  ctx.restore();
+  return c;
+}
+
 export function sampleCards(id: DocumentId = 'dni-es'): { front: HTMLCanvasElement; back: HTMLCanvasElement } {
-  return id === 'cni-fr'
-    ? { front: cniFront(), back: cniBack() }
-    : { front: dniFront(), back: dniBack() };
+  switch (id) {
+    case 'cni-fr':
+      return { front: cniFront(), back: cniBack() };
+    case 'cie-it':
+      return { front: cieFront(), back: cieBack() };
+    default:
+      return { front: dniFront(), back: dniBack() };
+  }
 }
