@@ -1,7 +1,7 @@
 {
   "name": "sequrid",
   "private": true,
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Protect a photo of your ID card: cover sensitive data and add a watermark. Everything runs in your browser.",
   "type": "module",
   "license": "AGPL-3.0-or-later",

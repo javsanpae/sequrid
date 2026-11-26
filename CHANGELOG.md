@@ -8,6 +8,20 @@ The released version is the one in the [`VERSION`](VERSION) file.
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-11-26
+
+### Changed
+
+- The app starts with the custom document selected, so it works with any ID
+  from the first moment. Pick your country in the photos panel to get the
+  predefined zones of your document.
+
+### Fixed
+
+- A photo placed in the second document's slot could get the zones of the
+  default document instead of those of the first document's country, because
+  the second document inherited the country only after its zones were set.
+
 ## [0.6.0] - 2026-11-26
 
 ### Added
@@ -18,12 +32,6 @@ The released version is the one in the [`VERSION`](VERSION) file.
   zones you draw. It always comes last in the picker and is offered when a
   search finds nothing.
 - Fictitious generic sample card to try the custom document.
-
-### Changed
-
-- The app starts with the custom document selected, so it works with any ID
-  from the first moment. Pick your country in the photos panel to get the
-  predefined zones of your document.
 
 ### Fixed
 
@@ -199,7 +207,8 @@ The released version is the one in the [`VERSION`](VERSION) file.
   publishing of the image and chart to `ghcr.io`.
 - Licensed under the GNU Affero General Public License v3.0 or later.
 
-[Unreleased]: https://github.com/javsanpae/sequrid/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/javsanpae/sequrid/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/javsanpae/sequrid/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/javsanpae/sequrid/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/javsanpae/sequrid/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/javsanpae/sequrid/compare/v0.3.0...v0.4.0

@@ -53,7 +53,7 @@ docker run -d --name sequrid -p 8080:8080 --read-only --tmpfs /tmp --cap-drop AL
 The chart lives in [`charts/sequrid`](charts/sequrid) and is also published as an OCI artifact with every release:
 
 ```bash
-helm install sequrid oci://ghcr.io/javsanpae/charts/sequrid --version 0.6.0 \
+helm install sequrid oci://ghcr.io/javsanpae/charts/sequrid --version 0.6.1 \
   --set ingress.enabled=true \
   --set ingress.hosts[0].host=sequrid.example.com \
   --set ingress.hosts[0].paths[0].path=/ \
@@ -154,7 +154,7 @@ Only add documents whose layout you have checked against an official specimen.
 
 ### Releasing a version
 
-The version lives in the [`VERSION`](VERSION) file, which only contains the number (for example `0.6.0`). It is the single source of truth: the image, the chart (`version` and `appVersion`) and the git tag take it from there. The versions in `Chart.yaml` and `package.json` are not used for publishing.
+The version lives in the [`VERSION`](VERSION) file, which only contains the number (for example `0.6.1`). It is the single source of truth: the image, the chart (`version` and `appVersion`) and the git tag take it from there. The versions in `Chart.yaml` and `package.json` are not used for publishing.
 
 1. On your branch, bump `VERSION` following [semver](https://semver.org/) and move the `[Unreleased]` entries in [`CHANGELOG.md`](CHANGELOG.md) to a section for the new version.
 2. Merge the pull request into `main`.
