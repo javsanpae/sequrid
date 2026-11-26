@@ -8,6 +8,22 @@ The released version is the one in the [`VERSION`](VERSION) file.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-26
+
+### Added
+
+- "Custom" entry in the country picker for documents that are not in the
+  list yet. It has no predefined fields: the app switches to "Draw" so you
+  mark everything you want to cover, and the protection level is based on the
+  zones you draw. It always comes last in the picker and is offered when a
+  search finds nothing.
+- Fictitious generic sample card to try the custom document.
+
+### Fixed
+
+- Missing comma in the Spanish, French and Italian answer to "Which documents
+  are supported?".
+
 ## [0.5.0] - 2026-11-26
 
 ### Added
@@ -177,7 +193,8 @@ The released version is the one in the [`VERSION`](VERSION) file.
   publishing of the image and chart to `ghcr.io`.
 - Licensed under the GNU Affero General Public License v3.0 or later.
 
-[Unreleased]: https://github.com/javsanpae/sequrid/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/javsanpae/sequrid/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/javsanpae/sequrid/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/javsanpae/sequrid/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/javsanpae/sequrid/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/javsanpae/sequrid/compare/v0.2.0...v0.3.0

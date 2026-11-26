@@ -33,9 +33,12 @@ export const DICTIONARY_TEXT: CatalogText = {
   countryName: (doc, lang) => entry(doc, lang)?.countryName,
 };
 
-/** Country name of a document in a language: Intl, then the dictionary, then the code. */
+/**
+ * Country name of a document in a language: Intl, then the dictionary, then
+ * the code. The custom document's pseudo-country only has a dictionary name.
+ */
 export const documentCountryName = (doc: DocumentInfo, lang: Lang, text: CatalogText = DICTIONARY_TEXT): string =>
-  countryName(doc.country, lang, text.countryName(doc, lang));
+  doc.custom ? (text.countryName(doc, lang) ?? doc.country) : countryName(doc.country, lang, text.countryName(doc, lang));
 
 /** Letters that do not decompose with NFD but that people type without the accent. */
 const FOLD: Record<string, string> = { ß: 'ss', æ: 'ae', œ: 'oe', ø: 'o', ł: 'l', đ: 'd', ð: 'd', þ: 'th', ı: 'i' };
@@ -65,11 +68,11 @@ interface Indexed<D extends DocumentInfo> {
 function index<D extends DocumentInfo>(doc: D, text: CatalogText): Indexed<D> {
   const countries = [
     ...LANGUAGES.map((l) => documentCountryName(doc, l.code, text)),
-    nativeCountryName(doc.country) ?? '',
-    doc.country,
+    doc.custom ? '' : (nativeCountryName(doc.country) ?? ''),
+    doc.custom ? '' : doc.country,
   ];
   const models = LANGUAGES.map((l) => text.modelName(doc, l.code) ?? '');
-  const years = [doc.issuedFrom, doc.issuedUntil ?? ''].map(String);
+  const years = doc.custom ? [] : [doc.issuedFrom, doc.issuedUntil ?? ''].map(String);
   const all = [...countries, doc.short, ...models, ...(doc.aliases ?? []), ...years];
   return {
     doc,
@@ -84,7 +87,7 @@ const isYear = (token: string) => /^\d{4}$/.test(token);
 /** A word matches by prefix; a year also matches every model issued that year. */
 function matches(item: Indexed<DocumentInfo>, token: string): boolean {
   if (item.words.some((w) => w.startsWith(token))) return true;
-  if (!isYear(token)) return false;
+  if (!isYear(token) || item.doc.custom) return false;
   const year = Number(token);
   return year >= item.doc.issuedFrom && year <= (item.doc.issuedUntil ?? Infinity);
 }
@@ -124,7 +127,9 @@ export function groupByCountry<D extends DocumentInfo>(
   const compare = collator(lang);
   const list = [...groups.values()];
   for (const g of list) g.documents.sort(compareModels);
-  return list.sort((a, b) => compare.compare(a.name, b.name) || a.country.localeCompare(b.country));
+  // The custom document is not a country: always last.
+  const isCustom = (g: CountryGroup<D>) => (g.documents.some((d) => d.custom) ? 1 : 0);
+  return list.sort((a, b) => isCustom(a) - isCustom(b) || compare.compare(a.name, b.name) || a.country.localeCompare(b.country));
 }
 
 /**

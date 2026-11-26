@@ -106,7 +106,12 @@
       ]}
     />
     {#if app.coverMode === 'auto'}
-      <p class="help">{t.settings.autoHelp(docPhrase)}</p>
+      {#if !app.activeDocs.every((d) => d.custom)}
+        <p class="help">{t.settings.autoHelp(docPhrase)}</p>
+      {/if}
+      {#if app.activeDocs.some((d) => d.custom)}
+        <p class="note custom-note"><Icon name="pen" size={16} /> <span>{t.settings.customHelp}</span></p>
+      {/if}
       {#each SIDES as side (side)}
         {@const group = entries.filter((e) => e.sides[0] === side)}
         {#if group.length}

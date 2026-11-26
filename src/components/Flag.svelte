@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { CountryCode } from '../lib/documents';
+  import { CUSTOM_COUNTRY, type CountryCode } from '../lib/documents';
+  import Icon from './Icon.svelte';
 
   let { country, size = 20 }: { country: CountryCode; size?: number } = $props();
 
@@ -38,6 +39,11 @@
       <rect width="1.2" height={(7 * 2) / 13} fill="#3c3b6e" />
     {/if}
   </svg>
+{:else if code === CUSTOM_COUNTRY}
+  <!-- Custom document: not a country, so a neutral pen icon instead of a flag. -->
+  <span class="flag badge custom" style:width="{size}px" style:height="{height}px" aria-hidden="true"
+    ><Icon name="pen" size={Math.max(10, Math.round(height * 0.8))} stroke={2.2} /></span
+  >
 {:else}
   <span
     class="flag badge"
@@ -53,6 +59,11 @@
     flex: none;
     border-radius: 3px;
     box-shadow: 0 0 0 1px rgb(0 0 0 / 0.12);
+  }
+  .custom {
+    background: var(--accent-soft);
+    color: var(--accent-text);
+    box-shadow: inset 0 0 0 1px var(--accent);
   }
   .badge {
     display: inline-grid;

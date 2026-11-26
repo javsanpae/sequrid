@@ -125,6 +125,8 @@ class AppState {
       if (this.faces[faceId]) this.resetZones(faceId);
     }
     this.selectedZone = null;
+    // A custom document has no predefined zones: start ready to draw them.
+    if (documentType(id).custom) this.tool = 'draw';
   }
 
   /** Follows the UI language: the default text comes from the current dictionary. */
@@ -153,6 +155,7 @@ class AppState {
     this.selectedZone = null;
     this.zoom = 1;
     if (this.tool === 'frame') this.tool = 'move';
+    if (this.docOf(id).custom) this.tool = 'draw';
   }
 
   removeFace(id: FaceId) {

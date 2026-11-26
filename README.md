@@ -6,7 +6,7 @@ Protect your ID card before sending it: cover the data nobody needs, add a water
 
 ## Features
 
-- **Several countries**: Spanish DNI (2021 model), French carte nationale d'identité (2021 onwards) Italian carta d'identità elettronica (CIE 3.0, current design since 2022), UK photocard driving licence (Great Britain and Northern Ireland) and US passport card. The UK and the US have no national identity card, so these are the cards people use as ID. Each ID has its own country picker, with a search box and documents grouped by country (with room for several models per country), and the zones are placed over the data of that model.
+- **Several countries**: Spanish DNI (2021 model), French carte nationale d'identité (2021 onwards) Italian carta d'identità elettronica (CIE 3.0, current design since 2022), UK photocard driving licence (Great Britain and Northern Ireland) and US passport card. The UK and the US have no national identity card, so these are the cards people use as ID. For anything else, pick **Custom** and draw the zones yourself. Each ID has its own country picker, with a search box and documents grouped by country (with room for several models per country), and the zones are placed over the data of that model.
 - **Up to two IDs** (front and back of each), which can be from different countries. Drop several photos at once and they fill the free slots; you can also paste them with <kbd>Ctrl</kbd>+<kbd>V</kbd> or take the photo with your phone.
 - **What the copy is for**: rental, job, sale, hotel, bank, public administration or other. Each use suggests which fields to cover and the watermark text.
 - **What to cover**, in automatic or manual mode (you draw the zones). In automatic mode, the zones depend on the document:
@@ -53,7 +53,7 @@ docker run -d --name sequrid -p 8080:8080 --read-only --tmpfs /tmp --cap-drop AL
 The chart lives in [`charts/sequrid`](charts/sequrid) and is also published as an OCI artifact with every release:
 
 ```bash
-helm install sequrid oci://ghcr.io/javsanpae/charts/sequrid --version 0.5.0 \
+helm install sequrid oci://ghcr.io/javsanpae/charts/sequrid --version 0.6.0 \
   --set ingress.enabled=true \
   --set ingress.hosts[0].host=sequrid.example.com \
   --set ingress.hosts[0].paths[0].path=/ \
@@ -154,7 +154,7 @@ Only add documents whose layout you have checked against an official specimen.
 
 ### Releasing a version
 
-The version lives in the [`VERSION`](VERSION) file, which only contains the number (for example `0.5.0`). It is the single source of truth: the image, the chart (`version` and `appVersion`) and the git tag take it from there. The versions in `Chart.yaml` and `package.json` are not used for publishing.
+The version lives in the [`VERSION`](VERSION) file, which only contains the number (for example `0.6.0`). It is the single source of truth: the image, the chart (`version` and `appVersion`) and the git tag take it from there. The versions in `Chart.yaml` and `package.json` are not used for publishing.
 
 1. On your branch, bump `VERSION` following [semver](https://semver.org/) and move the `[Unreleased]` entries in [`CHANGELOG.md`](CHANGELOG.md) to a section for the new version.
 2. Merge the pull request into `main`.

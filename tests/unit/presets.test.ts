@@ -6,7 +6,8 @@ import {
   DL_NI,
   DNI_ES,
   PPC_US,
-  DOCUMENTS,
+  CATALOG,
+  CUSTOM_DOC,
   documentKeys,
   documentType,
   ZONE_KEYS,
@@ -19,7 +20,7 @@ import { es } from '../../src/lib/i18n/es';
 import { fr } from '../../src/lib/i18n/fr';
 import { protectionMessage, protectionSummary, selectionFor, usage, USAGES } from '../../src/lib/presets';
 
-describe.each(DOCUMENTS.map((d) => [d.id, d] as const))('%s zone catalog', (_, doc) => {
+describe.each(CATALOG.map((d) => [d.id, d] as const))('%s zone catalog', (_, doc) => {
   it('has unique known keys and rects inside the card', () => {
     const keys = documentKeys(doc);
     expect(new Set(keys).size).toBe(keys.length);
@@ -105,6 +106,13 @@ describe('documents', () => {
     expect(zoneDef('signature', PPC_US)).toBeUndefined();
     expect(zoneSides(zoneDef('number', PPC_US)!)).toEqual(['front', 'back']);
     expect(zoneSides(zoneDef('mrz', PPC_US)!)).toEqual(['back']);
+  });
+
+  it('has a custom document without predefined zones', () => {
+    expect(documentType('custom')).toBe(CUSTOM_DOC);
+    expect(CUSTOM_DOC.custom).toBe(true);
+    expect(CUSTOM_DOC.zones).toEqual([]);
+    expect(CATALOG).not.toContain(CUSTOM_DOC);
   });
 
   it('rejects unknown documents', () => {
@@ -197,6 +205,21 @@ describe('protectionSummary', () => {
     expect(s.level).toBe('low');
     expect(protectionMessage(s, en)).toContain('Without a watermark');
     expect(protectionMessage(s, es)).toContain('Sin marca de agua');
+  });
+
+  it('judges drawn zones when only a custom document is in use', () => {
+    const none = protectionSummary('other', selectionFor('other'), { ...auto, available: [], manualZones: 0 });
+    expect(none.drawn).toBe(true);
+    expect(none.level).toBe('low');
+    expect(protectionMessage(none, en)).toContain('Nothing is covered yet');
+    const two = protectionSummary('other', selectionFor('other'), { ...auto, available: [], manualZones: 2 });
+    expect(two.level).toBe('medium');
+    expect(two.covered).toBe(2);
+    expect(protectionMessage(two, es)).toContain('2 zonas dibujadas');
+    // A real document with nothing recommended (bank on a UK licence) is not "drawn".
+    const bank = protectionSummary('bank', selectionFor('bank'), { ...auto, available: documentKeys(DL_GB) });
+    expect(bank.drawn).toBe(false);
+    expect(bank.total).toBe(0);
   });
 
   it('describes manual mode', () => {

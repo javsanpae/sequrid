@@ -86,6 +86,7 @@ export const en = {
     doc: (n: number) => `Document ${n}`,
     country: (n: number) => `Country of document ${n}`,
     countryChanged: (n: number, name: string) => `Document ${n}: zones placed for ${name}.`,
+    customChosen: (n: number) => `Document ${n}: custom document. Draw over everything you want to cover.`,
     slot: (face: string, loaded: boolean) => `${face}: ${loaded ? 'loaded, press to edit' : 'empty, press to upload'}`,
     secondDoc: 'Add a second document',
     sample: 'Try with a sample',
@@ -110,6 +111,9 @@ export const en = {
     option: (country: string, model: string, years: string, current: boolean) =>
       `${country}, ${model}, ${years}${current ? ', current' : ''}`,
     noResults: (query: string) => `No country or document matches “${query}”`,
+    customHint: 'Not in the list? Use a custom document and draw the zones yourself.',
+    /** Second line of the custom option. */
+    customNote: 'Not in the list · you draw the zones',
     /** Announced to screen readers while typing. */
     results: (count: number) => (count === 0 ? 'No documents found' : count === 1 ? '1 document' : `${count} documents`),
   },
@@ -187,6 +191,7 @@ export const en = {
     alsoOn: (s: Side) => `also on the ${side(s)}`,
     recommended: 'Recommended',
     manualHelp: 'Choose “Draw” in the canvas toolbar and mark everything you want to cover with your mouse or finger.',
+    customHelp: 'This document has no predefined fields. Choose “Draw” in the canvas toolbar and mark everything you want to cover.',
     coverStyle: 'How to cover',
     black: 'Black',
     pixelate: 'Pixelate',
@@ -229,6 +234,10 @@ export const en = {
     manual: (zones: number) =>
       `Manual mode: ${zones === 1 ? '1 zone drawn' : `${zones} zones drawn`}. Check that they cover what you want.`,
     addWatermark: 'Add the watermark.',
+    drawn: (zones: number) =>
+      zones === 0
+        ? 'Nothing is covered yet: draw over every detail you want to hide.'
+        : `${zones === 1 ? '1 zone drawn' : `${zones} zones drawn`}. Check that they cover what you want.`,
     covered: (covered: number, total: number, use: string) =>
       `You have covered ${covered} of ${total} recommended details for ${use}.`,
     noWatermark: 'Without a watermark, the copy can be used for anything.',
@@ -496,6 +505,16 @@ export const en = {
         mrz: { label: 'MRZ (bottom lines)', hint: 'The three machine-readable lines repeat the number, the dates and the name.' },
       },
     },
+    custom: {
+      countryName: 'Custom',
+      the: 'the document',
+      name: 'Other document',
+      sides: {
+        front: { label: 'Front', hint: 'First side' },
+        back: { label: 'Back', hint: 'Second side, if any' },
+      },
+      zones: {},
+    },
   } satisfies Record<DocumentId, DocumentText>,
 
   usages: {
@@ -604,7 +623,7 @@ export const en = {
         },
         {
           q: 'Which documents are supported?',
-          a: 'The Spanish DNI (2021 model), the French national identity card (since 2021), the Italian electronic identity card (CIE 3.0, since 2022), the UK photocard driving licence (Great Britain and Northern Ireland, since 2021) and the US passport card. The UK and the US have no national identity card, so these are the cards people use as ID. Choose the country of each document in the photos panel and the zones are placed over its details. More countries will follow.',
+          a: 'The Spanish DNI (2021 model), the French national identity card (since 2021), the Italian electronic identity card (CIE 3.0, since 2022), the UK photocard driving licence (Great Britain and Northern Ireland, since 2021) and the US passport card. The UK and the US have no national identity card, so these are the cards people use as ID. Choose the country of each document in the photos panel and the zones are placed over its details. More countries will follow. If yours is not in the list, choose “Custom” and draw the zones yourself.',
         },
         {
           q: 'Does it work on a phone and offline?',

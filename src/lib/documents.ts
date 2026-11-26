@@ -68,7 +68,13 @@ export interface ZoneDef {
  * any nation can be added without touching this type.
  */
 export type CountryCode = string;
-export type DocumentId = 'dni-es' | 'cni-fr' | 'cie-it' | 'dl-gb' | 'dl-ni' | 'ppc-us';
+export type DocumentId = 'dni-es' | 'cni-fr' | 'cie-it' | 'dl-gb' | 'dl-ni' | 'ppc-us' | 'custom';
+
+/**
+ * Pseudo-country of the custom document. ZZ is user-assigned in ISO 3166-1
+ * ("unknown or unspecified"), so it never clashes with a real nation.
+ */
+export const CUSTOM_COUNTRY: CountryCode = 'ZZ';
 
 /**
  * What the picker needs to list and search a document model. Countries can
@@ -85,6 +91,11 @@ export interface DocumentInfo {
   issuedUntil?: number;
   /** Extra search terms: official names, nicknames, older spellings. */
   aliases?: readonly string[];
+  /**
+   * A placeholder for any document not in the catalog: no predefined zones,
+   * no years, listed last in the picker and offered when a search finds nothing.
+   */
+  custom?: boolean;
 }
 
 export interface DocumentType extends DocumentInfo {
@@ -316,7 +327,37 @@ export const PPC_US: DocumentType = {
   ],
 };
 
-export const DOCUMENTS: DocumentType[] = [DNI_ES, CNI_FR, CIE_IT, DL_GB, DL_NI, PPC_US];
+/**
+ * Any document that is not in the list yet: the user draws the zones. ID-1
+ * size is assumed for the "real size" PDF; other formats can use "Enlarged".
+ */
+export const CUSTOM_DOC: DocumentType = {
+  id: 'custom',
+  country: CUSTOM_COUNTRY,
+  short: 'ID',
+  issuedFrom: 0,
+  custom: true,
+  aliases: [
+    'custom',
+    'other',
+    'unlisted',
+    'manual',
+    'personalizado',
+    'otro',
+    'personnalisé',
+    'autre',
+    'personalizzato',
+    'altro',
+  ],
+  widthMm: 85.6,
+  heightMm: 53.98,
+  zones: [],
+};
+
+export const DOCUMENTS: DocumentType[] = [DNI_ES, CNI_FR, CIE_IT, DL_GB, DL_NI, PPC_US, CUSTOM_DOC];
+
+/** Documents with a real catalog entry (measured zones), without the custom placeholder. */
+export const CATALOG: DocumentType[] = DOCUMENTS.filter((d) => !d.custom);
 
 /** True while the model is still being issued. */
 export const isCurrent = (doc: DocumentInfo): boolean => doc.issuedUntil === undefined;

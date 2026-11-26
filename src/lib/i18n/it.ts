@@ -52,6 +52,7 @@ export const it: Messages = {
     doc: (n) => `Documento ${n}`,
     country: (n) => `Paese del documento ${n}`,
     countryChanged: (n, name) => `Documento ${n}: zone posizionate per ${name}.`,
+    customChosen: (n) => `Documento ${n}: documento personalizzato. Disegna sopra tutto quello che vuoi oscurare.`,
     slot: (face, loaded) => `${face}: ${loaded ? 'foto caricata, premi per modificarla' : 'nessuna foto, premi per caricarla'}`,
     secondDoc: 'Aggiungi un secondo documento',
     sample: 'Prova con un esempio',
@@ -69,6 +70,8 @@ export const it: Messages = {
     years: (from, until) => (from === until ? `${from}` : `${from}–${until}`),
     option: (country, model, years, current) => `${country}, ${model}, ${years}${current ? ', modello attuale' : ''}`,
     noResults: (query) => `Nessun paese o documento corrisponde a “${query}”`,
+    customHint: 'Non è nell’elenco? Usa un documento personalizzato e disegna tu le zone.',
+    customNote: 'Non è nell’elenco · le zone le disegni tu',
     results: (count) => (count === 0 ? 'Nessun documento trovato' : count === 1 ? '1 documento' : `${count} documenti`),
   },
 
@@ -145,6 +148,7 @@ export const it: Messages = {
     alsoOn: (s) => `anche sul ${side(s)}`,
     recommended: 'Consigliato',
     manualHelp: 'Scegli “Disegna” nella barra degli strumenti e segna con il mouse o con il dito tutto ciò che vuoi oscurare.',
+    customHelp: 'Questo documento non ha campi predefiniti. Scegli “Disegna” nella barra degli strumenti e traccia tutto quello che vuoi oscurare.',
     coverStyle: 'Come oscurare',
     black: 'Nero',
     pixelate: 'Pixelato',
@@ -187,6 +191,10 @@ export const it: Messages = {
     manual: (zones) =>
       `Modalità manuale: ${zones === 1 ? '1 zona disegnata' : `${zones} zone disegnate`}. Controlla che coprano ciò che vuoi.`,
     addWatermark: 'Aggiungi la filigrana.',
+    drawn: (zones) =>
+      zones === 0
+        ? 'Non è ancora oscurato nulla: disegna sopra ogni dato che vuoi nascondere.'
+        : `${zones === 1 ? '1 zona disegnata' : `${zones} zone disegnate`}. Controlla che coprano quello che vuoi.`,
     covered: (covered, total, use) => `Hai oscurato ${covered} dei ${total} dati consigliati per ${use}.`,
     noWatermark: 'Senza filigrana, la copia può essere usata per qualsiasi scopo.',
   },
@@ -464,6 +472,16 @@ export const it: Messages = {
         mrz: { label: 'Zona MRZ (righe in basso)', hint: 'Le tre righe a lettura ottica ripetono il numero, le date e il nome.' },
       },
     },
+    custom: {
+      countryName: 'Personalizzato',
+      the: 'del documento',
+      name: 'Altro documento',
+      sides: {
+        front: { label: 'Fronte', hint: 'Prima faccia' },
+        back: { label: 'Retro', hint: 'Seconda faccia, se c’è' },
+      },
+      zones: {},
+    },
   },
 
   usages: {
@@ -572,7 +590,7 @@ export const it: Messages = {
         },
         {
           q: 'Quali documenti sono supportati?',
-          a: 'Il DNI spagnolo (modello 2021), la carta d’identità francese (dal 2021) la carta d’identità elettronica italiana (CIE 3.0, dal 2022), la patente di guida britannica con foto (Gran Bretagna e Irlanda del Nord, dal 2021) e la carta passaporto statunitense (passport card). Il Regno Unito e gli Stati Uniti non hanno una carta d’identità nazionale, quindi queste sono le tessere che si usano come documento d’identità. Scegli il paese di ogni documento nel pannello delle foto e le zone vengono posizionate sui suoi dati. Altri paesi arriveranno in seguito.',
+          a: 'Il DNI spagnolo (modello 2021), la carta d’identità francese (dal 2021), la carta d’identità elettronica italiana (CIE 3.0, dal 2022), la patente di guida britannica con foto (Gran Bretagna e Irlanda del Nord, dal 2021) e la carta passaporto statunitense (passport card). Il Regno Unito e gli Stati Uniti non hanno una carta d’identità nazionale, quindi queste sono le tessere che si usano come documento d’identità. Scegli il paese di ogni documento nel pannello delle foto e le zone vengono posizionate sui suoi dati. Altri paesi arriveranno in seguito. Se il tuo non è nell’elenco, scegli “Personalizzato” e disegna tu le zone.',
         },
         {
           q: 'Funziona sul telefono e offline?',

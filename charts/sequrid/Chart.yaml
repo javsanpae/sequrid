@@ -3,8 +3,8 @@ name: sequrid
 description: Protect a photo of your ID card by covering sensitive data and adding a watermark. Everything runs in the browser; the server only serves static files.
 type: application
 # CI overrides both with the contents of the VERSION file when publishing.
-version: 0.5.0
-appVersion: "0.5.0"
+version: 0.6.0
+appVersion: "0.6.0"
 kubeVersion: ">=1.25.0-0"
 home: https://github.com/javsanpae/sequrid
 sources:

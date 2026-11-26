@@ -72,11 +72,11 @@ describe('normalizeText', () => {
 describe('searchDocuments with the real catalog', () => {
   it('returns everything, grouped and sorted by localized name, for an empty query', () => {
     // France, Italy, Spain, United Kingdom, United States
-    expect(countries(search(''))).toEqual(['FR', 'IT', 'ES', 'GB', 'US']);
+    expect(countries(search(''))).toEqual(['FR', 'IT', 'ES', 'GB', 'US', 'ZZ']);
     // España, Estados Unidos, Francia, Italia, Reino Unido
-    expect(countries(search('   ', 'es'))).toEqual(['ES', 'US', 'FR', 'IT', 'GB']);
+    expect(countries(search('   ', 'es'))).toEqual(['ES', 'US', 'FR', 'IT', 'GB', 'ZZ']);
     // Espagne, États-Unis, France, Italie, Royaume-Uni
-    expect(countries(search('', 'fr'))).toEqual(['ES', 'US', 'FR', 'IT', 'GB']);
+    expect(countries(search('', 'fr'))).toEqual(['ES', 'US', 'FR', 'IT', 'GB', 'ZZ']);
     expect(search('')[0].name).toBe('France');
   });
 
@@ -117,6 +117,18 @@ describe('searchDocuments with the real catalog', () => {
     expect(ids(search('DVLA'))).toEqual(['dl-gb']);
     expect(ids(search('northern ireland'))).toEqual(['dl-ni']);
     expect(ids(search('scotland'))).toEqual(['dl-gb']);
+  });
+
+  it('finds the custom document by its own words only, and lists it last', () => {
+    for (const q of ['custom', 'other', 'personalizado', 'otro', 'personnalisé', 'autre', 'personalizzato', 'altro']) {
+      expect(ids(search(q)), q).toEqual(['custom']);
+    }
+    // Not a country: no ISO code, no years.
+    expect(ids(search('zz'))).toEqual([]);
+    expect(ids(search('2021'))).not.toContain('custom');
+    const all = search('');
+    expect(all[all.length - 1].name).toBe('Custom');
+    expect(search('', 'es').at(-1)!.name).toBe('Personalizado');
   });
 
   it('finds the US passport card', () => {
