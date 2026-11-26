@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { zoneLabel } from '../lib/documents';
   import { renderSettings } from '../lib/export';
+  import { m } from '../lib/i18n/index.svelte';
+  import { zoneLabel } from '../lib/i18n/text';
   import { clamp, clampRect, moveRect, rectFromPoints, resizeRect, type Handle, type Rect } from '../lib/geometry';
   import { renderOriginal, renderProtected, rotatedImage } from '../lib/render';
   import { app, newZoneId, type FaceId, type ZoneInstance } from '../lib/state.svelte';
@@ -43,7 +44,7 @@
   const zones = $derived(framing ? [] : app.visibleZones(face));
   const selected = $derived(zones.find((z) => z.id === app.selectedZone) ?? null);
 
-  const labelOf = (z: ZoneInstance) => (z.key ? zoneLabel(z.key, app.docOf(faceId)) : 'Zona propia');
+  const labelOf = (z: ZoneInstance, t = m()) => (z.key ? zoneLabel(t, z.key, app.docOf(faceId)) : t.stage.customZone);
 
   type Drag =
     | { kind: 'move' | 'resize' | 'draw'; zone: ZoneInstance; handle?: Handle; sx: number; sy: number; start: Rect }
@@ -124,7 +125,7 @@
     if (drag?.kind === 'draw') {
       const r = drag.zone.rect;
       if (r.w < 0.012 || r.h < 0.012) app.removeZone(faceId, drag.zone.id);
-      else app.status = 'Zona añadida. Arrástrala para moverla o usa las esquinas para ajustarla.';
+      else app.status = (t) => t.status.zoneAdded;
     }
     drag = null;
     dragging = false;
@@ -137,8 +138,9 @@
       const next = i === -1 ? (e.shiftKey ? zones.length - 1 : 0) : i + (e.shiftKey ? -1 : 1);
       if (next >= 0 && next < zones.length) {
         e.preventDefault();
-        app.selectedZone = zones[next].id;
-        app.status = `${labelOf(zones[next])} seleccionada.`;
+        const zone = zones[next];
+        app.selectedZone = zone.id;
+        app.status = (t) => t.status.zoneSelected(labelOf(zone, t));
       } else {
         app.selectedZone = null;
       }
@@ -181,9 +183,7 @@
       class:dragging
       role="application"
       tabindex="0"
-      aria-label={framing
-        ? 'Encuadre: arrastra el marco hasta los bordes de la tarjeta'
-        : 'Lienzo de edición. Tab recorre las zonas, flechas para moverlas, Mayús más flechas para cambiar su tamaño y Supr para quitarlas.'}
+      aria-label={framing ? m().stage.framingLabel : m().stage.canvasLabel}
       onpointerdown={onOverlayDown}
       onpointermove={onMove}
       onpointerup={onUp}
@@ -193,7 +193,7 @@
       {#if framing}
         <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div class="frame" style={pct(face.frame)} onpointerdown={(e) => onFrameDown(e)}>
-          <span class="frame-tip">Ajusta el marco a los bordes de la tarjeta</span>
+          <span class="frame-tip">{m().stage.frameTip}</span>
           {#each ALL as h (h)}
             <!-- svelte-ignore a11y_no_static_element_interactions -->
             <span class="handle h-{h}" onpointerdown={(e) => onFrameDown(e, h)}></span>
@@ -215,7 +215,7 @@
               <button
                 type="button"
                 class="remove"
-                aria-label="Quitar {labelOf(z)}"
+                aria-label={m().stage.remove(labelOf(z))}
                 onpointerdown={(e) => e.stopPropagation()}
                 onclick={() => app.removeZone(faceId, z.id)}><Icon name="x" size={12} stroke={3} /></button
               >

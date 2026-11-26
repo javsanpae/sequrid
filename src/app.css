@@ -14,9 +14,9 @@
   --accent-text: #0a5c55;
   --on-accent: #ffffff;
   --danger: #c2410c;
-  --level-baja: #dc2626;
-  --level-media: #d97706;
-  --level-alta: #059669;
+  --level-low: #dc2626;
+  --level-medium: #d97706;
+  --level-high: #059669;
   --focus: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
   --radius: 16px;
   --radius-sm: 10px;

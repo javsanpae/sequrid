@@ -1,6 +1,7 @@
 <script lang="ts">
   import { renderSettings } from '../lib/export';
   import { clamp } from '../lib/geometry';
+  import { m } from '../lib/i18n/index.svelte';
   import { renderOriginal, renderProtected, rotatedImage } from '../lib/render';
   import { app, type FaceId } from '../lib/state.svelte';
 
@@ -53,17 +54,17 @@
     onpointerup={() => (dragging = false)}
     onpointercancel={() => (dragging = false)}
   >
-    <canvas bind:this={before} aria-label="Foto original"></canvas>
-    <canvas bind:this={after} class="after" style:clip-path="inset(0 0 0 {pos}%)" aria-label="Copia protegida"></canvas>
-    <span class="label left">Original</span>
-    <span class="label right">Protegida</span>
+    <canvas bind:this={before} aria-label={m().compare.originalLabel}></canvas>
+    <canvas bind:this={after} class="after" style:clip-path="inset(0 0 0 {pos}%)" aria-label={m().compare.protectedLabel}></canvas>
+    <span class="label left">{m().compare.original}</span>
+    <span class="label right">{m().compare.protected}</span>
     <span class="divider" style:left="{pos}%"><span class="knob" aria-hidden="true">‹ ›</span></span>
   </div>
   <label class="range">
-    <span class="sr-only">Posición del comparador</span>
+    <span class="sr-only">{m().compare.position}</span>
     <input type="range" min="0" max="100" bind:value={pos} />
   </label>
-  <p class="hint">Desliza para comparar la foto original con la copia protegida.</p>
+  <p class="hint">{m().compare.hint}</p>
 </div>
 
 <style>

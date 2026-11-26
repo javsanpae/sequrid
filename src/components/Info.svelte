@@ -1,61 +1,24 @@
 <script lang="ts">
-  import { DNI_ES, KEY_LABELS } from '../lib/documents';
+  import { DNI_ES, type ZoneKey } from '../lib/documents';
+  import { getLang, m } from '../lib/i18n/index.svelte';
+  import { zoneText } from '../lib/i18n/text';
   import { USAGES } from '../lib/presets';
   import { SOURCE_URL } from '../lib/config';
   import Icon from './Icon.svelte';
+  import Rich from './Rich.svelte';
 
-  const keyZones = DNI_ES.zones.filter((z) => ['soporte', 'nacimiento', 'firma', 'can', 'mrz', 'numero'].includes(z.key));
-
-  const faqs = [
-    {
-      q: '¿La foto de mi DNI se sube a algún servidor?',
-      a: 'No. La imagen se abre y se procesa dentro de tu navegador. El servidor solo entrega los archivos de la página, y su política de seguridad (CSP) prohíbe al navegador conectarse a ningún sitio: aunque quisiera, la página no podría enviar tu foto.',
-    },
-    {
-      q: '¿Se guarda algo?',
-      a: 'Nada de tus fotos ni de tus ajustes. Al recargar la página todo empieza de cero. Lo único que se recuerda es si prefieres el tema claro u oscuro.',
-    },
-    {
-      q: '¿Pixelar o desenfocar es tan seguro como tapar en negro?',
-      a: 'El negro es lo más seguro porque elimina por completo la información. El pixelado y el desenfoque de Sequrid usan bloques grandes para que el texto no se pueda reconstruir, pero si dudas, usa negro.',
-    },
-    {
-      q: '¿Para qué sirve la marca de agua con fecha y destinatario?',
-      a: 'Deja claro para quién y cuándo se hizo la copia. Si alguien la reutiliza para otra cosa, la marca lo delata y la copia pierde valor para un estafador.',
-    },
-    {
-      q: '¿Qué es el CAN del DNI?',
-      a: 'Son seis cifras en la esquina inferior derecha del anverso que permiten leer el chip por NFC. Nadie que reciba una copia lo necesita.',
-    },
-    {
-      q: '¿Es legal enviar una copia del DNI con datos tapados?',
-      a: 'Sí. Es tu documento y puedes decidir qué datos compartir. Si quien lo pide necesita algún dato concreto, destápalo solo para esa copia y deja la marca de agua.',
-    },
-    {
-      q: '¿Puedo juntar dos documentos en el mismo PDF?',
-      a: 'Sí. Activa «Añadir un segundo documento» y tendrás cuatro huecos; cada documento puede ser de un país distinto. El PDF coloca cada uno en una fila con sus dos caras.',
-    },
-    {
-      q: '¿Qué documentos admite?',
-      a: "El DNI español (modelo 2021) y la carte nationale d'identité francesa (desde 2021). Elige el país de cada documento en el panel de fotos y las zonas se colocan sobre sus datos. Iremos añadiendo más países.",
-    },
-    {
-      q: '¿Funciona en el móvil y sin conexión?',
-      a: 'Sí. En el móvil puedes hacer la foto directamente. Y una vez cargada la página, puedes activar el modo avión: todo sigue funcionando porque no necesita la red.',
-    },
-    {
-      q: '¿Puedo instalarlo en mi propio servidor?',
-      a: 'Sí, ese es el objetivo: es código abierto y se distribuye como imagen Docker y chart de Helm. Así puedes revisar exactamente qué hace y servirlo tú mismo.',
-    },
-  ];
+  const KEY_ZONES: ZoneKey[] = ['serial', 'birthDate', 'signature', 'can', 'mrz', 'number'];
+  const keyZones = DNI_ES.zones.filter((z) => KEY_ZONES.includes(z.key)).map((z) => z.key);
+  const t = $derived(m());
 </script>
 
-<section id="que-tapar" class="block">
-  <p class="eyebrow">Anverso y reverso</p>
-  <h2>Qué datos del DNI conviene tapar</h2>
-  <p class="lead">No todos los datos valen lo mismo para quien quiere hacerse pasar por ti. Estos son los que más se aprovechan y los que menos falta hacen en una copia.</p>
+<section id="what-to-cover" class="block">
+  <p class="eyebrow">{t.info.cover.eyebrow}</p>
+  <h2>{t.info.cover.title}</h2>
+  <p class="lead">{t.info.cover.lead}</p>
   <div class="grid cards">
-    {#each keyZones as z (z.key)}
+    {#each keyZones as key (key)}
+      {@const z = zoneText(t, key, DNI_ES)}
       <article class="mini">
         <h3>{z.label}</h3>
         <p>{z.hint}</p>
@@ -65,55 +28,55 @@
 </section>
 
 <section class="block">
-  <p class="eyebrow">Según el trámite</p>
-  <h2>Qué dejar visible según para qué es la copia</h2>
+  <p class="eyebrow">{t.info.usage.eyebrow}</p>
+  <h2>{t.info.usage.title}</h2>
   <div class="table-wrap">
     <table>
       <thead>
-        <tr><th scope="col">Uso</th><th scope="col">Se tapa</th><th scope="col">Marca de agua</th></tr>
+        <tr><th scope="col">{t.info.usage.use}</th><th scope="col">{t.info.usage.covered}</th><th scope="col">{t.info.usage.watermark}</th></tr>
       </thead>
       <tbody>
-        {#each USAGES.filter((u) => u.id !== 'otro') as u (u.id)}
+        {#each USAGES.filter((u) => u.id !== 'other') as u (u.id)}
           <tr>
-            <th scope="row">{u.label}</th>
-            <td>{u.cover.map((k) => KEY_LABELS[k]).join(', ')}</td>
-            <td><code>{u.watermark.toLocaleUpperCase('es-ES')}</code></td>
+            <th scope="row">{t.usages[u.id].label}</th>
+            <td>{u.cover.map((k) => t.fields[k]).join(', ')}</td>
+            <td><code>{t.usages[u.id].watermark.toLocaleUpperCase(getLang())}</code></td>
           </tr>
         {/each}
       </tbody>
     </table>
   </div>
-  <p class="small">Cada documento solo tapa los datos que tiene: el código 2D-Doc y la estatura, por ejemplo, solo existen en la carta francesa. Es una orientación. Si quien te pide la copia necesita algún dato más, destápalo solo para él y deja la marca de agua.</p>
+  <p class="small">{t.info.usage.note}</p>
 </section>
 
-<section id="privacidad" class="block privacy">
+<section id="privacy" class="block privacy">
   <div>
-    <p class="eyebrow">Sin servidores de por medio</p>
-    <h2>Tu DNI no sale de tu dispositivo. Compruébalo.</h2>
-    <p class="lead">Sequrid funciona entero en tu navegador. La foto se lee del archivo, se dibuja en un lienzo, se tapa y se convierte a PDF o JPG ahí mismo.</p>
+    <p class="eyebrow">{t.info.privacy.eyebrow}</p>
+    <h2>{t.info.privacy.title}</h2>
+    <p class="lead">{t.info.privacy.lead}</p>
   </div>
   <ol class="steps">
-    <li><span><Icon name="file" size={18} /></span>Abre esta página y espera a que cargue.</li>
-    <li><span><Icon name="wifiOff" size={18} /></span>Activa el modo avión o desconecta la red.</li>
-    <li><span><Icon name="shieldCheck" size={18} /></span>Protege tu DNI y descarga el PDF. Funciona igual.</li>
+    <li><span><Icon name="file" size={18} /></span>{t.info.privacy.steps[0]}</li>
+    <li><span><Icon name="wifiOff" size={18} /></span>{t.info.privacy.steps[1]}</li>
+    <li><span><Icon name="shieldCheck" size={18} /></span>{t.info.privacy.steps[2]}</li>
   </ol>
   <p class="small">
-    Además, el servidor envía la cabecera <code>Content-Security-Policy: connect-src 'none'</code>, que impide al navegador hacer cualquier petición desde la página. El código es abierto: <a href={SOURCE_URL} target="_blank" rel="noopener noreferrer">revísalo tú mismo</a>.
+    <Rich text={t.info.privacy.csp} /><a href={SOURCE_URL} target="_blank" rel="noopener noreferrer">{t.info.privacy.cspLink}</a>{t.info.privacy.cspEnd}
   </p>
 </section>
 
-<section id="preguntas" class="block">
-  <p class="eyebrow">Dudas habituales</p>
-  <h2>Preguntas frecuentes</h2>
+<section id="faq" class="block">
+  <p class="eyebrow">{t.info.faq.eyebrow}</p>
+  <h2>{t.info.faq.title}</h2>
   <div class="faq">
-    {#each faqs as f, i (i)}
+    {#each t.info.faq.items as f, i (i)}
       <details>
         <summary>{f.q}<Icon name="chevron" size={18} /></summary>
         <p>{f.a}</p>
       </details>
     {/each}
   </div>
-  <p class="small">¿Te han suplantado? En España puedes llamar gratis al <strong>017</strong>, la línea de ayuda en ciberseguridad de INCIBE.</p>
+  <p class="small"><Rich text={t.info.faq.help} /></p>
 </section>
 
 <style>
@@ -192,7 +155,8 @@
   tbody tr:last-child > * {
     border-bottom: 0;
   }
-  code {
+  code,
+  .small :global(code) {
     font: 600 11.5px var(--mono);
     padding: 2px 6px;
     border-radius: 6px;

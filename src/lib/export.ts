@@ -1,3 +1,5 @@
+import { m } from './i18n/index.svelte';
+import { downloadBase, faceFileName } from './i18n/text';
 import { buildPdf, layoutPages, type PdfImage } from './pdf';
 import { canvasToBlob, createCanvas, ctx2d, downloadBlob } from './image';
 import { renderProtected, type RenderSettings } from './render';
@@ -24,13 +26,9 @@ export function renderForExport(id: FaceId): HTMLCanvasElement | null {
   return face ? renderProtected(face, renderSettings(face), EXPORT_WIDTH) : null;
 }
 
-/** "dni-protegido", "cni-protegido", or "documento-protegido" when countries are mixed. */
-const fileBase = () => {
-  const docs = app.activeDocs;
-  return `${docs.length === 1 ? docs[0].short.toLowerCase() : 'documento'}-protegido`;
-};
-const faceFile = (id: FaceId) =>
-  `${fileBase()}-${app.docOf(id).short.toLowerCase()}${FACE_META[id].doc}-${FACE_META[id].side}`;
+/** Localized file names: "dni-protected", "cni-protege", "document-protected" when countries are mixed. */
+const fileBase = () => downloadBase(m(), app.activeDocs);
+const faceFile = (id: FaceId) => faceFileName(m(), app.activeDocs, app.docOf(id), FACE_META[id].doc, FACE_META[id].side);
 
 export async function downloadPdf(): Promise<void> {
   const ids = app.loaded;

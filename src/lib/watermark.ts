@@ -30,15 +30,18 @@ export function todayIso(now: Date = new Date()): string {
   return `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}`;
 }
 
-/** Builds the watermark line: "SOLO PARA ALQUILER · INMOBILIARIA SOL · 26/11/2026". */
-export function composeWatermark(base: string, recipient: string, isoDate: string, custom = ''): string {
+/**
+ * Builds the watermark line: "ONLY FOR A RENTAL · SUNRISE LETTINGS · 26/11/2026".
+ * The date is always dd/mm/yyyy; `locale` only drives the uppercasing.
+ */
+export function composeWatermark(base: string, recipient: string, isoDate: string, custom = '', locale = 'en'): string {
   const own = custom.replace(/\s+/g, ' ').trim();
-  if (own) return own.toLocaleUpperCase('es-ES');
+  if (own) return own.toLocaleUpperCase(locale);
   return [base, recipient, formatDate(isoDate)]
     .map((s) => s.replace(/\s+/g, ' ').trim())
     .filter(Boolean)
     .join(' · ')
-    .toLocaleUpperCase('es-ES');
+    .toLocaleUpperCase(locale);
 }
 
 export interface WatermarkLayout {

@@ -1,80 +1,27 @@
 import { ZONE_KEYS, type ZoneKey } from './documents';
+import type { Messages } from './i18n/en';
 
-export type UsageId = 'otro' | 'alquiler' | 'trabajo' | 'compraventa' | 'hotel' | 'banco' | 'administracion';
+export type UsageId = 'other' | 'rental' | 'job' | 'sale' | 'hotel' | 'bank' | 'government';
 
+/** What a usage covers. Its label, note and watermark text live in the i18n dictionaries. */
 export interface UsagePreset {
   id: UsageId;
-  label: string;
-  /** Short name used in sentences ("recomendados para …"). */
-  short: string;
-  /** Default watermark text, before recipient and date. */
-  watermark: string;
   /** Zones that are covered by default for this use. */
   cover: ZoneKey[];
-  note: string;
 }
 
 // Keys a document does not have are simply ignored (e.g. the 2D-Doc seal on a DNI).
-const PRUDENT: ZoneKey[] = ['soporte', 'nacimiento', 'firma', 'can', 'lugar', 'padres', 'altura', 'sello', 'mrz'];
-const STRICT: ZoneKey[] = ['numero', ...PRUDENT, 'domicilio'];
+const PRUDENT: ZoneKey[] = ['serial', 'birthDate', 'signature', 'can', 'birthPlace', 'parents', 'height', 'seal', 'mrz'];
+const STRICT: ZoneKey[] = ['number', ...PRUDENT, 'address'];
 
 export const USAGES: UsagePreset[] = [
-  {
-    id: 'otro',
-    label: 'Otro / no lo tengo claro',
-    short: 'cualquier uso',
-    watermark: 'Copia de uso limitado',
-    cover: PRUDENT,
-    note: 'Opción prudente: se tapa lo que casi nunca hace falta. Si te rechazan la copia, destapa solo lo que te pidan.',
-  },
-  {
-    id: 'alquiler',
-    label: 'Alquiler de vivienda',
-    short: 'alquiler',
-    watermark: 'Solo para alquiler',
-    cover: PRUDENT,
-    note: 'Para alquilar suelen bastar el nombre, el número de documento y la foto. Lo demás se tapa.',
-  },
-  {
-    id: 'trabajo',
-    label: 'Oferta de trabajo o selección',
-    short: 'proceso de selección',
-    watermark: 'Solo para proceso de selección',
-    cover: STRICT,
-    note: 'Nadie necesita tu documento antes de firmar un contrato. Si te lo piden antes de la entrevista, desconfía: solo quedan visibles nombre y foto.',
-  },
-  {
-    id: 'compraventa',
-    label: 'Compraventa (Wallapop, Vinted…)',
-    short: 'compraventa',
-    watermark: 'Solo para verificar compraventa',
-    cover: STRICT,
-    note: 'Un comprador o vendedor particular no necesita tu documento. Que insista en verlo es una señal típica de estafa.',
-  },
-  {
-    id: 'hotel',
-    label: 'Hotel o alojamiento',
-    short: 'hotel',
-    watermark: 'Solo para registro de viajeros',
-    cover: ['firma', 'can', 'lugar', 'padres', 'altura', 'sello', 'mrz'],
-    note: 'El registro de viajeros pide número, soporte, fecha de nacimiento y domicilio, así que se quedan visibles.',
-  },
-  {
-    id: 'banco',
-    label: 'Banco o financiera',
-    short: 'banco',
-    watermark: 'Solo para identificación bancaria',
-    cover: ['can'],
-    note: 'Los bancos deben identificarte con el documento completo. Tu protección aquí es la marca de agua.',
-  },
-  {
-    id: 'administracion',
-    label: 'Administración pública',
-    short: 'trámite administrativo',
-    watermark: 'Solo para trámite administrativo',
-    cover: ['can'],
-    note: 'La Administración suele necesitar la copia completa. Solo se tapa el CAN y se deja claro el uso.',
-  },
+  { id: 'other', cover: PRUDENT },
+  { id: 'rental', cover: PRUDENT },
+  { id: 'job', cover: STRICT },
+  { id: 'sale', cover: STRICT },
+  { id: 'hotel', cover: ['signature', 'can', 'birthPlace', 'parents', 'height', 'seal', 'mrz'] },
+  { id: 'bank', cover: ['can'] },
+  { id: 'government', cover: ['can'] },
 ];
 
 export function usage(id: UsageId): UsagePreset {
@@ -91,15 +38,18 @@ export function selectionFor(id: UsageId): CoverSelection {
   return Object.fromEntries(ZONE_KEYS.map((k) => [k, rec.has(k)])) as CoverSelection;
 }
 
-export type ProtectionLevel = 'baja' | 'media' | 'alta';
+export type ProtectionLevel = 'low' | 'medium' | 'high';
 
 export interface ProtectionSummary {
+  usage: UsageId;
+  manual: boolean;
+  watermark: boolean;
+  /** Recommended fields covered, or zones drawn in manual mode. */
   covered: number;
   total: number;
   /** 0..1 */
   score: number;
   level: ProtectionLevel;
-  message: string;
 }
 
 /**
@@ -122,24 +72,23 @@ export function protectionSummary(
   const recommended = preset.cover.filter((k) => available.has(k));
   const total = recommended.length;
   const wm = opts.watermark ? 0.2 : 0;
+  const base = { usage: id, manual: opts.manual, watermark: opts.watermark, total };
 
   if (opts.manual) {
     const score = Math.min(1, wm + (opts.manualZones > 0 ? 0.4 : 0));
-    const zones = opts.manualZones === 1 ? '1 zona dibujada' : `${opts.manualZones} zonas dibujadas`;
-    return {
-      covered: opts.manualZones,
-      total,
-      score,
-      level: score >= 0.6 ? 'media' : 'baja',
-      message: `Modo manual: ${zones}. Revisa que tapan lo que quieres.${opts.watermark ? '' : ' Añade la marca de agua.'}`,
-    };
+    return { ...base, covered: opts.manualZones, score, level: score >= 0.6 ? 'medium' : 'low' };
   }
 
   const covered = recommended.filter((k) => selection[k]).length;
   const ratio = total === 0 ? 1 : covered / total;
   const score = Math.round((ratio * 0.8 + wm) * 100) / 100;
-  const level: ProtectionLevel = score >= 0.95 ? 'alta' : score >= 0.6 ? 'media' : 'baja';
-  let message = `Has tapado ${covered} de ${total} datos recomendados para ${preset.short}.`;
-  if (!opts.watermark) message += ' Sin marca de agua la copia sirve para cualquier cosa.';
-  return { covered, total, score, level, message };
+  const level: ProtectionLevel = score >= 0.95 ? 'high' : score >= 0.6 ? 'medium' : 'low';
+  return { ...base, covered, score, level };
+}
+
+/** Sentence that explains a summary, in the language of the given dictionary. */
+export function protectionMessage(s: ProtectionSummary, t: Messages): string {
+  const p = t.protection;
+  if (s.manual) return p.manual(s.covered) + (s.watermark ? '' : ` ${p.addWatermark}`);
+  return p.covered(s.covered, s.total, t.usages[s.usage].short) + (s.watermark ? '' : ` ${p.noWatermark}`);
 }

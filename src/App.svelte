@@ -3,6 +3,7 @@
   import { loadFiles } from './lib/files';
   import { app } from './lib/state.svelte';
   import { SOURCE_URL, VERSION } from './lib/config';
+  import { m } from './lib/i18n/index.svelte';
   import Editor from './components/Editor.svelte';
   import Header from './components/Header.svelte';
   import Icon from './components/Icon.svelte';
@@ -41,12 +42,12 @@
 <main>
   <section class="hero">
     <div class="badges">
-      <span class="badge"><Icon name="lock" size={13} /> Sin subir tu foto</span>
-      <span class="badge"><Icon name="check" size={13} stroke={3} /> Sin registro</span>
-      <span class="badge"><Icon name="code" size={13} /> Código abierto</span>
+      <span class="badge"><Icon name="lock" size={13} /> {m().hero.noUpload}</span>
+      <span class="badge"><Icon name="check" size={13} stroke={3} /> {m().hero.noSignup}</span>
+      <span class="badge"><Icon name="code" size={13} /> {m().hero.openSource}</span>
     </div>
-    <h1>Protege tu DNI antes de enviarlo</h1>
-    <p>Tapa los datos que nadie necesita, añade una marca de agua con el destinatario y la fecha, y descarga un PDF o JPG listo para enviar. Funciona con el DNI español y la carte d'identité francesa.</p>
+    <h1>{m().hero.title}</h1>
+    <p>{m().hero.lead}</p>
   </section>
 
   <div class="layout" id="editor">
@@ -60,16 +61,16 @@
 
 <footer>
   <p>
-    Sequrid procesa todo en tu navegador. Ninguna imagen se envía ni se guarda.
-    <a href={SOURCE_URL} target="_blank" rel="noopener noreferrer">Código fuente</a> · Licencia AGPL-3.0 · v{VERSION}
+    {m().footer.text}
+    <a href={SOURCE_URL} target="_blank" rel="noopener noreferrer">{m().footer.source}</a> · {m().footer.license} · v{VERSION}
   </p>
 </footer>
 
 {#if app.loaded.length > 0}
   <div class="mobile-bar">
-    <a class="btn" href="#descargar">Ajustes</a>
+    <a class="btn" href="#download">{m().mobileBar.settings}</a>
     <button type="button" class="btn primary" disabled={mobileBusy} onclick={mobilePdf}>
-      <Icon name="download" size={18} /> {mobileBusy ? 'Generando…' : 'Descargar PDF'}
+      <Icon name="download" size={18} /> {mobileBusy ? m().settings.busy : m().settings.pdf}
     </button>
   </div>
 {/if}

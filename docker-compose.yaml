@@ -1,4 +1,4 @@
-# Sequrid: self-hosted, 100% client-side DNI protection.
+# Sequrid: self-hosted, 100% client-side ID card protection.
 #
 #   docker compose up -d          -> http://localhost:8080
 #

@@ -1,14 +1,17 @@
 <script lang="ts">
-  import { KEY_LABELS, SIDES, ZONE_KEYS, zoneDef, type Side, type ZoneKey } from '../lib/documents';
+  import { SIDES, ZONE_KEYS, zoneDef, type Side, type ZoneKey } from '../lib/documents';
   import type { CoverStyle } from '../lib/effects';
   import { downloadAllJpg, downloadFaceJpg, downloadPdf } from '../lib/export';
+  import { m } from '../lib/i18n/index.svelte';
+  import { docText, zoneText } from '../lib/i18n/text';
   import type { PdfSize } from '../lib/pdf';
-  import { protectionSummary, usage, USAGES, type UsageId } from '../lib/presets';
+  import { protectionMessage, protectionSummary, usage, USAGES, type UsageId } from '../lib/presets';
   import { app, type CoverMode } from '../lib/state.svelte';
   import Icon from './Icon.svelte';
   import Segmented from './Segmented.svelte';
   import Toggle from './Toggle.svelte';
 
+  const t = $derived(m());
   const preset = $derived(usage(app.usage));
   const recommended = $derived(new Set<ZoneKey>(preset.cover));
   const summary = $derived(
@@ -29,13 +32,17 @@
     const single = docs.length === 1 ? docs[0] : null;
     const keys = single ? single.zones.map((z) => z.key) : ZONE_KEYS.filter((k) => docs.some((d) => zoneDef(k, d)));
     return keys.map((key) => {
-      const defs = docs.map((d) => zoneDef(key, d)).filter((d) => d !== undefined);
+      const owners = docs.filter((d) => zoneDef(key, d));
+      const defs = owners.map((d) => zoneDef(key, d)!);
       const sides = SIDES.filter((side) => defs.some((def) => def.rects.some((r) => r.side === side)));
-      return { key, label: single ? defs[0].label : KEY_LABELS[key], hint: defs[0].hint, sides };
+      const label = single ? zoneText(t, key, single).label : t.fields[key];
+      return { key, label, hint: zoneText(t, key, owners[0]).hint, sides };
     });
   });
-  const docWord = $derived(app.activeDocs.length === 1 ? app.activeDocs[0].short : 'documento');
-  const otherSide = (side: Side) => (side === 'anverso' ? 'reverso' : 'anverso');
+  const docId = $derived(app.activeDocs.length === 1 ? app.activeDocs[0].id : null);
+  const otherSide = (side: Side): Side => (side === 'front' ? 'back' : 'front');
+  /** Side headings use the first document's wording ("Front", "Anverso", "Recto"…). */
+  const sideTitle = (side: Side) => docText(t, app.activeDocs[0]).sides[side].label;
   const hasFaces = $derived(app.loaded.length > 0);
   let busy = $state<'' | 'pdf' | 'jpg' | 'all'>('');
 
@@ -47,161 +54,160 @@
       if (kind === 'pdf') await downloadPdf();
       else if (kind === 'jpg') await downloadFaceJpg(app.active);
       else await downloadAllJpg();
-      app.status = 'Descarga lista. Recuerda: solo para quien la necesita.';
+      app.status = (t) => t.status.downloadReady;
     } catch (e) {
-      app.status = e instanceof Error ? e.message : 'No se ha podido generar la descarga.';
+      console.error(e);
+      app.status = (t) => t.status.downloadFailed;
     } finally {
       busy = '';
     }
   }
 
-  function setMode(m: CoverMode) {
-    app.coverMode = m;
+  function setMode(mode: CoverMode) {
+    app.coverMode = mode;
     app.selectedZone = null;
-    if (m === 'manual' && app.tool === 'move') app.tool = 'draw';
-    if (m === 'auto' && app.tool === 'draw') app.tool = 'move';
+    if (mode === 'manual' && app.tool === 'move') app.tool = 'draw';
+    if (mode === 'auto' && app.tool === 'draw') app.tool = 'move';
   }
-
-  const sides = SIDES.map((side) => ({ side, label: side === 'anverso' ? 'Anverso' : 'Reverso' }));
 </script>
 
 <div class="card settings">
   <section aria-labelledby="s-usage">
-    <h2 id="s-usage" class="step"><span class="num">2</span>¿Para qué es la copia?</h2>
+    <h2 id="s-usage" class="step"><span class="num">2</span>{t.settings.usageTitle}</h2>
     <label class="field">
-      <span>Uso</span>
+      <span>{t.settings.usage}</span>
       <select class="input" value={app.usage} onchange={(e) => app.setUsage(e.currentTarget.value as UsageId)}>
-        {#each USAGES as u (u.id)}<option value={u.id}>{u.label}</option>{/each}
+        {#each USAGES as u (u.id)}<option value={u.id}>{t.usages[u.id].label}</option>{/each}
       </select>
     </label>
     <div class="row2">
       <label class="field">
-        <span>Destinatario <small>(opcional)</small></span>
-        <input class="input" type="text" maxlength="60" placeholder="Ej.: Inmobiliaria Sol" autocomplete="off" bind:value={app.recipient} />
+        <span>{t.settings.recipient} <small>{t.settings.optional}</small></span>
+        <input class="input" type="text" maxlength="60" placeholder={t.settings.recipientPlaceholder} autocomplete="off" bind:value={app.recipient} />
       </label>
       <label class="field">
-        <span>Fecha</span>
+        <span>{t.settings.date}</span>
         <input class="input" type="date" bind:value={app.date} />
       </label>
     </div>
-    <p class="note"><Icon name="info" size={16} /> <span>{preset.note}</span></p>
+    <p class="note"><Icon name="info" size={16} /> <span>{t.usages[app.usage].note}</span></p>
   </section>
 
   <section aria-labelledby="s-cover">
-    <h2 id="s-cover" class="step"><span class="num">3</span>Qué tapar</h2>
+    <h2 id="s-cover" class="step"><span class="num">3</span>{t.settings.coverTitle}</h2>
     <Segmented
-      label="Modo de tapado"
+      label={t.settings.coverMode}
       value={app.coverMode}
       onchange={setMode}
       options={[
-        { value: 'auto' as CoverMode, label: 'Automático' },
-        { value: 'manual' as CoverMode, label: 'Manual' },
+        { value: 'auto' as CoverMode, label: t.settings.auto },
+        { value: 'manual' as CoverMode, label: t.settings.manual },
       ]}
     />
     {#if app.coverMode === 'auto'}
-      <p class="help">Las zonas se colocan sobre los datos del {docWord}. Comprueba que caen en su sitio; si no, usa «Encuadre».</p>
-      {#each sides as s (s.side)}
-        {@const group = entries.filter((e) => e.sides[0] === s.side)}
+      <p class="help">{t.settings.autoHelp(docId)}</p>
+      {#each SIDES as side (side)}
+        {@const group = entries.filter((e) => e.sides[0] === side)}
         {#if group.length}
           <fieldset class="checks">
-            <legend>{s.label}</legend>
+            <legend>{sideTitle(side)}</legend>
             {#each group as z (z.key)}
               <label class="check" title={z.hint}>
                 <input type="checkbox" bind:checked={app.selection[z.key]} />
                 <span class="name">
                   {z.label}
-                  {#if z.sides.length > 1}<small>también en el {otherSide(s.side)}</small>{/if}
+                  {#if z.sides.length > 1}<small>{t.settings.alsoOn(otherSide(side))}</small>{/if}
                 </span>
-                {#if recommended.has(z.key)}<span class="rec">Recomendado</span>{/if}
+                {#if recommended.has(z.key)}<span class="rec">{t.settings.recommended}</span>{/if}
               </label>
             {/each}
           </fieldset>
         {/if}
       {/each}
     {:else}
-      <p class="help">Elige «Dibujar» en la barra del lienzo y marca con el ratón o el dedo todo lo que quieras tapar.</p>
+      <p class="help">{t.settings.manualHelp}</p>
     {/if}
 
     <div class="sub">
-      <span class="sub-title">Cómo se tapa</span>
+      <span class="sub-title">{t.settings.coverStyle}</span>
       <Segmented
-        label="Cómo se tapa"
+        label={t.settings.coverStyle}
         bind:value={app.coverStyle}
         options={[
-          { value: 'black' as CoverStyle, label: 'Negro' },
-          { value: 'pixelate' as CoverStyle, label: 'Pixelado' },
-          { value: 'blur' as CoverStyle, label: 'Desenfoque' },
+          { value: 'black' as CoverStyle, label: t.settings.black },
+          { value: 'pixelate' as CoverStyle, label: t.settings.pixelate },
+          { value: 'blur' as CoverStyle, label: t.settings.blur },
         ]}
       />
       {#if app.coverStyle !== 'black'}
-        <p class="help">El negro es lo más seguro. Pixelado y desenfoque se aplican con fuerza para que no se pueda leer, pero se nota menos que algo está tapado.</p>
+        <p class="help">{t.settings.styleHelp}</p>
       {/if}
     </div>
   </section>
 
   <section aria-labelledby="s-wm">
-    <h2 id="s-wm" class="step"><span class="num">4</span>Marca de agua</h2>
-    <Toggle bind:checked={app.watermark.enabled}>Añadir marca de agua</Toggle>
+    <h2 id="s-wm" class="step"><span class="num">4</span>{t.settings.watermarkTitle}</h2>
+    <Toggle bind:checked={app.watermark.enabled}>{t.settings.watermark}</Toggle>
     {#if app.watermark.enabled}
-      <p class="wm-preview" aria-label="Texto de la marca de agua">{app.watermarkText || '—'}</p>
+      <p class="wm-preview" aria-label={t.settings.watermarkPreview}>{app.watermarkText || '—'}</p>
       <label class="field">
-        <span>Texto propio <small>(sustituye al automático)</small></span>
-        <input class="input" type="text" maxlength="80" autocomplete="off" placeholder="Ej.: Solo para Inmobiliaria Sol" bind:value={app.watermark.custom} />
+        <span>{t.settings.customText} <small>{t.settings.customHint}</small></span>
+        <input class="input" type="text" maxlength="80" autocomplete="off" placeholder={t.settings.customPlaceholder} bind:value={app.watermark.custom} />
       </label>
       <label class="slider">
-        <span>Intensidad</span>
+        <span>{t.settings.opacity}</span>
         <input type="range" min="0.15" max="0.9" step="0.05" bind:value={app.watermark.opacity} />
       </label>
       <label class="slider">
-        <span>Tamaño</span>
+        <span>{t.settings.size}</span>
         <input type="range" min="0" max="1" step="0.05" bind:value={app.watermark.size} />
       </label>
       <Segmented
-        label="Color de la marca"
+        label={t.settings.tone}
         bind:value={app.watermark.tone}
         options={[
-          { value: 'dark' as const, label: 'Oscura' },
-          { value: 'light' as const, label: 'Clara' },
+          { value: 'dark' as const, label: t.settings.dark },
+          { value: 'light' as const, label: t.settings.light },
         ]}
       />
     {/if}
-    <Toggle bind:checked={app.grayscale}>Copia en blanco y negro</Toggle>
+    <Toggle bind:checked={app.grayscale}>{t.settings.grayscale}</Toggle>
   </section>
 
   <section aria-labelledby="s-level">
-    <h2 id="s-level" class="step"><span class="num">5</span>Nivel de protección</h2>
+    <h2 id="s-level" class="step"><span class="num">5</span>{t.settings.levelTitle}</h2>
     {#if hasFaces}
-      <div class="meter level-{summary.level}" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.round(summary.score * 100)} aria-label="Nivel de protección">
+      <div class="meter level-{summary.level}" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.round(summary.score * 100)} aria-label={t.settings.levelTitle}>
         <span style:width="{Math.max(6, summary.score * 100)}%"></span>
       </div>
-      <p class="level-text"><strong class="level-{summary.level}">Protección {summary.level}.</strong> {summary.message}</p>
+      <p class="level-text"><strong class="level-{summary.level}">{t.protection.levels[summary.level]}</strong> {protectionMessage(summary, t)}</p>
     {:else}
-      <p class="help">Sube una foto para empezar.</p>
+      <p class="help">{t.settings.levelEmpty}</p>
     {/if}
   </section>
 
-  <section aria-labelledby="s-dl" id="descargar">
-    <h2 id="s-dl" class="step"><span class="num">6</span>Descargar</h2>
+  <section aria-labelledby="s-dl" id="download">
+    <h2 id="s-dl" class="step"><span class="num">6</span>{t.settings.downloadTitle}</h2>
     <Segmented
-      label="Tamaño en el PDF"
+      label={t.settings.pdfSize}
       bind:value={app.pdfSize}
       options={[
-        { value: 'real' as PdfSize, label: 'Tamaño real', title: 'Tarjeta a 85,6 × 54 mm, como una fotocopia' },
-        { value: 'large' as PdfSize, label: 'Ampliado', title: 'Cada cara al ancho de la página, más legible' },
+        { value: 'real' as PdfSize, label: t.settings.real, title: t.settings.realTitle },
+        { value: 'large' as PdfSize, label: t.settings.large, title: t.settings.largeTitle },
       ]}
     />
     <button type="button" class="btn primary block lg" disabled={!hasFaces || !!busy} onclick={() => run('pdf')}>
-      <Icon name="download" size={18} /> {busy === 'pdf' ? 'Generando PDF…' : 'Descargar PDF'}
+      <Icon name="download" size={18} /> {busy === 'pdf' ? t.settings.pdfBusy : t.settings.pdf}
     </button>
     <div class="row2">
       <button type="button" class="btn" disabled={!app.activeFace || !!busy} onclick={() => run('jpg')}>
-        {busy === 'jpg' ? 'Generando…' : 'JPG de esta cara'}
+        {busy === 'jpg' ? t.settings.busy : t.settings.jpgFace}
       </button>
       <button type="button" class="btn" disabled={!hasFaces || !!busy} onclick={() => run('all')}>
-        {busy === 'all' ? 'Generando…' : 'JPG con todas'}
+        {busy === 'all' ? t.settings.busy : t.settings.jpgAll}
       </button>
     </div>
-    <p class="help"><Icon name="eyeOff" size={14} /> La copia no lleva metadatos: ni ubicación, ni modelo de móvil, ni fecha de la foto.</p>
+    <p class="help"><Icon name="eyeOff" size={14} /> {t.settings.noMetadata}</p>
   </section>
 </div>
 
@@ -340,26 +346,26 @@
     border-radius: inherit;
     transition: width 0.3s ease, background 0.3s;
   }
-  .meter.level-baja span {
-    background: var(--level-baja);
+  .meter.level-low span {
+    background: var(--level-low);
   }
-  .meter.level-media span {
-    background: var(--level-media);
+  .meter.level-medium span {
+    background: var(--level-medium);
   }
-  .meter.level-alta span {
-    background: var(--level-alta);
+  .meter.level-high span {
+    background: var(--level-high);
   }
   .level-text {
     font-size: 13.5px;
   }
-  strong.level-baja {
-    color: var(--level-baja);
+  strong.level-low {
+    color: var(--level-low);
   }
-  strong.level-media {
-    color: var(--level-media);
+  strong.level-medium {
+    color: var(--level-medium);
   }
-  strong.level-alta {
-    color: var(--level-alta);
+  strong.level-high {
+    color: var(--level-high);
   }
   @media (max-width: 420px) {
     .row2 {

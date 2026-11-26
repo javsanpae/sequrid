@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { composeWatermark, formatDate, todayIso, watermarkLayout } from '../../src/lib/watermark';
 
 describe('watermark text', () => {
-  it('formats ISO dates the Spanish way', () => {
+  it('formats ISO dates as dd/mm/yyyy', () => {
     expect(formatDate('2026-11-26')).toBe('26/11/2026');
     expect(formatDate('26/11/2026')).toBe('');
     expect(formatDate('')).toBe('');
@@ -25,6 +25,13 @@ describe('watermark text', () => {
 
   it('uses the custom text when given', () => {
     expect(composeWatermark('Solo para alquiler', 'X', '2026-11-26', '  solo para ñoño ')).toBe('SOLO PARA ÑOÑO');
+  });
+
+  it('keeps accents when uppercasing in any UI language', () => {
+    expect(composeWatermark('Copie à usage limité', 'Agence Soleil', '2026-11-26', '', 'fr')).toBe(
+      'COPIE À USAGE LIMITÉ · AGENCE SOLEIL · 26/11/2026',
+    );
+    expect(composeWatermark('Only for a rental', '', '2026-11-26', '', 'en')).toBe('ONLY FOR A RENTAL · 26/11/2026');
   });
 });
 

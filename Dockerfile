@@ -19,7 +19,7 @@ FROM nginxinc/nginx-unprivileged:1.31-alpine
 ARG APP_VERSION=dev
 ARG SOURCE_URL=https://github.com/javsanpae/sequrid
 LABEL org.opencontainers.image.title="sequrid" \
-      org.opencontainers.image.description="Protege tu DNI con marca de agua y tapa datos sensibles. Todo se procesa en el navegador." \
+      org.opencontainers.image.description="Protect a photo of your ID card: cover sensitive data and add a watermark. Everything runs in the browser." \
       org.opencontainers.image.source="$SOURCE_URL" \
       org.opencontainers.image.licenses="AGPL-3.0-or-later" \
       org.opencontainers.image.version="$APP_VERSION"

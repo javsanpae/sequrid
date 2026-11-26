@@ -1,10 +1,10 @@
 apiVersion: v2
 name: sequrid
-description: Protege tu DNI con marca de agua y tapa datos sensibles. Todo se procesa en el navegador; el servidor solo entrega archivos estáticos.
+description: Protect a photo of your ID card by covering sensitive data and adding a watermark. Everything runs in the browser; the server only serves static files.
 type: application
 # CI overrides both with the contents of the VERSION file when publishing.
-version: 0.2.0
-appVersion: "0.2.0"
+version: 0.3.0
+appVersion: "0.3.0"
 kubeVersion: ">=1.25.0-0"
 home: https://github.com/javsanpae/sequrid
 sources:
@@ -12,7 +12,10 @@ sources:
 annotations:
   licenses: AGPL-3.0-or-later
 keywords:
+  - id-card
+  - identity-document
   - dni
+  - cni
   - privacy
   - watermark
   - self-hosted

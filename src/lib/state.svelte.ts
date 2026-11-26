@@ -1,37 +1,38 @@
-import {
-  documentKeys,
-  documentType,
-  zoneLabel,
-  type DocumentId,
-  type DocumentType,
-  type Side,
-  type ZoneKey,
-} from './documents';
+import { documentKeys, documentType, type DocumentId, type DocumentType, type Side, type ZoneKey } from './documents';
 import { FULL_RECT, nextRotation, type Rect, type Rotation } from './geometry';
-import { selectionFor, usage, type CoverSelection, type UsageId } from './presets';
+import { getLang, m, type Messages } from './i18n/index.svelte';
+import { docText, faceTitle, zoneLabel } from './i18n/text';
+import { selectionFor, type CoverSelection, type UsageId } from './presets';
 import { composeWatermark, DEFAULT_WATERMARK, todayIso, type WatermarkSettings } from './watermark';
 import type { CoverStyle } from './effects';
 import type { PdfSize } from './pdf';
 
-export type FaceId = 'd1a' | 'd1r' | 'd2a' | 'd2r';
-export const FACE_IDS: FaceId[] = ['d1a', 'd1r', 'd2a', 'd2r'];
+/** Photo slots: document 1 or 2, front or back. */
+export type FaceId = 'd1f' | 'd1b' | 'd2f' | 'd2b';
+export const FACE_IDS: FaceId[] = ['d1f', 'd1b', 'd2f', 'd2b'];
 
 export type DocNumber = 1 | 2;
 
 export const FACE_META: Record<FaceId, { doc: DocNumber; side: Side }> = {
-  d1a: { doc: 1, side: 'anverso' },
-  d1r: { doc: 1, side: 'reverso' },
-  d2a: { doc: 2, side: 'anverso' },
-  d2r: { doc: 2, side: 'reverso' },
+  d1f: { doc: 1, side: 'front' },
+  d1b: { doc: 1, side: 'back' },
+  d2f: { doc: 2, side: 'front' },
+  d2b: { doc: 2, side: 'back' },
 };
 
-/** "DNI 1 · Anverso", "CNI 2 · Reverso"… */
-export const faceName = (id: FaceId): string => {
-  const doc = app.docOf(id);
-  return `${doc.short} ${FACE_META[id].doc} · ${doc.sides[FACE_META[id].side].label}`;
-};
-export const faceLabel = (id: FaceId): string => app.docOf(id).sides[FACE_META[id].side].label;
-export const faceHint = (id: FaceId): string => app.docOf(id).sides[FACE_META[id].side].hint;
+/**
+ * A status line, rendered with the current dictionary so it follows
+ * language changes like the rest of the UI.
+ */
+export type StatusMessage = ((t: Messages) => string) | null;
+
+/** "DNI 1 · Front", "CNI 2 · Verso"… */
+export const faceName = (id: FaceId, t: Messages = m()): string =>
+  faceTitle(t, app.docOf(id), FACE_META[id].doc, FACE_META[id].side);
+export const faceLabel = (id: FaceId, t: Messages = m()): string =>
+  docText(t, app.docOf(id)).sides[FACE_META[id].side].label;
+export const faceHint = (id: FaceId, t: Messages = m()): string =>
+  docText(t, app.docOf(id)).sides[FACE_META[id].side].hint;
 
 export interface ZoneInstance {
   id: string;
@@ -65,18 +66,18 @@ export function defaultZones(doc: DocumentType, side: Side): ZoneInstance[] {
 }
 
 class AppState {
-  faces = $state<Record<FaceId, Face | null>>({ d1a: null, d1r: null, d2a: null, d2r: null });
-  active = $state<FaceId>('d1a');
+  faces = $state<Record<FaceId, Face | null>>({ d1f: null, d1b: null, d2f: null, d2b: null });
+  active = $state<FaceId>('d1f');
   twoDocs = $state(false);
   /** Country / document model of each ID. */
   docTypes = $state<Record<DocNumber, DocumentId>>({ 1: 'dni-es', 2: 'dni-es' });
 
-  usage = $state<UsageId>('otro');
+  usage = $state<UsageId>('other');
   recipient = $state('');
   date = $state(todayIso());
 
   coverMode = $state<CoverMode>('auto');
-  selection = $state<CoverSelection>(selectionFor('otro'));
+  selection = $state<CoverSelection>(selectionFor('other'));
   coverStyle = $state<CoverStyle>('black');
 
   watermark = $state<WatermarkSettings>({ ...DEFAULT_WATERMARK });
@@ -87,7 +88,7 @@ class AppState {
   tool = $state<Tool>('move');
   zoom = $state(1);
   selectedZone = $state<string | null>(null);
-  status = $state('');
+  status = $state<StatusMessage>(null);
 
   get slots(): FaceId[] {
     return this.twoDocs ? FACE_IDS : FACE_IDS.slice(0, 2);
@@ -126,8 +127,9 @@ class AppState {
     this.selectedZone = null;
   }
 
+  /** Follows the UI language: the default text comes from the current dictionary. */
   get watermarkText(): string {
-    return composeWatermark(usage(this.usage).watermark, this.recipient, this.date, this.watermark.custom);
+    return composeWatermark(m().usages[this.usage].watermark, this.recipient, this.date, this.watermark.custom, getLang());
   }
 
   /** Zones that are actually applied to a face with the current settings. */
@@ -191,16 +193,18 @@ class AppState {
     } else {
       // Automatic zones follow their checkbox: removing one uncovers that field.
       this.selection[z.key] = false;
-      this.status = `${zoneLabel(z.key, this.docOf(faceId))} queda visible. Vuelve a marcarlo en «Qué tapar» si quieres taparlo.`;
+      const key = z.key;
+      const doc = this.docOf(faceId);
+      this.status = (t) => t.status.zoneVisible(zoneLabel(t, key, doc));
     }
     if (this.selectedZone === zoneId) this.selectedZone = null;
   }
 
   setTwoDocs(on: boolean) {
     // A second ID usually comes from the same country as the first one.
-    if (on && !this.faces.d2a && !this.faces.d2r) this.docTypes[2] = this.docTypes[1];
+    if (on && !this.faces.d2f && !this.faces.d2b) this.docTypes[2] = this.docTypes[1];
     this.twoDocs = on;
-    if (!on && FACE_META[this.active].doc === 2) this.active = 'd1a';
+    if (!on && FACE_META[this.active].doc === 2) this.active = 'd1f';
   }
 }
 
