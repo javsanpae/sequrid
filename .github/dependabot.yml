@@ -7,6 +7,11 @@ updates:
     groups:
       dev-dependencies:
         patterns: ['*']
+    ignore:
+      # svelte-check 4.x only supports TypeScript 5 and 6. Remove this rule
+      # once svelte-check declares support for TypeScript 7.
+      - dependency-name: typescript
+        versions: ['>=7']
   - package-ecosystem: github-actions
     directory: /
     schedule:
