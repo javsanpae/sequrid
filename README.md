@@ -73,7 +73,7 @@ Detrás de un proxy inverso no hace falta nada especial: es un sitio estático. 
 
 ## Desarrollo
 
-Requisitos: Node.js 20.19 o superior (se usa 22).
+Requisitos: Node.js 26 (la versión está en [`.nvmrc`](.nvmrc); funciona desde la 20.19).
 
 ```bash
 npm install
