@@ -48,7 +48,7 @@ docker run -d --name sequrid -p 8080:8080 --read-only --tmpfs /tmp --cap-drop AL
 El chart está en [`charts/sequrid`](charts/sequrid) y también se publica como OCI en cada versión:
 
 ```bash
-helm install sequrid oci://ghcr.io/javsanpae/charts/sequrid --version 0.1.0 \
+helm install sequrid oci://ghcr.io/javsanpae/charts/sequrid --version 0.1.1 \
   --set ingress.enabled=true \
   --set ingress.hosts[0].host=dni.example.com \
   --set ingress.hosts[0].paths[0].path=/ \
@@ -112,18 +112,22 @@ Para añadir otro documento (NIE, pasaporte…) basta con definir otro `Document
 
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml):
 
-1. **test**: `svelte-check`, tests unitarios y build.
-2. **e2e**: Playwright en escritorio y móvil.
-3. **helm**: `helm lint` y `helm template` con todas las opciones activadas.
-4. **image**: construye la imagen, hace un smoke test (salud, CSP, usuario sin root), repite los e2e contra el contenedor y publica en `ghcr.io` para amd64 y arm64 con SBOM y procedencia. En `main` se etiqueta como `latest` y con el SHA; en las pull requests solo se construye.
-5. **chart**: al crear una etiqueta `vX.Y.Z`, publica la imagen con esa versión y el chart en `oci://ghcr.io/javsanpae/charts`.
+1. **version**: lee y valida el archivo [`VERSION`](VERSION) y decide si toca publicar versión.
+2. **test**: `svelte-check`, tests unitarios y build.
+3. **e2e**: Playwright en escritorio y móvil.
+4. **helm**: `helm lint`, `helm template` con todas las opciones activadas y `helm package` con la versión de `VERSION`.
+5. **image**: construye la imagen, hace un smoke test (salud, CSP, usuario sin root), repite los e2e contra el contenedor y la publica en `ghcr.io` para amd64 y arm64, con SBOM y procedencia. En las pull requests solo se construye. En `main` se publica siempre como `latest` y con el SHA; si hay versión nueva, también como `X.Y.Z` y `X.Y`.
+6. **release**: si hay versión nueva, publica el chart en `oci://ghcr.io/javsanpae/charts/sequrid`, crea la etiqueta `vX.Y.Z` y una release de GitHub con el chart adjunto.
 
-Para sacar una versión:
+### Publicar una versión
 
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
+La versión vive en el archivo [`VERSION`](VERSION), que solo contiene el número (por ejemplo `0.1.1`). Es la única fuente de verdad: la imagen, el chart (`version` y `appVersion`) y la etiqueta de git la toman de ahí. Las versiones de `Chart.yaml` y `package.json` no se usan para publicar.
+
+1. En tu rama, sube el número de `VERSION` siguiendo [semver](https://semver.org/lang/es/).
+2. Fusiona la pull request en `main`.
+3. El CI ve que no existe la etiqueta `v<VERSION>` y publica la imagen, el chart y la release.
+
+Si fusionas sin cambiar `VERSION`, no se publica ninguna versión nueva (solo `latest` y el SHA de la imagen); el CI avisa de ello en la pull request. Una versión ya publicada nunca se sobrescribe.
 
 La primera vez, el paquete de ghcr.io se crea como privado: cámbialo a público en la configuración del paquete en GitHub para que cualquiera pueda descargarlo.
 
