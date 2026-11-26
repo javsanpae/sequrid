@@ -8,6 +8,32 @@ The released version is the one in the [`VERSION`](VERSION) file.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-26
+
+### Added
+
+- United Kingdom: the photocard driving licence, which is the everyday ID in
+  a country without a national identity card, in both current models: Great
+  Britain (DVLA, design issued since December 2021) and Northern Ireland
+  (DVA). Fields follow the numbering on the card (1–12), including the
+  driver number, the address, the driving categories and dates, and the
+  restriction codes on the back.
+- United States: the passport card (Department of State, issued since 2008),
+  the only nationwide federal ID in card format. It has no signature; its
+  control numbers and barcode are grouped in one field.
+- Fictitious sample cards for both UK licences and the US passport card, and
+  their flags.
+- Help lines for the United Kingdom (Report Fraud, formerly Action Fraud, for
+  England, Wales and Northern Ireland, and Police Scotland on 101) and the
+  United States (IdentityTheft.gov from the FTC).
+
+### Changed
+
+- Usage presets also cover driving restriction codes, which can reveal health
+  conditions, and job and sale cover the driving categories and their dates.
+- Download names turn multi-word document names into safe words, e.g.
+  `passport-card-protected.pdf`.
+
 ## [0.4.0] - 2026-11-26
 
 ### Added
@@ -151,7 +177,8 @@ The released version is the one in the [`VERSION`](VERSION) file.
   publishing of the image and chart to `ghcr.io`.
 - Licensed under the GNU Affero General Public License v3.0 or later.
 
-[Unreleased]: https://github.com/javsanpae/sequrid/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/javsanpae/sequrid/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/javsanpae/sequrid/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/javsanpae/sequrid/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/javsanpae/sequrid/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/javsanpae/sequrid/compare/v0.1.1...v0.2.0

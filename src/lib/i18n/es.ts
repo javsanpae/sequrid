@@ -7,7 +7,7 @@ export const es: Messages = {
   meta: {
     title: 'Sequrid · Protege tu DNI',
     description:
-      'Tapa los datos sensibles de tu DNI o documento de identidad (España, Francia e Italia) y añade una marca de agua con destinatario y fecha. Todo se procesa en tu navegador: la foto nunca sale de tu dispositivo.',
+      'Tapa los datos sensibles de tu DNI o documento de identidad (España, Francia, Italia, Reino Unido y Estados Unidos) y añade una marca de agua con destinatario y fecha. Todo se procesa en tu navegador: la foto nunca sale de tu dispositivo.',
   },
 
   language: {
@@ -34,7 +34,7 @@ export const es: Messages = {
     noSignup: 'Sin registro',
     openSource: 'Código abierto',
     title: 'Protege tu DNI antes de enviarlo',
-    lead: 'Tapa los datos que nadie necesita, añade una marca de agua con el destinatario y la fecha, y descarga un PDF o JPG listo para enviar. Funciona con el DNI español, la carte nationale d’identité francesa y la CIE italiana.',
+    lead: 'Tapa los datos que nadie necesita, añade una marca de agua con el destinatario y la fecha, y descarga un PDF o JPG listo para enviar. Funciona con el DNI español, la carte nationale d’identité francesa, la CIE italiana, el permiso de conducir británico y la tarjeta de pasaporte estadounidense.',
   },
 
   footer: {
@@ -234,6 +234,8 @@ export const es: Messages = {
     taxCode: 'Código fiscal',
     birthRecord: 'Datos del acta de nacimiento',
     issuer: 'Autoridad que lo expide',
+    entitlements: 'Categorías del permiso y fechas',
+    restrictions: 'Códigos de restricción',
     mrz: 'Zona MRZ',
   },
 
@@ -366,6 +368,102 @@ export const es: Messages = {
         mrz: { label: 'Zona MRZ (líneas inferiores)', hint: 'Las tres líneas legibles por máquina repiten el número, las fechas y el nombre.' },
       },
     },
+    'dl-gb': {
+      countryName: 'Reino Unido',
+      the: 'del permiso de conducir',
+      name: 'Permiso de conducir (Gran Bretaña, DVLA, desde 2021)',
+      sides: {
+        front: { label: 'Anverso', hint: 'Cara con la foto' },
+        back: { label: 'Reverso', hint: 'Cara con las categorías' },
+      },
+      zones: {
+        name: { label: 'Apellidos y nombre (1, 2)', hint: 'Casi siempre hace falta: es lo que te identifica.' },
+        birthDate: {
+          label: 'Fecha y lugar de nacimiento (3)',
+          hint: 'Comparten línea, así que se tapan juntos. Son respuestas típicas de las preguntas de seguridad.',
+        },
+        issueDate: { label: 'Fecha de expedición (4a)', hint: 'Rara vez la necesita quien recibe la copia.' },
+        issuer: { label: 'Autoridad que lo expide (4c)', hint: 'El organismo que expidió el permiso. Rara vez hace falta.' },
+        expiry: { label: 'Fecha de caducidad (4b)', hint: 'Rara vez la necesita quien recibe la copia.' },
+        number: {
+          label: 'Número de conductor (5)',
+          hint: 'Sus 16 caracteres codifican tu apellido, tu fecha de nacimiento y tus iniciales. Pueden pedírtelo aseguradoras y empresas; nadie más lo necesita.',
+        },
+        signature: { label: 'Firma (7)', hint: 'Una firma escaneada se puede pegar en cualquier contrato o autorización.' },
+        address: { label: 'Domicilio (8)', hint: 'Tu dirección. Solo la necesita quien tenga que enviarte algo o registrarte.' },
+        entitlements: {
+          label: 'Categorías y sus fechas (9–11)',
+          hint: 'Qué vehículos puedes conducir y desde cuándo. Solo los necesita una empresa para la que vayas a conducir.',
+        },
+        restrictions: {
+          label: 'Códigos de restricción (12)',
+          hint: 'Códigos como el 01 (gafas) o las adaptaciones del vehículo pueden revelar problemas de salud. Tápalos salvo que te los pidan.',
+        },
+        serial: { label: 'Número de serie de la tarjeta', hint: 'El número de abajo a la derecha del reverso identifica la tarjeta física.' },
+        photo: { label: 'Fotografía (y retrato secundario)', hint: 'La foto principal y el retrato fantasma más pequeño que hay debajo.' },
+      },
+    },
+    'dl-ni': {
+      countryName: 'Reino Unido',
+      the: 'del permiso de conducir',
+      name: 'Permiso de conducir (Irlanda del Norte, DVA, desde 2021)',
+      sides: {
+        front: { label: 'Anverso', hint: 'Cara con la foto' },
+        back: { label: 'Reverso', hint: 'Cara con las categorías' },
+      },
+      zones: {
+        name: { label: 'Apellidos y nombre (1, 2)', hint: 'Casi siempre hace falta: es lo que te identifica.' },
+        birthDate: {
+          label: 'Fecha y lugar de nacimiento (3)',
+          hint: 'Comparten línea, así que se tapan juntos. Son respuestas típicas de las preguntas de seguridad.',
+        },
+        issueDate: { label: 'Fecha de expedición (4a)', hint: 'Rara vez la necesita quien recibe la copia.' },
+        issuer: { label: 'Autoridad que lo expide (4c)', hint: 'El organismo que expidió el permiso. Rara vez hace falta.' },
+        expiry: { label: 'Fecha de caducidad (4b)', hint: 'Rara vez la necesita quien recibe la copia.' },
+        number: {
+          label: 'Número de conductor (5)',
+          hint: 'Tu número de conductor único, de ocho cifras. Pueden pedírtelo aseguradoras y empresas; nadie más lo necesita.',
+        },
+        signature: { label: 'Firma (7)', hint: 'Una firma escaneada se puede pegar en cualquier contrato o autorización.' },
+        address: { label: 'Domicilio (8)', hint: 'Tu dirección. Solo la necesita quien tenga que enviarte algo o registrarte.' },
+        entitlements: {
+          label: 'Categorías y sus fechas (9–11)',
+          hint: 'Qué vehículos puedes conducir y desde cuándo. Solo los necesita una empresa para la que vayas a conducir.',
+        },
+        restrictions: {
+          label: 'Códigos de restricción (12)',
+          hint: 'Códigos como el 01 (gafas) o las adaptaciones del vehículo pueden revelar problemas de salud. Tápalos salvo que te los pidan.',
+        },
+        serial: { label: 'Número de serie de la tarjeta', hint: 'El número de abajo a la derecha del reverso identifica la tarjeta física.' },
+        photo: { label: 'Fotografía (y retrato secundario)', hint: 'La foto principal y el retrato fantasma más pequeño que hay debajo.' },
+      },
+    },
+    'ppc-us': {
+      countryName: 'Estados Unidos',
+      the: 'de la tarjeta de pasaporte',
+      name: 'Tarjeta de pasaporte (desde 2008)',
+      sides: {
+        front: { label: 'Anverso', hint: 'Cara con la foto' },
+        back: { label: 'Reverso', hint: 'Cara con la MRZ' },
+      },
+      zones: {
+        number: {
+          label: 'Número de la tarjeta de pasaporte',
+          hint: 'Empieza por C. Va impreso en el anverso, en relieve en el reverso y en la MRZ.',
+        },
+        serial: {
+          label: 'Números de control y código de barras',
+          hint: 'Los números bajo la foto, en el borde izquierdo, abajo a la derecha y en el reverso, además del código de barras.',
+        },
+        name: { label: 'Apellidos y nombre', hint: 'Casi siempre hace falta: es lo que te identifica.' },
+        birthDate: { label: 'Fecha de nacimiento', hint: 'Muy usada en preguntas de seguridad y recuperación de cuentas.' },
+        birthPlace: { label: 'Lugar de nacimiento', hint: 'Otro dato típico de las preguntas de seguridad.' },
+        issueDate: { label: 'Fecha de expedición', hint: 'Rara vez la necesita quien recibe la copia.' },
+        expiry: { label: 'Fecha de caducidad', hint: 'Rara vez la necesita quien recibe la copia.' },
+        photo: { label: 'Fotografía (y retrato secundario)', hint: 'La foto principal y el retrato fantasma más pequeño de la derecha.' },
+        mrz: { label: 'Zona MRZ (líneas inferiores)', hint: 'Las tres líneas legibles por máquina repiten el número, las fechas y el nombre.' },
+      },
+    },
   },
 
   usages: {
@@ -474,7 +572,7 @@ export const es: Messages = {
         },
         {
           q: '¿Qué documentos admite?',
-          a: 'El DNI español (modelo 2021), la carte nationale d’identité francesa (desde 2021) y la carta d’identità elettronica italiana (CIE 3.0, desde 2022). Elige el país de cada documento en el panel de fotos y las zonas se colocan sobre sus datos. Iremos añadiendo más países.',
+          a: 'El DNI español (modelo 2021), la carte nationale d’identité francesa (desde 2021) la carta d’identità elettronica italiana (CIE 3.0, desde 2022), el permiso de conducir británico con foto (Gran Bretaña e Irlanda del Norte, desde 2021) y la tarjeta de pasaporte estadounidense (passport card). Ni el Reino Unido ni Estados Unidos tienen documento nacional de identidad, así que estas son las tarjetas que se usan para identificarse. Elige el país de cada documento en el panel de fotos y las zonas se colocan sobre sus datos. Iremos añadiendo más países.',
         },
         {
           q: '¿Funciona en el móvil y sin conexión?',
@@ -503,6 +601,8 @@ export const es: Messages = {
         'es-incibe': 'Línea gratuita y confidencial del Instituto Nacional de Ciberseguridad para cualquier problema de ciberseguridad. Todos los días de 8:00 a 23:00.',
         'fr-17cyber': 'Asistencia oficial en línea para víctimas de ciberdelitos, con ayuda de la policía o la gendarmería si hace falta.',
         'it-postale': 'Portal de la Policía Postal y de Ciberseguridad para informarte y avisar de delitos en internet. Las denuncias formales se ponen en una comisaría.',
+        'gb-reportfraud': 'El servicio nacional para denunciar fraudes y ciberdelitos en Inglaterra, Gales e Irlanda del Norte (antes Action Fraud). Atención telefónica las 24 horas. En Escocia, denúncialo a Police Scotland en el 101.',
+        'us-ftc': 'La web de la Comisión Federal de Comercio (FTC) para denunciar el robo de identidad y obtener un plan de recuperación personalizado. El teléfono de la FTC atiende de lunes a viernes, de 8:00 a 17:00.',
       },
       note: 'Solo aparecen servicios comprobados en sus webs oficiales. Iremos añadiendo países junto con sus documentos.',
     },

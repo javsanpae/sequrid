@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { DOCUMENTS } from '../../src/lib/documents';
 import { HELP_LINES, sortHelpLines } from '../../src/lib/help-lines';
 
-const names: Record<string, string> = { ES: 'Spain', FR: 'France', IT: 'Italy' };
+const names: Record<string, string> = { ES: 'Spain', FR: 'France', IT: 'Italy', GB: 'United Kingdom', US: 'United States' };
 const name = (code: string) => names[code] ?? code;
 
 describe('help lines', () => {
@@ -31,8 +31,8 @@ describe('help lines', () => {
   });
 
   it('sort the countries in use first, then by name', () => {
-    expect(sortHelpLines(HELP_LINES, [], name).map((l) => l.country)).toEqual(['FR', 'IT', 'ES']);
-    expect(sortHelpLines(HELP_LINES, ['IT'], name).map((l) => l.country)).toEqual(['IT', 'FR', 'ES']);
-    expect(sortHelpLines(HELP_LINES, ['ES', 'FR'], name).map((l) => l.country)).toEqual(['ES', 'FR', 'IT']);
+    expect(sortHelpLines(HELP_LINES, [], name).map((l) => l.country)).toEqual(['FR', 'IT', 'ES', 'GB', 'US']);
+    expect(sortHelpLines(HELP_LINES, ['IT'], name).map((l) => l.country)).toEqual(['IT', 'FR', 'ES', 'GB', 'US']);
+    expect(sortHelpLines(HELP_LINES, ['US', 'GB'], name).map((l) => l.country)).toEqual(['US', 'GB', 'FR', 'IT', 'ES']);
   });
 });

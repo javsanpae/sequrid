@@ -4,7 +4,7 @@ Onboarding for AI coding agents (and humans) working on **Sequrid**. Read this b
 
 ## What this project is
 
-Sequrid is a static Svelte 5 + TypeScript web app that protects a photo of an ID card before you send it. It covers sensitive fields (black, pixelated or blurred), adds a tiled diagonal watermark (use · recipient · date) and exports an A4 PDF or JPGs. It supports the Spanish DNI (2021 model), the French carte nationale d'identité (since 2021) and the Italian CIE 3.0 (current design, since 2022), up to two IDs (front and back each), in English, Spanish, French and Italian.
+Sequrid is a static Svelte 5 + TypeScript web app that protects a photo of an ID card before you send it. It covers sensitive fields (black, pixelated or blurred), adds a tiled diagonal watermark (use · recipient · date) and exports an A4 PDF or JPGs. It supports the Spanish DNI (2021 model), the French carte nationale d'identité (since 2021) and the Italian CIE 3.0 (current design, since 2022), the UK photocard driving licence (Great Britain and Northern Ireland) and the US passport card, up to two IDs (front and back each), in English, Spanish, French and Italian.
 
 It ships as an nginx container image (`ghcr.io/javsanpae/sequrid`) and a Helm chart. Licensed **AGPL-3.0-or-later** ([`LICENSE`](LICENSE)).
 
@@ -50,7 +50,7 @@ src/App.svelte             page layout, paste/drop handling, footer (source link
 src/app.css                design tokens, light/dark themes, global styles
 src/lib/
   config.ts                SOURCE_URL and VERSION from VITE_SOURCE_URL / VITE_APP_VERSION
-  documents.ts             document models: ZoneKey, DocumentType, DNI_ES, CNI_FR, CIE_IT, DOCUMENTS, helpers
+  documents.ts             document models: ZoneKey, DocumentType, DNI_ES, CNI_FR, CIE_IT, DL_GB, DL_NI, PPC_US, DOCUMENTS, helpers
   countries.ts             country names via Intl.DisplayNames, native language/name (cached)
   document-search.ts       picker grouping by country and accent-insensitive search
   presets.ts               usage presets (what each use covers) and protection level
@@ -110,7 +110,7 @@ VERSION                    release version, single source of truth
 
 ### Document model
 
-- `ZoneKey` is a **shared vocabulary across countries** (`number`, `serial`, `birthDate`, `signature`, `can`, `expiry`, `issueDate`, `name`, `photo`, `address`, `birthPlace`, `parents`, `height`, `seal`, `taxCode`, `birthRecord`, `issuer`, `mrz`) so presets work for every document. `ZONE_KEYS` order is the display order for mixed-country checklists.
+- `ZoneKey` is a **shared vocabulary across countries** (`number`, `serial`, `birthDate`, `signature`, `can`, `expiry`, `issueDate`, `name`, `photo`, `address`, `birthPlace`, `parents`, `height`, `seal`, `taxCode`, `birthRecord`, `issuer`, `entitlements`, `restrictions`, `mrz`) so presets work for every document. `ZONE_KEYS` order is the display order for mixed-country checklists.
 - A `DocumentType` has `id` (`DocumentId` union), `country` (ISO 3166-1 alpha-2), `short` (acronym used in labels and file names), `issuedFrom`, optional `issuedUntil` (absent = still issued), optional `aliases` (search terms), `widthMm`/`heightMm` (ID-1) and `zones`, each with one or more rects on either side (repeated prints of the same data are extra rects of the same key).
 - `documents.ts` holds **only geometry and identifiers**; display text lives in `t.documents[id]` (`countryName`, `name`, `sides`, per-document `zones` label/hint). `t.fields` holds neutral names used when countries are mixed.
 - The picker (`document-search.ts`) groups by country (sorted by localized name with `Intl.Collator`; models current first, then newest via `compareModels`) and searches case- and accent-insensitively: every query word must prefix-match a word among country names (all UI languages, native name, ISO code), acronym, model names (all UI languages), aliases and years; a 4-digit year also matches models issued that year. Country names come from `Intl.DisplayNames` (`countries.ts`), falling back to the dictionary `countryName`, then the code.
@@ -134,7 +134,7 @@ VERSION                    release version, single source of truth
 
 ### Add a country or document model
 
-1. **Geometry** in `src/lib/documents.ts`: add the id to `DocumentId`, define a `DocumentType` with measured rects (fractions of the card, from an official specimen), `short`, `issuedFrom`/`issuedUntil`, `aliases`, ID-1 size, and add it to `DOCUMENTS`. Reuse existing `ZoneKey`s; only add a key if the data is genuinely new (see below). The unit tests require: unique keys, rects inside the card, zones on both sides, ID-1 size, and `number`, `birthDate`, `signature`, `can`, `mrz`, `photo` present.
+1. **Geometry** in `src/lib/documents.ts`: add the id to `DocumentId`, define a `DocumentType` with measured rects (fractions of the card, from an official specimen), `short`, `issuedFrom`/`issuedUntil`, `aliases`, ID-1 size, and add it to `DOCUMENTS`. Reuse existing `ZoneKey`s; only add a key if the data is genuinely new (see below). The unit tests require: unique keys, rects inside the card, zones on both sides, ID-1 size, and `number`, `name`, `birthDate`, `photo` present (signature, CAN and MRZ are not on every document). `short` may contain spaces ("Passport Card"); file names go through `fileSlug()`.
 2. **Dictionaries** (`en.ts`, `es.ts`, `fr.ts`, `it.ts`): `documents[id]` with `countryName`, `name`, `sides` (label + hint) and a `zones` entry for exactly the keys the document has (tested). Add `the` (the document inside a sentence, used by `settings.autoHelp`) and update the copy that lists supported documents: `meta.description`, `hero.lead`, the FAQ item "Which documents are supported?", `info.usage.note` if relevant, plus the static `<meta name="description">` in `index.html` and README "Features".
 3. **Flag** in `src/components/Flag.svelte`: add a simplified SVG (viewBox `0 0 3 2`) to the `{#if}` branch, or rely on the ISO-code badge fallback.
 4. **Sample** in `src/lib/sample.ts`: draw a fictitious card with data where the real one has it, no official emblems, and add it to `sampleCards()`. Without it, `sampleCards()` falls back to the DNI drawing, which will not match the new zones.

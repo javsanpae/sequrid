@@ -22,16 +22,17 @@ const PRUDENT: ZoneKey[] = [
   'seal',
   'taxCode',
   'birthRecord',
+  'restrictions',
   'mrz',
 ];
-const STRICT: ZoneKey[] = ['number', ...PRUDENT, 'address', 'issuer'];
+const STRICT: ZoneKey[] = ['number', ...PRUDENT, 'address', 'issuer', 'entitlements'];
 
 export const USAGES: UsagePreset[] = [
   { id: 'other', cover: PRUDENT },
   { id: 'rental', cover: PRUDENT },
   { id: 'job', cover: STRICT },
   { id: 'sale', cover: STRICT },
-  { id: 'hotel', cover: ['signature', 'can', 'birthPlace', 'parents', 'height', 'seal', 'taxCode', 'birthRecord', 'mrz'] },
+  { id: 'hotel', cover: ['signature', 'can', 'birthPlace', 'parents', 'height', 'seal', 'taxCode', 'birthRecord', 'restrictions', 'mrz'] },
   { id: 'bank', cover: ['can'] },
   { id: 'government', cover: ['can'] },
 ];

@@ -5,11 +5,14 @@
 
   const code = $derived(country.toUpperCase());
   const height = $derived(Math.round((size * 2) / 3));
+  const DRAWN = ['ES', 'FR', 'IT', 'GB', 'US'];
+  // US flag: 13 stripes, the first 7 next to the blue canton.
+  const STRIPES = Array.from({ length: 13 }, (_, i) => i);
 </script>
 
 <!-- Simplified flags, drawn here so they look the same on every system.
      Countries without a drawn flag get a neutral badge with their ISO code. -->
-{#if code === 'ES' || code === 'FR' || code === 'IT'}
+{#if DRAWN.includes(code)}
   <svg class="flag" width={size} {height} viewBox="0 0 3 2" aria-hidden="true" focusable="false">
     {#if code === 'ES'}
       <rect width="3" height="2" fill="#c60b1e" />
@@ -18,10 +21,21 @@
       <rect width="1" height="2" fill="#002395" />
       <rect x="1" width="1" height="2" fill="#ffffff" />
       <rect x="2" width="1" height="2" fill="#ed2939" />
-    {:else}
+    {:else if code === 'IT'}
       <rect width="1" height="2" fill="#009246" />
       <rect x="1" width="1" height="2" fill="#ffffff" />
       <rect x="2" width="1" height="2" fill="#ce2b37" />
+    {:else if code === 'GB'}
+      <rect width="3" height="2" fill="#012169" />
+      <path d="M0 0L3 2M3 0L0 2" stroke="#ffffff" stroke-width="0.4" />
+      <path d="M0 0L3 2M3 0L0 2" stroke="#c8102e" stroke-width="0.13" />
+      <path d="M1.5 0V2M0 1H3" stroke="#ffffff" stroke-width="0.6" />
+      <path d="M1.5 0V2M0 1H3" stroke="#c8102e" stroke-width="0.36" />
+    {:else}
+      {#each STRIPES as i (i)}
+        <rect y={(i * 2) / 13} width="3" height={2 / 13 + 0.001} fill={i % 2 ? '#ffffff' : '#b22234'} />
+      {/each}
+      <rect width="1.2" height={(7 * 2) / 13} fill="#3c3b6e" />
     {/if}
   </svg>
 {:else}

@@ -71,9 +71,12 @@ describe('normalizeText', () => {
 
 describe('searchDocuments with the real catalog', () => {
   it('returns everything, grouped and sorted by localized name, for an empty query', () => {
-    expect(countries(search(''))).toEqual(['FR', 'IT', 'ES']); // France, Italy, Spain
-    expect(countries(search('   ', 'es'))).toEqual(['ES', 'FR', 'IT']); // España, Francia, Italia
-    expect(countries(search('', 'fr'))).toEqual(['ES', 'FR', 'IT']); // Espagne, France, Italie
+    // France, Italy, Spain, United Kingdom, United States
+    expect(countries(search(''))).toEqual(['FR', 'IT', 'ES', 'GB', 'US']);
+    // España, Estados Unidos, Francia, Italia, Reino Unido
+    expect(countries(search('   ', 'es'))).toEqual(['ES', 'US', 'FR', 'IT', 'GB']);
+    // Espagne, États-Unis, France, Italie, Royaume-Uni
+    expect(countries(search('', 'fr'))).toEqual(['ES', 'US', 'FR', 'IT', 'GB']);
     expect(search('')[0].name).toBe('France');
   });
 
@@ -104,7 +107,22 @@ describe('searchDocuments with the real catalog', () => {
       expect(ids(search(q)), q).toEqual(['cie-it']);
     }
     // Issued since 2022, so a 2021 search does not include it.
-    expect(ids(search('2021')).sort()).toEqual(['cni-fr', 'dni-es']);
+    expect(ids(search('2021'))).not.toContain('cie-it');
+  });
+
+  it('finds both UK driving licences, Great Britain first', () => {
+    for (const q of ['united kingdom', 'reino unido', 'royaume-uni', 'GB', 'driving licence', 'DL']) {
+      expect(ids(search(q)), q).toEqual(['dl-gb', 'dl-ni']);
+    }
+    expect(ids(search('DVLA'))).toEqual(['dl-gb']);
+    expect(ids(search('northern ireland'))).toEqual(['dl-ni']);
+    expect(ids(search('scotland'))).toEqual(['dl-gb']);
+  });
+
+  it('finds the US passport card', () => {
+    for (const q of ['united states', 'estados unidos', 'états-unis', 'usa', 'US', 'passport card', 'pass card', 'real id']) {
+      expect(ids(search(q)), q).toEqual(['ppc-us']);
+    }
   });
 
   it('matches model names in every language', () => {
@@ -119,9 +137,11 @@ describe('searchDocuments with the real catalog', () => {
   });
 
   it('matches by year', () => {
-    expect(ids(search('2021')).sort()).toEqual(['cni-fr', 'dni-es']);
+    // Every model issued at some point in 2021, including the passport card (2008–present).
+    expect(ids(search('2021')).sort()).toEqual(['cni-fr', 'dl-gb', 'dl-ni', 'dni-es', 'ppc-us']);
     expect(ids(search('france 2023'))).toEqual(['cni-fr']);
-    expect(ids(search('2015'))).toEqual([]);
+    expect(ids(search('2015'))).toEqual(['ppc-us']);
+    expect(ids(search('2005'))).toEqual([]);
   });
 
   it('returns nothing when nothing matches', () => {

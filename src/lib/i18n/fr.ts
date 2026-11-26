@@ -9,7 +9,7 @@ export const fr: Messages = {
   meta: {
     title: 'Sequrid · Protégez votre carte d’identité',
     description:
-      'Masquez les informations sensibles de votre carte d’identité (Espagne, France et Italie) et ajoutez un filigrane avec le destinataire et la date. Tout est traité dans votre navigateur : la photo ne quitte jamais votre appareil.',
+      'Masquez les informations sensibles de votre carte d’identité (Espagne, France, Italie, Royaume-Uni et États-Unis) et ajoutez un filigrane avec le destinataire et la date. Tout est traité dans votre navigateur : la photo ne quitte jamais votre appareil.',
   },
 
   language: {
@@ -36,7 +36,7 @@ export const fr: Messages = {
     noSignup: 'Sans inscription',
     openSource: 'Open source',
     title: 'Protégez votre carte d’identité avant de l’envoyer',
-    lead: 'Masquez les informations dont personne n’a besoin, ajoutez un filigrane avec le destinataire et la date, puis téléchargez un PDF ou un JPG prêt à envoyer. Compatible avec le DNI espagnol, la carte nationale d’identité française et la CIE italienne.',
+    lead: 'Masquez les informations dont personne n’a besoin, ajoutez un filigrane avec le destinataire et la date, puis téléchargez un PDF ou un JPG prêt à envoyer. Compatible avec le DNI espagnol, la carte nationale d’identité française, la CIE italienne, le permis de conduire britannique et la carte passeport américaine.',
   },
 
   footer: {
@@ -239,6 +239,8 @@ export const fr: Messages = {
     taxCode: 'Code fiscal',
     birthRecord: 'Références de l’acte de naissance',
     issuer: 'Autorité de délivrance',
+    entitlements: 'Catégories de permis et dates',
+    restrictions: 'Codes de restriction',
     mrz: 'Zone MRZ',
   },
 
@@ -383,6 +385,99 @@ export const fr: Messages = {
         mrz: { label: 'Zone MRZ (lignes du bas)', hint: 'Les trois lignes lisibles par machine reprennent le numéro, les dates et le nom.' },
       },
     },
+    'dl-gb': {
+      countryName: 'Royaume-Uni',
+      the: 'du permis de conduire',
+      name: 'Permis de conduire (Grande-Bretagne, DVLA, depuis 2021)',
+      sides: {
+        front: { label: 'Recto', hint: 'Face avec la photo' },
+        back: { label: 'Verso', hint: 'Face avec les catégories' },
+      },
+      zones: {
+        name: { label: 'Nom et prénoms (1, 2)', hint: 'Presque toujours nécessaire : c’est ce qui vous identifie.' },
+        birthDate: {
+          label: 'Date et lieu de naissance (3)',
+          hint: 'Ils partagent une ligne, ils sont donc masqués ensemble. Ce sont des réponses classiques aux questions de sécurité.',
+        },
+        issueDate: { label: 'Date de délivrance (4a)', hint: 'Rarement utile à qui reçoit la copie.' },
+        issuer: { label: 'Autorité de délivrance (4c)', hint: 'L’organisme qui a délivré le permis. Rarement utile.' },
+        expiry: { label: 'Date d’expiration (4b)', hint: 'Rarement utile à qui reçoit la copie.' },
+        number: {
+          label: 'Numéro de conducteur (5)',
+          hint: 'Ses 16 caractères encodent votre nom, votre date de naissance et vos initiales. Les assureurs et les employeurs peuvent le demander ; personne d’autre n’en a besoin.',
+        },
+        signature: { label: 'Signature (7)', hint: 'Une signature numérisée peut être collée sur n’importe quel contrat ou autorisation.' },
+        address: { label: 'Adresse (8)', hint: 'Votre adresse. Seule une personne qui doit vous envoyer quelque chose ou vous inscrire en a besoin.' },
+        entitlements: {
+          label: 'Catégories et leurs dates (9–11)',
+          hint: 'Les véhicules que vous pouvez conduire et depuis quand. Seul un employeur qui vous fera conduire en a besoin.',
+        },
+        restrictions: {
+          label: 'Codes de restriction (12)',
+          hint: 'Des codes comme 01 (lunettes) ou les aménagements du véhicule peuvent révéler des problèmes de santé. Masquez-les sauf si on vous les demande.',
+        },
+        serial: { label: 'Numéro de série de la carte', hint: 'Le numéro en bas à droite du verso identifie la carte physique.' },
+        photo: { label: 'Photo (et portrait secondaire)', hint: 'La photo principale et le petit portrait fantôme en dessous.' },
+      },
+    },
+    'dl-ni': {
+      countryName: 'Royaume-Uni',
+      the: 'du permis de conduire',
+      name: 'Permis de conduire (Irlande du Nord, DVA, depuis 2021)',
+      sides: {
+        front: { label: 'Recto', hint: 'Face avec la photo' },
+        back: { label: 'Verso', hint: 'Face avec les catégories' },
+      },
+      zones: {
+        name: { label: 'Nom et prénoms (1, 2)', hint: 'Presque toujours nécessaire : c’est ce qui vous identifie.' },
+        birthDate: {
+          label: 'Date et lieu de naissance (3)',
+          hint: 'Ils partagent une ligne, ils sont donc masqués ensemble. Ce sont des réponses classiques aux questions de sécurité.',
+        },
+        issueDate: { label: 'Date de délivrance (4a)', hint: 'Rarement utile à qui reçoit la copie.' },
+        issuer: { label: 'Autorité de délivrance (4c)', hint: 'L’organisme qui a délivré le permis. Rarement utile.' },
+        expiry: { label: 'Date d’expiration (4b)', hint: 'Rarement utile à qui reçoit la copie.' },
+        number: {
+          label: 'Numéro de conducteur (5)',
+          hint: 'Votre numéro de conducteur unique, à huit chiffres. Les assureurs et les employeurs peuvent le demander ; personne d’autre n’en a besoin.',
+        },
+        signature: { label: 'Signature (7)', hint: 'Une signature numérisée peut être collée sur n’importe quel contrat ou autorisation.' },
+        address: { label: 'Adresse (8)', hint: 'Votre adresse. Seule une personne qui doit vous envoyer quelque chose ou vous inscrire en a besoin.' },
+        entitlements: {
+          label: 'Catégories et leurs dates (9–11)',
+          hint: 'Les véhicules que vous pouvez conduire et depuis quand. Seul un employeur qui vous fera conduire en a besoin.',
+        },
+        restrictions: {
+          label: 'Codes de restriction (12)',
+          hint: 'Des codes comme 01 (lunettes) ou les aménagements du véhicule peuvent révéler des problèmes de santé. Masquez-les sauf si on vous les demande.',
+        },
+        serial: { label: 'Numéro de série de la carte', hint: 'Le numéro en bas à droite du verso identifie la carte physique.' },
+        photo: { label: 'Photo (et portrait secondaire)', hint: 'La photo principale et le petit portrait fantôme en dessous.' },
+      },
+    },
+    'ppc-us': {
+      countryName: 'États-Unis',
+      the: 'de la carte passeport',
+      name: 'Carte passeport (depuis 2008)',
+      sides: {
+        front: { label: 'Recto', hint: 'Face avec la photo' },
+        back: { label: 'Verso', hint: 'Face avec la zone MRZ' },
+      },
+      zones: {
+        number: { label: 'Numéro de la carte passeport', hint: 'Il commence par C. Imprimé au recto, en relief au verso et dans la MRZ.' },
+        serial: {
+          label: 'Numéros de contrôle et code-barres',
+          hint: 'Les numéros sous la photo, le long du bord gauche, en bas à droite et au verso, ainsi que le code-barres.',
+        },
+        name: { label: 'Nom et prénoms', hint: 'Presque toujours nécessaire : c’est ce qui vous identifie.' },
+        birthDate: { label: 'Date de naissance', hint: 'Très utilisée dans les questions de sécurité et la récupération de comptes.' },
+        birthPlace: { label: 'Lieu de naissance', hint: 'Une autre réponse classique aux questions de sécurité.' },
+        issueDate: { label: 'Date de délivrance', hint: 'Rarement utile à qui reçoit la copie.' },
+        expiry: { label: 'Date d’expiration', hint: 'Rarement utile à qui reçoit la copie.' },
+        photo: { label: 'Photo (et portrait secondaire)', hint: 'La photo principale et le petit portrait fantôme à droite.' },
+        mrz: { label: 'Zone MRZ (lignes du bas)', hint: 'Les trois lignes lisibles par machine reprennent le numéro, les dates et le nom.' },
+      },
+    },
   },
 
   usages: {
@@ -491,7 +586,7 @@ export const fr: Messages = {
         },
         {
           q: 'Quels documents sont pris en charge ?',
-          a: 'Le DNI espagnol (modèle 2021), la carte nationale d’identité française (depuis 2021) et la carte d’identité électronique italienne (CIE 3.0, depuis 2022). Choisissez le pays de chaque document dans le panneau des photos et les zones se placent sur ses informations. D’autres pays suivront.',
+          a: 'Le DNI espagnol (modèle 2021), la carte nationale d’identité française (depuis 2021) la carte d’identité électronique italienne (CIE 3.0, depuis 2022), le permis de conduire britannique à photo (Grande-Bretagne et Irlande du Nord, depuis 2021) et la carte passeport américaine (passport card). Le Royaume-Uni et les États-Unis n’ont pas de carte nationale d’identité : ce sont donc ces cartes qui servent de pièce d’identité. Choisissez le pays de chaque document dans le panneau des photos et les zones se placent sur ses informations. D’autres pays suivront.',
         },
         {
           q: 'Est-ce que ça fonctionne sur mobile et hors connexion ?',
@@ -520,6 +615,8 @@ export const fr: Messages = {
         'es-incibe': 'Ligne gratuite et confidentielle de l’Institut national de cybersécurité espagnol pour tout problème de cybersécurité. Tous les jours de 8 h à 23 h.',
         'fr-17cyber': 'Assistance officielle en ligne pour les victimes de cybermalveillance, avec l’aide d’un policier ou d’un gendarme si nécessaire.',
         'it-postale': 'Portail de la police postale et de la cybersécurité italienne pour s’informer et signaler des délits en ligne. Les plaintes se déposent dans un commissariat.',
+        'gb-reportfraud': 'Le service national pour signaler les fraudes et la cybercriminalité en Angleterre, au pays de Galles et en Irlande du Nord (anciennement Action Fraud). Lignes téléphoniques ouvertes 24 h/24. En Écosse, signalez-le à Police Scotland au 101.',
+        'us-ftc': 'Le site de la Federal Trade Commission (FTC) pour signaler une usurpation d’identité et obtenir un plan de rétablissement personnalisé. La ligne téléphonique de la FTC est ouverte du lundi au vendredi, de 8 h à 17 h.',
       },
       note: 'Seuls les services vérifiés sur leurs sites officiels sont listés. D’autres pays seront ajoutés avec leurs documents.',
     },

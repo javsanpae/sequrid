@@ -31,12 +31,21 @@ export const sideLabel = (t: Messages, doc: DocumentType, side: Side): string =>
 export const faceTitle = (t: Messages, doc: DocumentType, n: number, side: Side): string =>
   `${doc.short} ${n} · ${sideLabel(t, doc, side)}`;
 
+/** A document acronym as a file-name word: "DNI" → "dni", "Passport Card" → "passport-card". */
+export const fileSlug = (short: string): string =>
+  short
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
 /** "dni-protected", "cni-protege", or "document-protected" when countries are mixed. */
 export function downloadBase(t: Messages, docs: readonly DocumentType[]): string {
-  const prefix = docs.length === 1 ? docs[0].short.toLowerCase() : t.files.document;
+  const prefix = docs.length === 1 ? fileSlug(docs[0].short) : t.files.document;
   return `${prefix}-${t.files.protected}`;
 }
 
 /** "dni-protected-dni1-front", "dni-protegido-dni1-anverso", "cni-protege-cni2-verso"… */
 export const faceFileName = (t: Messages, docs: readonly DocumentType[], doc: DocumentType, n: number, side: Side): string =>
-  `${downloadBase(t, docs)}-${doc.short.toLowerCase()}${n}-${t.files.sides[side]}`;
+  `${downloadBase(t, docs)}-${fileSlug(doc.short)}${n}-${t.files.sides[side]}`;

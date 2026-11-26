@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DOCUMENTS, documentKeys, DNI_ES, CNI_FR, CIE_IT, ZONE_KEYS } from '../../src/lib/documents';
+import { DOCUMENTS, documentKeys, DNI_ES, CNI_FR, CIE_IT, DL_GB, PPC_US, ZONE_KEYS } from '../../src/lib/documents';
 import { en } from '../../src/lib/i18n/en';
 import {
   browserLang,
@@ -11,7 +11,7 @@ import {
   preferenceFor,
   type Lang,
 } from '../../src/lib/i18n/lang';
-import { downloadBase, faceFileName, faceTitle, zoneLabel, zoneText } from '../../src/lib/i18n/text';
+import { downloadBase, faceFileName, faceTitle, fileSlug, zoneLabel, zoneText } from '../../src/lib/i18n/text';
 import { USAGES } from '../../src/lib/presets';
 
 /** Every leaf path with its kind, e.g. "status.loadedOne: function" or "info.faq.items: array(10)". */
@@ -179,5 +179,15 @@ describe('text helpers', () => {
     expect(faceFileName(fr, [CNI_FR], CNI_FR, 2, 'back')).toBe('cni-protege-cni2-verso');
     expect(downloadBase(italian, [CIE_IT, DNI_ES])).toBe('documento-protetto');
     expect(faceFileName(italian, [CIE_IT], CIE_IT, 1, 'back')).toBe('cie-protetto-cie1-retro');
+  });
+
+  it('turns multi-word acronyms into safe file-name words', () => {
+    expect(fileSlug('DNI')).toBe('dni');
+    expect(fileSlug('Passport Card')).toBe('passport-card');
+    expect(fileSlug(' Ça  Va! ')).toBe('ca-va');
+    expect(downloadBase(en, [PPC_US])).toBe('passport-card-protected');
+    expect(faceFileName(en, [PPC_US], PPC_US, 1, 'back')).toBe('passport-card-protected-passport-card1-back');
+    expect(faceFileName(en, [DL_GB], DL_GB, 2, 'front')).toBe('dl-protected-dl2-front');
+    expect(faceTitle(en, PPC_US, 1, 'front')).toBe('Passport Card 1 · Front');
   });
 });

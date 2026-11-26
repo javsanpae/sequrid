@@ -6,7 +6,7 @@ import type { CountryCode } from './documents';
  * services are proper nouns and are not translated; what each one does is
  * described in the i18n dictionaries (`info.help.lines`).
  */
-export type HelpLineId = 'es-incibe' | 'fr-17cyber' | 'it-postale';
+export type HelpLineId = 'es-incibe' | 'fr-17cyber' | 'it-postale' | 'gb-reportfraud' | 'us-ftc';
 
 export type ContactKind = 'phone' | 'whatsapp' | 'telegram' | 'web';
 
@@ -69,6 +69,32 @@ export const HELP_LINES: HelpLine[] = [
     contacts: [{ kind: 'web', value: 'commissariatodips.it', href: 'https://www.commissariatodips.it/' }],
     emergency: ['112', '113'],
     source: 'https://www.commissariatodips.it/',
+  },
+  {
+    id: 'gb-reportfraud',
+    country: 'GB',
+    // Formerly Action Fraud. Covers England, Wales and Northern Ireland;
+    // in Scotland, crimes are reported to Police Scotland on 101.
+    service: 'Report Fraud',
+    operator: 'Police (England, Wales and Northern Ireland)',
+    contacts: [
+      { kind: 'phone', value: '0300 123 2040', href: 'tel:03001232040' },
+      { kind: 'web', value: 'reportfraud.police.uk', href: 'https://www.reportfraud.police.uk/' },
+    ],
+    emergency: ['999'],
+    source: 'https://www.reportfraud.police.uk/contact-us/',
+  },
+  {
+    id: 'us-ftc',
+    country: 'US',
+    service: 'IdentityTheft.gov',
+    operator: 'Federal Trade Commission (FTC)',
+    contacts: [
+      { kind: 'web', value: 'identitytheft.gov', href: 'https://www.identitytheft.gov/' },
+      { kind: 'phone', value: '1-877-382-4357', href: 'tel:1-877-382-4357' },
+    ],
+    emergency: ['911'],
+    source: 'https://www.ftc.gov/about-ftc/contact',
   },
 ];
 

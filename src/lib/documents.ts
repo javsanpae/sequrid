@@ -26,6 +26,8 @@ export type ZoneKey =
   | 'taxCode'
   | 'birthRecord'
   | 'issuer'
+  | 'entitlements'
+  | 'restrictions'
   | 'mrz';
 
 export const ZONE_KEYS: ZoneKey[] = [
@@ -46,6 +48,8 @@ export const ZONE_KEYS: ZoneKey[] = [
   'taxCode',
   'birthRecord',
   'issuer',
+  'entitlements',
+  'restrictions',
   'mrz',
 ];
 
@@ -64,7 +68,7 @@ export interface ZoneDef {
  * any nation can be added without touching this type.
  */
 export type CountryCode = string;
-export type DocumentId = 'dni-es' | 'cni-fr' | 'cie-it';
+export type DocumentId = 'dni-es' | 'cni-fr' | 'cie-it' | 'dl-gb' | 'dl-ni' | 'ppc-us';
 
 /**
  * What the picker needs to list and search a document model. Countries can
@@ -208,7 +212,111 @@ export const CIE_IT: DocumentType = {
   ],
 };
 
-export const DOCUMENTS: DocumentType[] = [DNI_ES, CNI_FR, CIE_IT];
+/**
+ * The United Kingdom has no national identity card: the photocard driving
+ * licence is the everyday ID. Great Britain (DVLA) and Northern Ireland (DVA)
+ * issue cards with the same layout (fields numbered as in the EU model), so
+ * they share most of the geometry. Positions follow DVLA and nidirect.gov.uk
+ * specimens. The back is a table of categories (9), valid from/to dates
+ * (10, 11) and restriction codes (12), which can reveal health conditions.
+ */
+function ukLicenceZones(o: { name: number; number: number; dateOnPhoto: ZoneKey; photo: SideRect[] }): ZoneDef[] {
+  return [
+    { key: 'name', rects: [front(0.347, o.name, 0.43, 0.17)] },
+    // Field 3: date and place of birth on one line.
+    { key: 'birthDate', rects: [front(0.347, 0.342, 0.44, 0.055)] },
+    {
+      key: 'issueDate',
+      rects: [front(0.347, 0.396, 0.155, 0.052), ...(o.dateOnPhoto === 'issueDate' ? [front(0.06, 0.615, 0.11, 0.036)] : [])],
+    },
+    { key: 'issuer', rects: [front(0.511, 0.396, 0.13, 0.052)] },
+    {
+      key: 'expiry',
+      rects: [front(0.347, 0.451, 0.155, 0.052), ...(o.dateOnPhoto === 'expiry' ? [front(0.06, 0.615, 0.11, 0.036)] : [])],
+    },
+    { key: 'number', rects: [front(0.347, 0.506, o.number, 0.052)] },
+    { key: 'signature', rects: [front(0.347, 0.58, 0.39, 0.13)] },
+    { key: 'address', rects: [front(0.347, 0.726, 0.46, 0.143)] },
+    { key: 'entitlements', rects: [front(0.347, 0.88, 0.5, 0.06), back(0.432, 0.069, 0.252, 0.775)] },
+    { key: 'restrictions', rects: [back(0.679, 0.069, 0.195, 0.775)] },
+    { key: 'serial', rects: [back(0.698, 0.912, 0.25, 0.07)] },
+    { key: 'photo', rects: o.photo },
+  ];
+}
+
+/** Great Britain photocard driving licence (DVLA), design issued since December 2021. */
+export const DL_GB: DocumentType = {
+  id: 'dl-gb',
+  country: 'GB',
+  short: 'DL',
+  issuedFrom: 2021,
+  aliases: ['driving licence', 'driver’s licence', 'photocard', 'DVLA', 'Great Britain', 'England', 'Scotland', 'Wales'],
+  widthMm: 85.6,
+  heightMm: 53.98,
+  // The 16-character driver number encodes surname, date of birth and initials.
+  zones: ukLicenceZones({
+    name: 0.166,
+    number: 0.34,
+    dateOnPhoto: 'issueDate',
+    photo: [front(0.055, 0.244, 0.22, 0.41), front(0.067, 0.713, 0.207, 0.195)],
+  }),
+};
+
+/** Northern Ireland photocard driving licence (DVA), design issued since 2021. */
+export const DL_NI: DocumentType = {
+  id: 'dl-ni',
+  country: 'GB',
+  short: 'DL',
+  issuedFrom: 2021,
+  aliases: ['driving licence', 'driver’s licence', 'photocard', 'DVA', 'Northern Ireland', 'NI'],
+  widthMm: 85.6,
+  heightMm: 53.98,
+  zones: ukLicenceZones({
+    name: 0.176,
+    number: 0.18,
+    dateOnPhoto: 'expiry',
+    photo: [front(0.058, 0.236, 0.216, 0.424), front(0.093, 0.712, 0.152, 0.164)],
+  }),
+};
+
+/**
+ * U.S. passport card (Department of State), the only nationwide federal ID
+ * in card format, issued since 2008 in polycarbonate. Positions follow the
+ * official exemplar. It has no signature. Control numbers (under the photo,
+ * along the left edge, bottom right and on the back) and the barcode are
+ * grouped as `serial`.
+ */
+export const PPC_US: DocumentType = {
+  id: 'ppc-us',
+  country: 'US',
+  short: 'Passport Card',
+  issuedFrom: 2008,
+  aliases: ['passport card', 'US passport card', 'PASS card', 'REAL ID', 'United States', 'USA'],
+  widthMm: 85.6,
+  heightMm: 53.98,
+  zones: [
+    { key: 'number', rects: [front(0.715, 0.247, 0.2, 0.062), back(0.745, 0.374, 0.195, 0.067)] },
+    {
+      key: 'serial',
+      rects: [
+        front(0.06, 0.865, 0.205, 0.055),
+        front(0.805, 0.875, 0.125, 0.045),
+        front(0.002, 0.43, 0.026, 0.44),
+        back(0.7, 0.138, 0.08, 0.046),
+        back(0.043, 0.45, 0.31, 0.11),
+      ],
+    },
+    { key: 'name', rects: [front(0.395, 0.338, 0.44, 0.212)] },
+    { key: 'birthDate', rects: [front(0.578, 0.602, 0.17, 0.062)] },
+    { key: 'birthPlace', rects: [front(0.48, 0.714, 0.28, 0.062)] },
+    { key: 'issueDate', rects: [front(0.486, 0.82, 0.185, 0.055)] },
+    { key: 'expiry', rects: [front(0.703, 0.82, 0.19, 0.055)] },
+    { key: 'photo', rects: [front(0.03, 0.222, 0.31, 0.627), front(0.839, 0.454, 0.134, 0.251)] },
+    { key: 'mrz', rects: [back(0.049, 0.67, 0.89, 0.222)] },
+  ],
+};
+
+export const DOCUMENTS: DocumentType[] = [DNI_ES, CNI_FR, CIE_IT, DL_GB, DL_NI, PPC_US];
 
 /** True while the model is still being issued. */
 export const isCurrent = (doc: DocumentInfo): boolean => doc.issuedUntil === undefined;

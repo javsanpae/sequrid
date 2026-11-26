@@ -530,12 +530,210 @@ function cieBack(): HTMLCanvasElement {
   return c;
 }
 
+const EN_VALUE = '#161c28';
+const num = (ctx: Ctx, t: string, fx: number, fy: number) => text(ctx, t, fx, fy, 0.024, { color: '#4a3a5c', weight: 500 });
+
+/** UK photocard licence: Great Britain and Northern Ireland share the layout. */
+function licenceFront(variant: 'gb' | 'ni'): HTMLCanvasElement {
+  const c = createCanvas(W, H);
+  const ctx = ctx2d(c);
+  cardBase(ctx, ['#f6e3ee', '#fbf1f5', '#e6eef8', '#f4e6f0']);
+  const gb = variant === 'gb';
+
+  text(ctx, 'UK', 0.04, 0.115, 0.075, { color: '#23338a', weight: 900 });
+  text(ctx, 'DRIVING LICENCE · SPECIMEN', 0.19, 0.1, 0.048, { color: '#23338a', weight: 800 });
+  text(ctx, 'SAMPLE · FICTITIOUS DATA', 0.19, 0.145, 0.024, { color: '#4a3a5c', weight: 600 });
+
+  // Photo with a laser-engraved date, and the ghost image below it.
+  const px = 0.06 * W, py = 0.25 * H, pw = 0.21 * W, ph = 0.4 * H;
+  ctx.save();
+  roundedPath(ctx, px, py, pw, ph, 0.015 * H);
+  ctx.clip();
+  ctx.fillStyle = '#e2e4e8';
+  ctx.fillRect(px, py, pw, ph);
+  portrait(ctx, px, py, pw, ph, '#6a7078');
+  ctx.restore();
+  text(ctx, gb ? '01.06.2023' : '31.05.2033', 0.065, 0.642, 0.022, { color: '#1a1a1a', weight: 700 });
+  ctx.save();
+  ctx.globalAlpha = 0.35;
+  portrait(ctx, 0.1 * W, 0.72 * H, 0.14 * W, 0.17 * H, '#7a7f88');
+  ctx.restore();
+
+  num(ctx, '1.', 0.315, 0.215);
+  text(ctx, 'SAMPLE', 0.355, 0.215, 0.044, { color: EN_VALUE, weight: 600 });
+  num(ctx, '2.', 0.315, 0.265);
+  text(ctx, 'ALEX', 0.355, 0.265, 0.042, { color: EN_VALUE, weight: 600 });
+  text(ctx, 'JORDAN', 0.355, 0.31, 0.042, { color: EN_VALUE, weight: 600 });
+  num(ctx, '3.', 0.315, 0.385);
+  text(ctx, gb ? '01.02.1990 LEEDS' : '01.02.1990 BELFAST', 0.355, 0.385, 0.038, { color: EN_VALUE, weight: 600 });
+  num(ctx, '4a.', 0.305, 0.438);
+  text(ctx, '01.06.2023', 0.355, 0.438, 0.036, { color: EN_VALUE, weight: 600 });
+  num(ctx, '4c.', 0.515, 0.438);
+  text(ctx, gb ? 'DVLA' : 'DVA', 0.555, 0.438, 0.036, { color: EN_VALUE, weight: 600 });
+  num(ctx, '4b.', 0.305, 0.493);
+  text(ctx, '31.05.2033', 0.355, 0.493, 0.036, { color: EN_VALUE, weight: 600 });
+  num(ctx, '5.', 0.315, 0.548);
+  text(ctx, gb ? 'SAMPL902010AJ9XY 01' : '12345678', 0.355, 0.548, 0.036, { color: EN_VALUE, weight: 600 });
+  num(ctx, '7.', 0.315, 0.61);
+
+  ctx.strokeStyle = '#1b2440';
+  ctx.lineWidth = 5;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  const sx = 0.4 * W, sy = 0.68 * H;
+  ctx.moveTo(sx, sy);
+  for (let i = 0; i <= 50; i++) {
+    const t = i / 50;
+    ctx.lineTo(sx + t * 0.25 * W, sy - Math.sin(t * 10) * 0.03 * H - t * 0.02 * H);
+  }
+  ctx.stroke();
+
+  num(ctx, '8.', 0.315, 0.77);
+  text(ctx, '1 EXAMPLE STREET,', 0.355, 0.77, 0.032, { color: EN_VALUE, weight: 600 });
+  text(ctx, 'SAMPLETOWN', 0.355, 0.81, 0.032, { color: EN_VALUE, weight: 600 });
+  text(ctx, gb ? 'AB1 2CD' : 'BT1 1AA', 0.355, 0.85, 0.032, { color: EN_VALUE, weight: 600 });
+  num(ctx, '9.', 0.315, 0.915);
+  text(ctx, 'AM/A/B1/B/f/k/q', 0.355, 0.915, 0.032, { color: EN_VALUE, weight: 600 });
+
+  ctx.save();
+  ctx.translate(0.6 * W, 0.62 * H);
+  ctx.rotate(-0.4);
+  text(ctx, 'SPECIMEN', 0, 0, 0.09, { color: 'rgba(35, 51, 138, 0.15)', weight: 900 });
+  ctx.restore();
+  ctx.restore();
+  return c;
+}
+
+function licenceBack(variant: 'gb' | 'ni'): HTMLCanvasElement {
+  const c = createCanvas(W, H);
+  const ctx = ctx2d(c);
+  cardBase(ctx, ['#f6e3ee', '#fbf1f5', '#efe8f6', '#f4e6f0']);
+
+  // Categories (9), valid from (10), valid to (11) and codes (12).
+  const cols = [0.28, 0.43, 0.55, 0.68, 0.87];
+  ctx.strokeStyle = 'rgba(40, 30, 60, 0.5)';
+  ctx.lineWidth = 2;
+  for (const x of cols) {
+    ctx.beginPath();
+    ctx.moveTo(x * W, 0.05 * H);
+    ctx.lineTo(x * W, 0.85 * H);
+    ctx.stroke();
+  }
+  num(ctx, '9.', 0.33, 0.075);
+  num(ctx, '10.', 0.47, 0.075);
+  num(ctx, '11.', 0.59, 0.075);
+  num(ctx, '12.', 0.75, 0.075);
+  const rows = ['AM', 'A1', 'A2', 'A', 'B1', 'B', 'C1', 'C', 'D1', 'D', 'BE', 'C1E', 'CE', 'D1E', 'DE', 'f/k/q'];
+  rows.forEach((cat, i) => {
+    const y = 0.12 + i * 0.046;
+    ctx.beginPath();
+    ctx.moveTo(cols[0] * W, (y + 0.012) * H);
+    ctx.lineTo(cols[4] * W, (y + 0.012) * H);
+    ctx.stroke();
+    text(ctx, cat, 0.29, y, 0.03, { color: EN_VALUE, weight: 600 });
+    if (cat === 'AM' || cat === 'B' || cat === 'B1' || cat === 'f/k/q') {
+      text(ctx, '15.03.10', 0.445, y, 0.03, { color: EN_VALUE, weight: 600 });
+      text(ctx, '14.03.40', 0.565, y, 0.03, { color: EN_VALUE, weight: 600 });
+    }
+    if (cat === 'B') text(ctx, '01', 0.7, y, 0.03, { color: EN_VALUE, weight: 700 });
+  });
+
+  // Decorative symbol on the left (not an official emblem).
+  ctx.fillStyle = variant === 'gb' ? 'rgba(60, 60, 60, 0.6)' : 'rgba(184, 144, 46, 0.7)';
+  ctx.beginPath();
+  ctx.arc(0.13 * W, 0.3 * H, 0.08 * H, 0, Math.PI * 2);
+  ctx.fill();
+
+  verticalText(ctx, '1. Surname 2. First names 3. Date and place of birth', 0.94, 0.85, 0.02);
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+  ctx.fillRect(0.7 * W, 0.915 * H, 0.24 * W, 0.065 * H);
+  text(ctx, 'ZZ00000001', 0.72, 0.965, 0.034, { color: EN_VALUE, weight: 600, font: MONO });
+  ctx.restore();
+  return c;
+}
+
+const usLabel = (ctx: Ctx, t: string, fx: number, fy: number) => text(ctx, t, fx, fy, 0.026, { color: '#2a3a58', weight: 500 });
+
+function passportCardFront(): HTMLCanvasElement {
+  const c = createCanvas(W, H);
+  const ctx = ctx2d(c);
+  cardBase(ctx, ['#e4eef8', '#f4f7fb', '#e8f0f7', '#f6eef0']);
+
+  text(ctx, 'PASSPORT CARD · SPECIMEN', 0.07, 0.1, 0.052, { color: '#1f3b73', weight: 800 });
+  text(ctx, 'SAMPLE · FICTITIOUS DATA · NOT VALID', 0.07, 0.152, 0.026, { color: '#9b2335', weight: 700 });
+
+  const px = 0.035 * W, py = 0.23 * H, pw = 0.3 * W, ph = 0.6 * H;
+  ctx.save();
+  roundedPath(ctx, px, py, pw, ph, 0.015 * H);
+  ctx.clip();
+  ctx.fillStyle = '#e2e6ea';
+  ctx.fillRect(px, py, pw, ph);
+  portrait(ctx, px, py, pw, ph, '#666e78');
+  ctx.restore();
+  ctx.save();
+  ctx.globalAlpha = 0.35;
+  portrait(ctx, 0.845 * W, 0.47 * H, 0.12 * W, 0.22 * H, '#5d6670');
+  ctx.restore();
+
+  usLabel(ctx, 'Nationality', 0.4, 0.25);
+  text(ctx, 'USA', 0.4, 0.292, 0.036, { color: EN_VALUE, weight: 600 });
+  usLabel(ctx, 'Passport Card no.', 0.72, 0.232);
+  text(ctx, 'C00000000', 0.72, 0.296, 0.045, { color: EN_VALUE, weight: 600 });
+  usLabel(ctx, 'Surname', 0.4, 0.365);
+  text(ctx, 'SAMPLE', 0.4, 0.41, 0.042, { color: EN_VALUE, weight: 600 });
+  usLabel(ctx, 'Given Names', 0.4, 0.455);
+  text(ctx, 'ALEX JORDAN', 0.4, 0.5, 0.042, { color: EN_VALUE, weight: 600 });
+  usLabel(ctx, 'Sex', 0.45, 0.598);
+  text(ctx, 'F', 0.45, 0.652, 0.04, { color: EN_VALUE, weight: 600 });
+  usLabel(ctx, 'Date of Birth', 0.58, 0.598);
+  text(ctx, '1 JAN 1990', 0.58, 0.655, 0.04, { color: EN_VALUE, weight: 600 });
+  usLabel(ctx, 'Place of Birth', 0.48, 0.708);
+  text(ctx, 'TEXAS, U.S.A.', 0.48, 0.765, 0.04, { color: EN_VALUE, weight: 600 });
+  usLabel(ctx, 'Issued On', 0.49, 0.812);
+  text(ctx, '1 JUN 2023', 0.49, 0.866, 0.036, { color: EN_VALUE, weight: 600 });
+  usLabel(ctx, 'Expires On', 0.705, 0.812);
+  text(ctx, '31 MAY 2033', 0.705, 0.866, 0.036, { color: EN_VALUE, weight: 600 });
+
+  // Control numbers.
+  text(ctx, 'Z-0000000-00', 0.065, 0.905, 0.03, { color: EN_VALUE, weight: 700 });
+  text(ctx, '0-00000-0', 0.81, 0.91, 0.025, { color: EN_VALUE, weight: 600 });
+  verticalText(ctx, '00000-Z00Z', 0.022, 0.86, 0.022);
+  ctx.restore();
+  return c;
+}
+
+function passportCardBack(): HTMLCanvasElement {
+  const c = createCanvas(W, H);
+  const ctx = ctx2d(c);
+  cardBase(ctx, ['#dff0f2', '#f2f8f9', '#e3eff4', '#f0f4f6']);
+
+  text(ctx, 'PASSPORT CARD · SPECIMEN', 0.2, 0.1, 0.04, { color: '#1f3b73', weight: 800 });
+  text(ctx, '00000.', 0.7, 0.175, 0.03, { color: EN_VALUE, weight: 600 });
+  text(ctx, 'Sample card for testing.', 0.07, 0.24, 0.03, { color: '#2a3a58', weight: 500 });
+  text(ctx, 'Not a travel document.', 0.07, 0.29, 0.03, { color: '#2a3a58', weight: 500 });
+  text(ctx, 'C00000000', 0.75, 0.43, 0.045, { color: EN_VALUE, weight: 700 });
+  fakeBarcode(ctx, 0.045 * W, 0.455 * H, 0.3 * W, 0.1 * H);
+
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.fillRect(0, 0.64 * H, W, 0.3 * H);
+  const mrz = ['IPUSAC000000000<<<<<<<<<<<<<<<', '9001010F3305310USA<<<<<<<<<<<0', 'SAMPLE<<ALEX<JORDAN<<<<<<<<<<<'];
+  mrz.forEach((line, i) => text(ctx, line, 0.055, 0.735 + i * 0.07, 0.064, { font: MONO, weight: 700, color: '#20252b' }));
+  ctx.restore();
+  return c;
+}
+
 export function sampleCards(id: DocumentId = 'dni-es'): { front: HTMLCanvasElement; back: HTMLCanvasElement } {
   switch (id) {
     case 'cni-fr':
       return { front: cniFront(), back: cniBack() };
     case 'cie-it':
       return { front: cieFront(), back: cieBack() };
+    case 'dl-gb':
+      return { front: licenceFront('gb'), back: licenceBack('gb') };
+    case 'dl-ni':
+      return { front: licenceFront('ni'), back: licenceBack('ni') };
+    case 'ppc-us':
+      return { front: passportCardFront(), back: passportCardBack() };
     default:
       return { front: dniFront(), back: dniBack() };
   }
