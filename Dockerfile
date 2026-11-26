@@ -15,7 +15,7 @@ ENV VITE_APP_VERSION=$APP_VERSION \
 RUN npm run build
 
 # ---- Serve it with an unprivileged nginx: no backend, no storage ----
-FROM nginxinc/nginx-unprivileged:1.29-alpine
+FROM nginxinc/nginx-unprivileged:1.31-alpine
 ARG APP_VERSION=dev
 ARG SOURCE_URL=https://github.com/javsanpae/sequrid
 LABEL org.opencontainers.image.title="sequrid" \
