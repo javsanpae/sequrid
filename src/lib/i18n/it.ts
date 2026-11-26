@@ -7,7 +7,7 @@ export const it: Messages = {
   meta: {
     title: 'Sequrid · Proteggi la tua carta d’identità',
     description:
-      'Oscura i dati sensibili della tua carta d’identità (Spagna, Francia e Italia) e aggiungi una filigrana con destinatario e data. Tutto viene elaborato nel tuo browser: la foto non lascia mai il tuo dispositivo.',
+      'Oscura i dati sensibili della tua carta d’identità (Spagna, Francia, Italia, Regno Unito e Stati Uniti) e aggiungi una filigrana con destinatario e data. Tutto viene elaborato nel tuo browser: la foto non lascia mai il tuo dispositivo.',
   },
 
   language: {
@@ -34,7 +34,7 @@ export const it: Messages = {
     noSignup: 'Senza registrazione',
     openSource: 'Open source',
     title: 'Proteggi la tua carta d’identità prima di inviarla',
-    lead: 'Oscura i dati che non servono a nessuno, aggiungi una filigrana con il destinatario e la data e scarica un PDF o un JPG pronto da inviare. Funziona con il DNI spagnolo, la carta d’identità francese e la CIE italiana.',
+    lead: 'Oscura i dati che non servono a nessuno, aggiungi una filigrana con il destinatario e la data e scarica un PDF o un JPG pronto da inviare. Funziona con il DNI spagnolo, la carta d’identità francese, la CIE italiana, la patente di guida britannica e la carta passaporto statunitense.',
   },
 
   footer: {
@@ -237,6 +237,8 @@ export const it: Messages = {
     taxCode: 'Codice fiscale',
     birthRecord: 'Estremi dell’atto di nascita',
     issuer: 'Autorità di rilascio',
+    entitlements: 'Categorie di guida e date',
+    restrictions: 'Codici di restrizione',
     mrz: 'Zona MRZ',
   },
 
@@ -369,6 +371,99 @@ export const it: Messages = {
         mrz: { label: 'Zona MRZ (righe in basso)', hint: 'Le tre righe a lettura ottica ripetono il numero, le date e il nome.' },
       },
     },
+    'dl-gb': {
+      countryName: 'Regno Unito',
+      the: 'della patente',
+      name: 'Patente di guida (Gran Bretagna, DVLA, dal 2021)',
+      sides: {
+        front: { label: 'Fronte', hint: 'Lato con la foto' },
+        back: { label: 'Retro', hint: 'Lato con le categorie' },
+      },
+      zones: {
+        name: { label: 'Cognome e nomi (1, 2)', hint: 'Serve quasi sempre: è ciò che ti identifica.' },
+        birthDate: {
+          label: 'Data e luogo di nascita (3)',
+          hint: 'Sono sulla stessa riga, quindi vengono oscurati insieme. Sono risposte classiche alle domande di sicurezza.',
+        },
+        issueDate: { label: 'Data di rilascio (4a)', hint: 'Raramente serve a chi riceve la copia.' },
+        issuer: { label: 'Autorità di rilascio (4c)', hint: 'L’ente che ha rilasciato la patente. Raramente serve.' },
+        expiry: { label: 'Data di scadenza (4b)', hint: 'Raramente serve a chi riceve la copia.' },
+        number: {
+          label: 'Numero di patente (5)',
+          hint: 'I 16 caratteri codificano il tuo cognome, la data di nascita e le iniziali. Assicurazioni e datori di lavoro possono chiederlo; a nessun altro serve.',
+        },
+        signature: { label: 'Firma (7)', hint: 'Una firma scansionata può essere incollata su qualsiasi contratto o autorizzazione.' },
+        address: { label: 'Indirizzo (8)', hint: 'Il tuo indirizzo. Serve solo a chi deve inviarti qualcosa o registrare i tuoi dati.' },
+        entitlements: {
+          label: 'Categorie e relative date (9–11)',
+          hint: 'Quali veicoli puoi guidare e da quando. Servono solo a un datore di lavoro per cui devi guidare.',
+        },
+        restrictions: {
+          label: 'Codici di restrizione (12)',
+          hint: 'Codici come 01 (occhiali) o gli adattamenti del veicolo possono rivelare problemi di salute. Oscurali, a meno che non te li chiedano.',
+        },
+        serial: { label: 'Numero di serie della carta', hint: 'Il numero in basso a destra sul retro identifica la carta fisica.' },
+        photo: { label: 'Foto (e ritratto secondario)', hint: 'La foto principale e il ritratto più piccolo sotto di essa.' },
+      },
+    },
+    'dl-ni': {
+      countryName: 'Regno Unito',
+      the: 'della patente',
+      name: 'Patente di guida (Irlanda del Nord, DVA, dal 2021)',
+      sides: {
+        front: { label: 'Fronte', hint: 'Lato con la foto' },
+        back: { label: 'Retro', hint: 'Lato con le categorie' },
+      },
+      zones: {
+        name: { label: 'Cognome e nomi (1, 2)', hint: 'Serve quasi sempre: è ciò che ti identifica.' },
+        birthDate: {
+          label: 'Data e luogo di nascita (3)',
+          hint: 'Sono sulla stessa riga, quindi vengono oscurati insieme. Sono risposte classiche alle domande di sicurezza.',
+        },
+        issueDate: { label: 'Data di rilascio (4a)', hint: 'Raramente serve a chi riceve la copia.' },
+        issuer: { label: 'Autorità di rilascio (4c)', hint: 'L’ente che ha rilasciato la patente. Raramente serve.' },
+        expiry: { label: 'Data di scadenza (4b)', hint: 'Raramente serve a chi riceve la copia.' },
+        number: {
+          label: 'Numero di patente (5)',
+          hint: 'Il tuo numero di patente univoco, di otto cifre. Assicurazioni e datori di lavoro possono chiederlo; a nessun altro serve.',
+        },
+        signature: { label: 'Firma (7)', hint: 'Una firma scansionata può essere incollata su qualsiasi contratto o autorizzazione.' },
+        address: { label: 'Indirizzo (8)', hint: 'Il tuo indirizzo. Serve solo a chi deve inviarti qualcosa o registrare i tuoi dati.' },
+        entitlements: {
+          label: 'Categorie e relative date (9–11)',
+          hint: 'Quali veicoli puoi guidare e da quando. Servono solo a un datore di lavoro per cui devi guidare.',
+        },
+        restrictions: {
+          label: 'Codici di restrizione (12)',
+          hint: 'Codici come 01 (occhiali) o gli adattamenti del veicolo possono rivelare problemi di salute. Oscurali, a meno che non te li chiedano.',
+        },
+        serial: { label: 'Numero di serie della carta', hint: 'Il numero in basso a destra sul retro identifica la carta fisica.' },
+        photo: { label: 'Foto (e ritratto secondario)', hint: 'La foto principale e il ritratto più piccolo sotto di essa.' },
+      },
+    },
+    'ppc-us': {
+      countryName: 'Stati Uniti',
+      the: 'della carta passaporto',
+      name: 'Carta passaporto (passport card, dal 2008)',
+      sides: {
+        front: { label: 'Fronte', hint: 'Lato con la foto' },
+        back: { label: 'Retro', hint: 'Lato con la MRZ' },
+      },
+      zones: {
+        number: { label: 'Numero della carta passaporto', hint: 'Inizia con C. È stampato sul fronte, in rilievo sul retro e nella MRZ.' },
+        serial: {
+          label: 'Numeri di controllo e codice a barre',
+          hint: 'I numeri sotto la foto, lungo il bordo sinistro, in basso a destra e sul retro, oltre al codice a barre.',
+        },
+        name: { label: 'Cognome e nomi', hint: 'Serve quasi sempre: è ciò che ti identifica.' },
+        birthDate: { label: 'Data di nascita', hint: 'Molto usata nelle domande di sicurezza e nel recupero degli account.' },
+        birthPlace: { label: 'Luogo di nascita', hint: 'Un’altra risposta classica alle domande di sicurezza.' },
+        issueDate: { label: 'Data di rilascio', hint: 'Raramente serve a chi riceve la copia.' },
+        expiry: { label: 'Data di scadenza', hint: 'Raramente serve a chi riceve la copia.' },
+        photo: { label: 'Foto (e ritratto secondario)', hint: 'La foto principale e il ritratto più piccolo sulla destra.' },
+        mrz: { label: 'Zona MRZ (righe in basso)', hint: 'Le tre righe a lettura ottica ripetono il numero, le date e il nome.' },
+      },
+    },
   },
 
   usages: {
@@ -477,7 +572,7 @@ export const it: Messages = {
         },
         {
           q: 'Quali documenti sono supportati?',
-          a: 'Il DNI spagnolo (modello 2021), la carta d’identità francese (dal 2021) e la carta d’identità elettronica italiana (CIE 3.0, dal 2022). Scegli il paese di ogni documento nel pannello delle foto e le zone vengono posizionate sui suoi dati. Altri paesi arriveranno in seguito.',
+          a: 'Il DNI spagnolo (modello 2021), la carta d’identità francese (dal 2021) la carta d’identità elettronica italiana (CIE 3.0, dal 2022), la patente di guida britannica con foto (Gran Bretagna e Irlanda del Nord, dal 2021) e la carta passaporto statunitense (passport card). Il Regno Unito e gli Stati Uniti non hanno una carta d’identità nazionale, quindi queste sono le tessere che si usano come documento d’identità. Scegli il paese di ogni documento nel pannello delle foto e le zone vengono posizionate sui suoi dati. Altri paesi arriveranno in seguito.',
         },
         {
           q: 'Funziona sul telefono e offline?',
@@ -503,9 +598,11 @@ export const it: Messages = {
       emergencySms: 'Emergenze via SMS',
       newTab: 'si apre in una nuova scheda',
       lines: {
-        'es-incibe': 'Linea gratuita e riservata dell’Istituto nazionale di cybersicurezza spagnolo per qualsiasi problema di sicurezza informatica. Tutti i giorni dalle 8:00 alle 23:00.',
+        'es-incibe': 'Linea gratuita e riservata dell’Istituto nazionale di cybersicurezza spagnolo per qualsiasi problema di sicurezza informatica. Tutti i giorni dalle 8 alle 23.',
         'fr-17cyber': 'Assistenza ufficiale online per le vittime di reati informatici, con l’aiuto della polizia o della gendarmeria quando serve.',
         'it-postale': 'Portale della Polizia Postale e per la Sicurezza Cibernetica per informarsi e segnalare reati online. Le denunce vere e proprie si presentano presso un ufficio di Polizia o dei Carabinieri.',
+        'gb-reportfraud': 'Il servizio nazionale per segnalare frodi e reati informatici in Inghilterra, Galles e Irlanda del Nord (in precedenza Action Fraud). Linee telefoniche attive 24 ore su 24. In Scozia, rivolgiti a Police Scotland al 101.',
+        'us-ftc': 'Il sito della Federal Trade Commission (FTC) per segnalare un furto d’identità e ottenere un piano di recupero personalizzato. La linea telefonica della FTC è attiva dal lunedì al venerdì, dalle 8 alle 17.',
       },
       note: 'Sono elencati solo servizi verificati sui loro siti ufficiali. Altri paesi verranno aggiunti insieme ai loro documenti.',
     },

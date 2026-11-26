@@ -269,7 +269,9 @@ test.describe('countries', () => {
     await expect(listbox.getByRole('group', { name: 'France' })).toBeVisible();
     await expect(listbox.getByRole('group', { name: 'Italy' })).toBeVisible();
     await expect(listbox.getByRole('group', { name: 'Spain' })).toBeVisible();
-    await expect(options(page)).toHaveCount(3);
+    await expect(listbox.getByRole('group', { name: 'United Kingdom' }).getByRole('option')).toHaveCount(2);
+    await expect(listbox.getByRole('group', { name: 'United States' })).toBeVisible();
+    await expect(options(page)).toHaveCount(6);
 
     const spain = listbox.getByRole('group', { name: 'Spain' }).getByRole('option');
     await expect(spain).toHaveAccessibleName('Spain, DNI (2021 model), 2021–present, current');
@@ -291,7 +293,7 @@ test.describe('countries', () => {
     await page.getByRole('button', { name: 'Clear search' }).click();
     await expect(searchBox(page)).toHaveValue('');
     await expect(searchBox(page)).toBeFocused();
-    await expect(options(page)).toHaveCount(3);
+    await expect(options(page)).toHaveCount(6);
   });
 
   test('finds documents by acronym and by name in other languages while in English', async ({ page }) => {
@@ -340,22 +342,28 @@ test.describe('countries', () => {
     await trigger.focus();
     await page.keyboard.press('ArrowDown');
     await expect(searchBox(page)).toBeFocused();
-    // Options in English order: France, Italy, Spain (selected).
-    const [france, italy, spain] = await Promise.all([
+    // Options in English order: France, Italy, Spain (selected), United Kingdom (GB, NI), United States.
+    const [france, italy, spain, gb, us] = await Promise.all([
       page.getByRole('option', { name: /^France/ }).getAttribute('id'),
       page.getByRole('option', { name: /^Italy/ }).getAttribute('id'),
       page.getByRole('option', { name: /^Spain/ }).getAttribute('id'),
+      page.getByRole('option', { name: /^United Kingdom, Driving licence \(Great Britain/ }).getAttribute('id'),
+      page.getByRole('option', { name: /^United States/ }).getAttribute('id'),
     ]);
     const expectActive = (id: string | null) => expect(searchBox(page)).toHaveAttribute('aria-activedescendant', id!);
     await expectActive(spain);
     await page.keyboard.press('ArrowDown');
-    await expectActive(france);
+    await expectActive(gb);
     await page.keyboard.press('ArrowUp');
     await expectActive(spain);
     await page.keyboard.press('ArrowUp');
     await expectActive(italy);
     await page.keyboard.press('End');
-    await expectActive(spain);
+    await expectActive(us);
+    await page.keyboard.press('ArrowDown');
+    await expectActive(france);
+    await page.keyboard.press('ArrowUp');
+    await expectActive(us);
     await page.keyboard.press('Home');
     await expectActive(france);
     await page.keyboard.press('ArrowDown');
@@ -373,7 +381,7 @@ test.describe('countries', () => {
     await expect(options(page)).toHaveCount(1);
     await page.keyboard.press('Escape');
     await expect(searchBox(page)).toHaveValue('');
-    await expect(options(page)).toHaveCount(3);
+    await expect(options(page)).toHaveCount(6);
     await expect(searchBox(page)).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(page.getByRole('listbox')).toHaveCount(0);
@@ -602,7 +610,9 @@ test.describe('help lines', () => {
     const section = page.locator('#help');
     await expect(section.getByRole('heading', { level: 2 })).toHaveText('Where to get help if someone uses your identity');
     const rows = section.locator('tbody tr');
-    await expect(rows).toHaveCount(3);
+    await expect(rows).toHaveCount(5);
+    await expect(section.getByRole('link', { name: '0300 123 2040' })).toHaveAttribute('href', 'tel:03001232040');
+    await expect(section.getByRole('link', { name: /identitytheft\.gov/ })).toHaveAttribute('href', 'https://www.identitytheft.gov/');
     await expect(section.getByRole('link', { name: '017', exact: true })).toHaveAttribute('href', 'tel:017');
     await expect(section.getByRole('link', { name: /17cyber\.gouv\.fr/ })).toHaveAttribute('href', 'https://www.17cyber.gouv.fr/');
     await expect(section.getByRole('link', { name: /commissariatodips\.it/ })).toHaveAttribute('target', '_blank');
@@ -619,6 +629,40 @@ test.describe('help lines', () => {
     await page.getByRole('menuitemradio', { name: 'Español', exact: true }).click();
     await expect(page.locator('#help h2')).toHaveText('Dónde pedir ayuda si alguien usa tu identidad');
     await expect(rows.first()).toContainText('Italia');
+  });
+});
+
+test.describe('United Kingdom and United States', () => {
+  const pick = async (page: Page, query: string, option: RegExp) => {
+    await page.getByRole('button', { name: /^Country of document 1:/ }).click();
+    await page.getByRole('combobox', { name: 'Search country or document' }).fill(query);
+    await page.getByRole('option', { name: option }).click();
+  };
+
+  test('UK driving licence: Northern Ireland model, fields, sample and file names', async ({ page }) => {
+    await pick(page, 'northern ireland', /^United Kingdom, Driving licence \(Northern Ireland/);
+    await expect(page.getByRole('button', { name: /^Country of document 1: United Kingdom, Driving licence \(Northern Ireland/ })).toBeVisible();
+    await expect(page.getByRole('checkbox', { name: /Restriction codes \(12\)/ })).toBeChecked();
+    await expect(page.getByRole('checkbox', { name: /Driver number \(5\)/ })).not.toBeChecked();
+    await expect(page.getByRole('checkbox', { name: /Categories and their dates/ })).not.toBeChecked();
+    await expect(page.getByRole('checkbox', { name: /MRZ/ })).toHaveCount(0);
+
+    await loadSampleAs(page, 'DL');
+    await expect(page.getByText(/You have covered 4 of 4 recommended details/)).toBeVisible();
+    const [pdf] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Download PDF' }).first().click()]);
+    expect(pdf.suggestedFilename()).toBe('dl-protected.pdf');
+    await expect(page.locator('#help tbody tr').first()).toContainText('United Kingdom');
+  });
+
+  test('US passport card: fields, sample and file names', async ({ page }) => {
+    await pick(page, 'usa', /^United States, Passport card/);
+    await expect(page.getByRole('checkbox', { name: /Control numbers and barcode/ })).toBeChecked();
+    await expect(page.getByRole('checkbox', { name: /^Signature/ })).toHaveCount(0);
+
+    await loadSampleAs(page, 'Passport Card');
+    await expect(page.getByText(/You have covered 4 of 4 recommended details/)).toBeVisible();
+    const [jpg] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'JPG of this side' }).click()]);
+    expect(jpg.suggestedFilename()).toBe('passport-card-protected-passport-card1-front.jpg');
   });
 });
 

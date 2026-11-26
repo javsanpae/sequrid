@@ -41,7 +41,7 @@ export const en = {
   meta: {
     title: 'Sequrid · Protect your ID card',
     description:
-      'Cover the sensitive details on your ID card (Spain, France and Italy) and add a watermark with the recipient and the date. Everything is processed in your browser: the photo never leaves your device.',
+      'Cover the sensitive details on your ID card (Spain, France, Italy, the United Kingdom and the United States) and add a watermark with the recipient and the date. Everything is processed in your browser: the photo never leaves your device.',
   },
 
   language: {
@@ -68,7 +68,7 @@ export const en = {
     noSignup: 'No sign-up',
     openSource: 'Open source',
     title: 'Protect your ID card before sending it',
-    lead: 'Cover the details nobody needs, add a watermark with the recipient and the date, and download a PDF or JPG ready to send. Works with the Spanish DNI, the French national identity card and the Italian CIE.',
+    lead: 'Cover the details nobody needs, add a watermark with the recipient and the date, and download a PDF or JPG ready to send. Works with the Spanish DNI, the French national identity card, the Italian CIE, the UK driving licence and the US passport card.',
   },
 
   footer: {
@@ -281,6 +281,8 @@ export const en = {
     taxCode: 'Tax code',
     birthRecord: 'Birth record details',
     issuer: 'Issuing authority',
+    entitlements: 'Driving categories and dates',
+    restrictions: 'Restriction codes',
     mrz: 'MRZ',
   } satisfies Record<ZoneKey, string>,
 
@@ -407,6 +409,93 @@ export const en = {
         mrz: { label: 'MRZ (bottom lines)', hint: 'The three machine-readable lines repeat the number, the dates and the name.' },
       },
     },
+    'dl-gb': {
+      countryName: 'United Kingdom',
+      the: 'the driving licence',
+      name: 'Driving licence (Great Britain, DVLA, since 2021)',
+      sides: {
+        front: { label: 'Front', hint: 'Side with the photo' },
+        back: { label: 'Back', hint: 'Side with the categories' },
+      },
+      zones: {
+        name: { label: 'Surname and first names (1, 2)', hint: 'Almost always needed: it is what identifies you.' },
+        birthDate: {
+          label: 'Date and place of birth (3)',
+          hint: 'They share one line, so they are covered together. Classic answers to security questions.',
+        },
+        issueDate: { label: 'Date of issue (4a)', hint: 'Rarely needed by whoever receives the copy.' },
+        issuer: { label: 'Issuing authority (4c)', hint: 'The agency that issued the licence. Rarely needed.' },
+        expiry: { label: 'Expiry date (4b)', hint: 'Rarely needed by whoever receives the copy.' },
+        number: { label: 'Driver number (5)', hint: 'The 16 characters encode your surname, date of birth and initials. Insurers and employers may ask for it; nobody else needs it.' },
+        signature: { label: 'Signature (7)', hint: 'A scanned signature can be pasted onto any contract or authorization.' },
+        address: { label: 'Address (8)', hint: 'Your address. Only needed by someone who has to send you something or register you.' },
+        entitlements: {
+          label: 'Categories and their dates (9–11)',
+          hint: 'Which vehicles you may drive and since when. Only an employer who needs you to drive needs them.',
+        },
+        restrictions: {
+          label: 'Restriction codes (12)',
+          hint: 'Codes such as 01 (glasses) or vehicle adaptations can reveal health conditions. Cover them unless asked.',
+        },
+        serial: { label: 'Card serial number', hint: 'The number at the bottom right of the back identifies the physical card.' },
+        photo: { label: 'Photo (and ghost image)', hint: 'The main photo and the smaller ghost image below it.' },
+      },
+    },
+    'dl-ni': {
+      countryName: 'United Kingdom',
+      the: 'the driving licence',
+      name: 'Driving licence (Northern Ireland, DVA, since 2021)',
+      sides: {
+        front: { label: 'Front', hint: 'Side with the photo' },
+        back: { label: 'Back', hint: 'Side with the categories' },
+      },
+      zones: {
+        name: { label: 'Surname and first names (1, 2)', hint: 'Almost always needed: it is what identifies you.' },
+        birthDate: {
+          label: 'Date and place of birth (3)',
+          hint: 'They share one line, so they are covered together. Classic answers to security questions.',
+        },
+        issueDate: { label: 'Date of issue (4a)', hint: 'Rarely needed by whoever receives the copy.' },
+        issuer: { label: 'Issuing authority (4c)', hint: 'The agency that issued the licence. Rarely needed.' },
+        expiry: { label: 'Expiry date (4b)', hint: 'Rarely needed by whoever receives the copy.' },
+        number: { label: 'Driver number (5)', hint: 'Your unique eight-digit driver number. Insurers and employers may ask for it; nobody else needs it.' },
+        signature: { label: 'Signature (7)', hint: 'A scanned signature can be pasted onto any contract or authorization.' },
+        address: { label: 'Address (8)', hint: 'Your address. Only needed by someone who has to send you something or register you.' },
+        entitlements: {
+          label: 'Categories and their dates (9–11)',
+          hint: 'Which vehicles you may drive and since when. Only an employer who needs you to drive needs them.',
+        },
+        restrictions: {
+          label: 'Restriction codes (12)',
+          hint: 'Codes such as 01 (glasses) or vehicle adaptations can reveal health conditions. Cover them unless asked.',
+        },
+        serial: { label: 'Card serial number', hint: 'The number at the bottom right of the back identifies the physical card.' },
+        photo: { label: 'Photo (and ghost image)', hint: 'The main photo and the smaller ghost image below it.' },
+      },
+    },
+    'ppc-us': {
+      countryName: 'United States',
+      the: 'the passport card',
+      name: 'Passport card (since 2008)',
+      sides: {
+        front: { label: 'Front', hint: 'Side with the photo' },
+        back: { label: 'Back', hint: 'Side with the MRZ' },
+      },
+      zones: {
+        number: { label: 'Passport card number', hint: 'Starts with C. Printed on the front, raised on the back and in the MRZ.' },
+        serial: {
+          label: 'Control numbers and barcode',
+          hint: 'The numbers under the photo, along the left edge, at the bottom right and on the back, plus the barcode.',
+        },
+        name: { label: 'Surname and given names', hint: 'Almost always needed: it is what identifies you.' },
+        birthDate: { label: 'Date of birth', hint: 'Widely used in security questions and account recovery.' },
+        birthPlace: { label: 'Place of birth', hint: 'Another classic answer to security questions.' },
+        issueDate: { label: 'Issue date', hint: 'Rarely needed by whoever receives the copy.' },
+        expiry: { label: 'Expiry date', hint: 'Rarely needed by whoever receives the copy.' },
+        photo: { label: 'Photo (and ghost image)', hint: 'The main photo and the smaller ghost image on the right.' },
+        mrz: { label: 'MRZ (bottom lines)', hint: 'The three machine-readable lines repeat the number, the dates and the name.' },
+      },
+    },
   } satisfies Record<DocumentId, DocumentText>,
 
   usages: {
@@ -515,7 +604,7 @@ export const en = {
         },
         {
           q: 'Which documents are supported?',
-          a: 'The Spanish DNI (2021 model), the French national identity card (since 2021) and the Italian electronic identity card (CIE 3.0, since 2022). Choose the country of each document in the photos panel and the zones are placed over its details. More countries will follow.',
+          a: 'The Spanish DNI (2021 model), the French national identity card (since 2021), the Italian electronic identity card (CIE 3.0, since 2022), the UK photocard driving licence (Great Britain and Northern Ireland, since 2021) and the US passport card. The UK and the US have no national identity card, so these are the cards people use as ID. Choose the country of each document in the photos panel and the zones are placed over its details. More countries will follow.',
         },
         {
           q: 'Does it work on a phone and offline?',
@@ -547,6 +636,8 @@ export const en = {
         'es-incibe': 'Free and confidential helpline from Spain’s national cybersecurity institute for any cybersecurity problem. Every day from 8:00 to 23:00.',
         'fr-17cyber': 'Official online assistance for victims of cybercrime, with help from the police or gendarmerie when needed.',
         'it-postale': 'Portal of the Postal and Cyber Police to get information and report online crime. Formal complaints are filed at a police office.',
+        'gb-reportfraud': 'The national service to report fraud and cyber crime in England, Wales and Northern Ireland (formerly Action Fraud). Phone lines open 24 hours. In Scotland, report to Police Scotland on 101.',
+        'us-ftc': 'The Federal Trade Commission’s site to report identity theft and get a personal recovery plan. The FTC phone line is open Monday to Friday, 8 am to 5 pm.',
       } satisfies Record<HelpLineId, string>,
       note: 'Only services checked on their official websites are listed. More countries will be added along with their documents.',
     },

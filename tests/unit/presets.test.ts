@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   CIE_IT,
   CNI_FR,
+  DL_GB,
+  DL_NI,
   DNI_ES,
+  PPC_US,
   DOCUMENTS,
   documentKeys,
   documentType,
@@ -43,7 +46,8 @@ describe.each(DOCUMENTS.map((d) => [d.id, d] as const))('%s zone catalog', (_, d
   });
 
   it('always lets you cover the riskiest data', () => {
-    for (const k of ['number', 'birthDate', 'signature', 'can', 'mrz', 'photo'] as const) expect(zoneDef(k, doc)).toBeDefined();
+    // Not every document has a signature, a CAN or an MRZ (UK licences, US passport card).
+    for (const k of ['number', 'name', 'birthDate', 'photo'] as const) expect(zoneDef(k, doc)).toBeDefined();
   });
 });
 
@@ -75,6 +79,32 @@ describe('documents', () => {
     expect(zoneSides(zoneDef('photo', CIE_IT)!)).toEqual(['front', 'back']);
     expect(zoneSides(zoneDef('issuer', CIE_IT)!)).toEqual(['front']);
     expect(zoneDef('seal', CIE_IT)).toBeUndefined();
+  });
+
+  it('describes the UK driving licences', () => {
+    for (const doc of [DL_GB, DL_NI]) {
+      expect(doc.country).toBe('GB');
+      expect(doc.short).toBe('DL');
+      // Field 3 (date and place of birth) is one line, covered as a whole.
+      expect(zoneDef('birthPlace', doc)).toBeUndefined();
+      expect(zoneSides(zoneDef('restrictions', doc)!)).toEqual(['back']);
+      expect(zoneSides(zoneDef('entitlements', doc)!)).toEqual(['front', 'back']);
+      expect(zoneDef('mrz', doc)).toBeUndefined();
+      expect(zoneDef('can', doc)).toBeUndefined();
+    }
+    // The GB driver number (16 characters) is wider than the NI one (8 digits).
+    expect(zoneDef('number', DL_GB)!.rects[0].w).toBeGreaterThan(zoneDef('number', DL_NI)!.rects[0].w);
+    // The date engraved on the photo is the issue date in GB and the expiry date in NI.
+    expect(zoneDef('issueDate', DL_GB)!.rects).toHaveLength(2);
+    expect(zoneDef('expiry', DL_NI)!.rects).toHaveLength(2);
+  });
+
+  it('describes the US passport card', () => {
+    expect(documentType('ppc-us')).toBe(PPC_US);
+    expect(PPC_US.issuedFrom).toBe(2008);
+    expect(zoneDef('signature', PPC_US)).toBeUndefined();
+    expect(zoneSides(zoneDef('number', PPC_US)!)).toEqual(['front', 'back']);
+    expect(zoneSides(zoneDef('mrz', PPC_US)!)).toEqual(['back']);
   });
 
   it('rejects unknown documents', () => {
@@ -125,6 +155,17 @@ describe('protectionSummary', () => {
     expect(both.total).toBe(9);
     const itDoc = protectionSummary('other', selectionFor('other'), { ...auto, available: documentKeys(CIE_IT) });
     expect(itDoc.total).toBe(8);
+    // UK licences: serial, date/place of birth, signature and restriction codes.
+    expect(protectionSummary('other', selectionFor('other'), { ...auto, available: documentKeys(DL_GB) }).total).toBe(4);
+    // US passport card: control numbers, date and place of birth, MRZ.
+    expect(protectionSummary('other', selectionFor('other'), { ...auto, available: documentKeys(PPC_US) }).total).toBe(4);
+  });
+
+  it('covers driving restriction codes, which can reveal health conditions', () => {
+    for (const id of ['other', 'rental', 'job', 'sale', 'hotel'] as const) expect(selectionFor(id).restrictions, id).toBe(true);
+    expect(selectionFor('bank').restrictions).toBe(false);
+    expect(selectionFor('job').entitlements).toBe(true);
+    expect(selectionFor('rental').entitlements).toBe(false);
   });
 
   it('covers the Italian tax code by default except where the full copy is needed', () => {
