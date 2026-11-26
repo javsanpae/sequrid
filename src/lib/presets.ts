@@ -14,7 +14,8 @@ export interface UsagePreset {
   note: string;
 }
 
-const PRUDENT: ZoneKey[] = ['soporte', 'nacimiento', 'firma', 'can', 'lugar', 'padres', 'mrz'];
+// Keys a document does not have are simply ignored (e.g. the 2D-Doc seal on a DNI).
+const PRUDENT: ZoneKey[] = ['soporte', 'nacimiento', 'firma', 'can', 'lugar', 'padres', 'altura', 'sello', 'mrz'];
 const STRICT: ZoneKey[] = ['numero', ...PRUDENT, 'domicilio'];
 
 export const USAGES: UsagePreset[] = [
@@ -32,7 +33,7 @@ export const USAGES: UsagePreset[] = [
     short: 'alquiler',
     watermark: 'Solo para alquiler',
     cover: PRUDENT,
-    note: 'Para alquilar suelen bastar el nombre, el número de DNI y la foto. Lo demás se tapa.',
+    note: 'Para alquilar suelen bastar el nombre, el número de documento y la foto. Lo demás se tapa.',
   },
   {
     id: 'trabajo',
@@ -40,7 +41,7 @@ export const USAGES: UsagePreset[] = [
     short: 'proceso de selección',
     watermark: 'Solo para proceso de selección',
     cover: STRICT,
-    note: 'Nadie necesita tu DNI antes de firmar un contrato. Si te lo piden antes de la entrevista, desconfía: solo quedan visibles nombre y foto.',
+    note: 'Nadie necesita tu documento antes de firmar un contrato. Si te lo piden antes de la entrevista, desconfía: solo quedan visibles nombre y foto.',
   },
   {
     id: 'compraventa',
@@ -48,14 +49,14 @@ export const USAGES: UsagePreset[] = [
     short: 'compraventa',
     watermark: 'Solo para verificar compraventa',
     cover: STRICT,
-    note: 'Un comprador o vendedor particular no necesita tu DNI. Que insista en verlo es una señal típica de estafa.',
+    note: 'Un comprador o vendedor particular no necesita tu documento. Que insista en verlo es una señal típica de estafa.',
   },
   {
     id: 'hotel',
     label: 'Hotel o alojamiento',
     short: 'hotel',
     watermark: 'Solo para registro de viajeros',
-    cover: ['firma', 'can', 'lugar', 'padres', 'mrz'],
+    cover: ['firma', 'can', 'lugar', 'padres', 'altura', 'sello', 'mrz'],
     note: 'El registro de viajeros pide número, soporte, fecha de nacimiento y domicilio, así que se quedan visibles.',
   },
   {
@@ -108,10 +109,18 @@ export interface ProtectionSummary {
 export function protectionSummary(
   id: UsageId,
   selection: CoverSelection,
-  opts: { manual: boolean; manualZones: number; watermark: boolean },
+  opts: {
+    manual: boolean;
+    manualZones: number;
+    watermark: boolean;
+    /** Keys present on the documents in use; recommendations for other keys are ignored. */
+    available?: readonly ZoneKey[];
+  },
 ): ProtectionSummary {
   const preset = usage(id);
-  const total = preset.cover.length;
+  const available = new Set(opts.available ?? ZONE_KEYS);
+  const recommended = preset.cover.filter((k) => available.has(k));
+  const total = recommended.length;
   const wm = opts.watermark ? 0.2 : 0;
 
   if (opts.manual) {
@@ -126,7 +135,7 @@ export function protectionSummary(
     };
   }
 
-  const covered = preset.cover.filter((k) => selection[k]).length;
+  const covered = recommended.filter((k) => selection[k]).length;
   const ratio = total === 0 ? 1 : covered / total;
   const score = Math.round((ratio * 0.8 + wm) * 100) / 100;
   const level: ProtectionLevel = score >= 0.95 ? 'alta' : score >= 0.6 ? 'media' : 'baja';

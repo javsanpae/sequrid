@@ -24,8 +24,13 @@ export function renderForExport(id: FaceId): HTMLCanvasElement | null {
   return face ? renderProtected(face, renderSettings(face), EXPORT_WIDTH) : null;
 }
 
-const fileBase = 'dni-protegido';
-const faceFile = (id: FaceId) => `${fileBase}-dni${FACE_META[id].doc}-${FACE_META[id].side}`;
+/** "dni-protegido", "cni-protegido", or "documento-protegido" when countries are mixed. */
+const fileBase = () => {
+  const docs = app.activeDocs;
+  return `${docs.length === 1 ? docs[0].short.toLowerCase() : 'documento'}-protegido`;
+};
+const faceFile = (id: FaceId) =>
+  `${fileBase()}-${app.docOf(id).short.toLowerCase()}${FACE_META[id].doc}-${FACE_META[id].side}`;
 
 export async function downloadPdf(): Promise<void> {
   const ids = app.loaded;
@@ -38,7 +43,7 @@ export async function downloadPdf(): Promise<void> {
   }
   const pages = layoutPages(images, app.pdfSize);
   const pdf = buildPdf(pages, images);
-  downloadBlob(new Blob([pdf as BlobPart], { type: 'application/pdf' }), `${fileBase}.pdf`);
+  downloadBlob(new Blob([pdf as BlobPart], { type: 'application/pdf' }), `${fileBase()}.pdf`);
 }
 
 export async function downloadFaceJpg(id: FaceId): Promise<void> {
@@ -72,5 +77,5 @@ export async function downloadAllJpg(): Promise<void> {
     });
     y += rowHeights[r] + gap;
   });
-  downloadBlob(await canvasToBlob(sheet), `${fileBase}.jpg`);
+  downloadBlob(await canvasToBlob(sheet), `${fileBase()}.jpg`);
 }

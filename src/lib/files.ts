@@ -1,3 +1,4 @@
+import { documentType } from './documents';
 import { ACCEPTED_TYPES, loadImageFile } from './image';
 import { sampleCards } from './sample';
 import { app, faceName, type FaceId } from './state.svelte';
@@ -46,10 +47,12 @@ export function pickFiles(target: FaceId): void {
   input.click();
 }
 
+/** Loads a fictitious card of the country chosen for the first ID. */
 export function loadSample(): void {
-  const { anverso, reverso } = sampleCards();
+  const doc = documentType(app.docTypes[1]);
+  const { anverso, reverso } = sampleCards(doc.id);
   app.setFace('d1a', anverso);
   app.setFace('d1r', reverso);
   app.active = 'd1a';
-  app.status = 'DNI de ejemplo cargado en las dos caras. Los datos son ficticios.';
+  app.status = `${doc.short} de ejemplo (${doc.countryName}) cargado en las dos caras. Los datos son ficticios.`;
 }

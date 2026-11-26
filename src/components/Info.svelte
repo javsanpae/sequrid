@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { DNI_ES } from '../lib/documents';
+  import { DNI_ES, KEY_LABELS } from '../lib/documents';
   import { USAGES } from '../lib/presets';
-  import { zoneDef } from '../lib/documents';
   import { SOURCE_URL } from '../lib/config';
   import Icon from './Icon.svelte';
 
@@ -33,8 +32,12 @@
       a: 'Sí. Es tu documento y puedes decidir qué datos compartir. Si quien lo pide necesita algún dato concreto, destápalo solo para esa copia y deja la marca de agua.',
     },
     {
-      q: '¿Puedo juntar dos DNI en el mismo PDF?',
-      a: 'Sí. Activa «Añadir un segundo DNI» y tendrás cuatro huecos. El PDF coloca cada DNI en una fila con sus dos caras.',
+      q: '¿Puedo juntar dos documentos en el mismo PDF?',
+      a: 'Sí. Activa «Añadir un segundo documento» y tendrás cuatro huecos; cada documento puede ser de un país distinto. El PDF coloca cada uno en una fila con sus dos caras.',
+    },
+    {
+      q: '¿Qué documentos admite?',
+      a: "El DNI español (modelo 2021) y la carte nationale d'identité francesa (desde 2021). Elige el país de cada documento en el panel de fotos y las zonas se colocan sobre sus datos. Iremos añadiendo más países.",
     },
     {
       q: '¿Funciona en el móvil y sin conexión?',
@@ -73,14 +76,14 @@
         {#each USAGES.filter((u) => u.id !== 'otro') as u (u.id)}
           <tr>
             <th scope="row">{u.label}</th>
-            <td>{u.cover.map((k) => zoneDef(k).label.replace(' (líneas inferiores)', '')).join(', ')}</td>
+            <td>{u.cover.map((k) => KEY_LABELS[k]).join(', ')}</td>
             <td><code>{u.watermark.toLocaleUpperCase('es-ES')}</code></td>
           </tr>
         {/each}
       </tbody>
     </table>
   </div>
-  <p class="small">Es una orientación. Si quien te pide la copia necesita algún dato más, destápalo solo para él y deja la marca de agua.</p>
+  <p class="small">Cada documento solo tapa los datos que tiene: el código 2D-Doc y la estatura, por ejemplo, solo existen en la carta francesa. Es una orientación. Si quien te pide la copia necesita algún dato más, destápalo solo para él y deja la marca de agua.</p>
 </section>
 
 <section id="privacidad" class="block privacy">

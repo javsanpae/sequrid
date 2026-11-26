@@ -6,9 +6,12 @@ Protege tu DNI antes de enviarlo: tapa los datos que nadie necesita, añade una 
 
 ## Funcionalidades
 
-- **Hasta dos DNI** (anverso y reverso de cada uno). Arrastra varias fotos a la vez y se colocan solas en los huecos libres; también puedes pegarlas con <kbd>Ctrl</kbd>+<kbd>V</kbd> o hacer la foto desde el móvil.
+- **Varios países**: DNI español (modelo 2021) y carte nationale d'identité francesa (desde 2021). Cada documento tiene su selector de país y las zonas se colocan sobre los datos de ese modelo.
+- **Hasta dos documentos** (anverso y reverso de cada uno), que pueden ser de países distintos. Arrastra varias fotos a la vez y se colocan solas en los huecos libres; también puedes pegarlas con <kbd>Ctrl</kbd>+<kbd>V</kbd> o hacer la foto desde el móvil.
 - **Para qué es la copia**: alquiler, trabajo, compraventa, hotel, banco, Administración u otro. Cada uso propone qué datos tapar y el texto de la marca de agua.
-- **Qué tapar**, en modo automático (zonas colocadas sobre los datos del DNI 2021: número, soporte, fecha de nacimiento, firma, CAN, validez, nombre, foto, domicilio, lugar de nacimiento, padres y MRZ) o manual (dibujas tú las zonas).
+- **Qué tapar**, en modo automático o manual (dibujas tú las zonas). En automático, las zonas dependen del documento:
+  - DNI: número, soporte, fecha de nacimiento, firma, CAN, validez, nombre, foto, domicilio, lugar de nacimiento, padres y MRZ.
+  - Carte d'identité: número (también los impresos en vertical), número de serie, fecha y lugar de nacimiento, firma, CAN, caducidad, expedición, nombres, foto y retratos secundarios, estatura, dirección, código 2D-Doc y MRZ.
 - **Cómo se tapa**: negro, pixelado o desenfoque (estos dos usan bloques grandes para que el texto no se pueda reconstruir).
 - **Editor**: mover y redimensionar zonas, dibujar zonas propias, encuadrar la tarjeta, girar 90°, zoom y vista antes/después. Con teclado: <kbd>Tab</kbd> recorre las zonas, flechas para moverlas, <kbd>Mayús</kbd>+flechas para agrandarlas y <kbd>Supr</kbd> para quitarlas.
 - **Marca de agua** en mosaico diagonal: texto automático (uso · destinatario · fecha) o propio, intensidad, tamaño y tono claro u oscuro. Opción de copia en blanco y negro.
@@ -48,7 +51,7 @@ docker run -d --name sequrid -p 8080:8080 --read-only --tmpfs /tmp --cap-drop AL
 El chart está en [`charts/sequrid`](charts/sequrid) y también se publica como OCI en cada versión:
 
 ```bash
-helm install sequrid oci://ghcr.io/javsanpae/charts/sequrid --version 0.1.1 \
+helm install sequrid oci://ghcr.io/javsanpae/charts/sequrid --version 0.2.0 \
   --set ingress.enabled=true \
   --set ingress.hosts[0].host=dni.example.com \
   --set ingress.hosts[0].paths[0].path=/ \
@@ -91,7 +94,7 @@ Para los e2e hace falta el navegador de Playwright (`npx playwright install chro
 ```
 src/
   lib/
-    documents.ts   catálogo de zonas del DNI (coordenadas relativas a la tarjeta)
+    documents.ts   documentos por país y sus zonas (coordenadas relativas a la tarjeta)
     presets.ts     usos, qué se tapa en cada uno y nivel de protección
     watermark.ts   texto y geometría de la marca de agua
     effects.ts     pixelado, desenfoque y escala de grises sobre buffers RGBA
@@ -106,7 +109,12 @@ nginx/             configuración del servidor y cabeceras de seguridad
 charts/sequrid/    chart de Helm
 ```
 
-Para añadir otro documento (NIE, pasaporte…) basta con definir otro `DocumentType` en `documents.ts` con sus zonas.
+### Añadir un país o documento
+
+1. Define un `DocumentType` en [`src/lib/documents.ts`](src/lib/documents.ts) con sus zonas. Cada rectángulo indica en qué cara está y se expresa en fracciones del ancho y alto de la tarjeta. Usa las claves de `ZoneKey` para que los usos (alquiler, hotel…) funcionen sin tocar nada más.
+2. Añádelo a `DOCUMENTS` y su bandera a [`Flag.svelte`](src/components/Flag.svelte).
+3. Opcional: dibuja un ejemplo ficticio en [`src/lib/sample.ts`](src/lib/sample.ts) con los datos donde los pone el documento real.
+4. Los tests unitarios recorren todos los documentos y comprueban que las zonas son válidas.
 
 ## CI/CD
 

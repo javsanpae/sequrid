@@ -1,4 +1,12 @@
-import { DNI_ES, zoneDef, zonesForSide, type Side, type ZoneKey } from './documents';
+import {
+  documentKeys,
+  documentType,
+  zoneLabel,
+  type DocumentId,
+  type DocumentType,
+  type Side,
+  type ZoneKey,
+} from './documents';
 import { FULL_RECT, nextRotation, type Rect, type Rotation } from './geometry';
 import { selectionFor, usage, type CoverSelection, type UsageId } from './presets';
 import { composeWatermark, DEFAULT_WATERMARK, todayIso, type WatermarkSettings } from './watermark';
@@ -8,14 +16,22 @@ import type { PdfSize } from './pdf';
 export type FaceId = 'd1a' | 'd1r' | 'd2a' | 'd2r';
 export const FACE_IDS: FaceId[] = ['d1a', 'd1r', 'd2a', 'd2r'];
 
-export const FACE_META: Record<FaceId, { doc: 1 | 2; side: Side; label: string; hint: string }> = {
-  d1a: { doc: 1, side: 'anverso', label: 'Anverso', hint: 'Cara con la foto' },
-  d1r: { doc: 1, side: 'reverso', label: 'Reverso', hint: 'Cara con el domicilio' },
-  d2a: { doc: 2, side: 'anverso', label: 'Anverso', hint: 'Cara con la foto' },
-  d2r: { doc: 2, side: 'reverso', label: 'Reverso', hint: 'Cara con el domicilio' },
+export type DocNumber = 1 | 2;
+
+export const FACE_META: Record<FaceId, { doc: DocNumber; side: Side }> = {
+  d1a: { doc: 1, side: 'anverso' },
+  d1r: { doc: 1, side: 'reverso' },
+  d2a: { doc: 2, side: 'anverso' },
+  d2r: { doc: 2, side: 'reverso' },
 };
 
-export const faceName = (id: FaceId) => `DNI ${FACE_META[id].doc} · ${FACE_META[id].label}`;
+/** "DNI 1 · Anverso", "CNI 2 · Reverso"… */
+export const faceName = (id: FaceId): string => {
+  const doc = app.docOf(id);
+  return `${doc.short} ${FACE_META[id].doc} · ${doc.sides[FACE_META[id].side].label}`;
+};
+export const faceLabel = (id: FaceId): string => app.docOf(id).sides[FACE_META[id].side].label;
+export const faceHint = (id: FaceId): string => app.docOf(id).sides[FACE_META[id].side].hint;
 
 export interface ZoneInstance {
   id: string;
@@ -40,9 +56,11 @@ export type CoverMode = 'auto' | 'manual';
 let zoneSeq = 0;
 export const newZoneId = () => `z${++zoneSeq}`;
 
-export function defaultZones(side: Side): ZoneInstance[] {
-  return zonesForSide(side, DNI_ES).flatMap((def) =>
-    def.rects.map((rect) => ({ id: newZoneId(), key: def.key, rect: { ...rect } })),
+export function defaultZones(doc: DocumentType, side: Side): ZoneInstance[] {
+  return doc.zones.flatMap((def) =>
+    def.rects
+      .filter((r) => r.side === side)
+      .map(({ x, y, w, h }) => ({ id: newZoneId(), key: def.key, rect: { x, y, w, h } })),
   );
 }
 
@@ -50,6 +68,8 @@ class AppState {
   faces = $state<Record<FaceId, Face | null>>({ d1a: null, d1r: null, d2a: null, d2r: null });
   active = $state<FaceId>('d1a');
   twoDocs = $state(false);
+  /** Country / document model of each ID. */
+  docTypes = $state<Record<DocNumber, DocumentId>>({ 1: 'dni-es', 2: 'dni-es' });
 
   usage = $state<UsageId>('otro');
   recipient = $state('');
@@ -81,6 +101,31 @@ class AppState {
     return this.faces[this.active];
   }
 
+  docOf(id: FaceId): DocumentType {
+    return documentType(this.docTypes[FACE_META[id].doc]);
+  }
+
+  /** Document models of the IDs in use, without repeats. */
+  get activeDocs(): DocumentType[] {
+    const ids = this.twoDocs ? [this.docTypes[1], this.docTypes[2]] : [this.docTypes[1]];
+    return [...new Set(ids)].map(documentType);
+  }
+
+  /** Data fields that exist on the documents in use. */
+  get availableKeys(): ZoneKey[] {
+    return [...new Set(this.activeDocs.flatMap(documentKeys))];
+  }
+
+  /** Changes the country of an ID. Its automatic zones move to the new layout; drawn ones stay. */
+  setDocType(doc: DocNumber, id: DocumentId) {
+    if (this.docTypes[doc] === id) return;
+    this.docTypes[doc] = id;
+    for (const faceId of FACE_IDS.filter((f) => FACE_META[f].doc === doc)) {
+      if (this.faces[faceId]) this.resetZones(faceId);
+    }
+    this.selectedZone = null;
+  }
+
   get watermarkText(): string {
     return composeWatermark(usage(this.usage).watermark, this.recipient, this.date, this.watermark.custom);
   }
@@ -100,8 +145,8 @@ class AppState {
   }
 
   setFace(id: FaceId, image: HTMLCanvasElement) {
-    this.faces[id] = { image, rotation: 0, frame: { ...FULL_RECT }, zones: defaultZones(FACE_META[id].side) };
-    if (FACE_META[id].doc === 2) this.twoDocs = true;
+    this.faces[id] = { image, rotation: 0, frame: { ...FULL_RECT }, zones: defaultZones(this.docOf(id), FACE_META[id].side) };
+    if (FACE_META[id].doc === 2 && !this.twoDocs) this.setTwoDocs(true);
     this.active = id;
     this.selectedZone = null;
     this.zoom = 1;
@@ -114,7 +159,7 @@ class AppState {
     if (this.active === id) this.view = 'edit';
   }
 
-  /** Puts files into free slots in order, enabling the second DNI if needed. Returns the slots used. */
+  /** Puts files into free slots in order, enabling the second ID if needed. Returns the slots used. */
   freeSlotsFor(count: number, preferred: FaceId): FaceId[] {
     if (count === 1) return [preferred];
     const order = [preferred, ...FACE_IDS.filter((id) => id !== preferred)];
@@ -132,7 +177,7 @@ class AppState {
   resetZones(id: FaceId) {
     const f = this.faces[id];
     if (!f) return;
-    f.zones = [...defaultZones(FACE_META[id].side), ...f.zones.filter((z) => z.key === null)];
+    f.zones = [...defaultZones(this.docOf(id), FACE_META[id].side), ...f.zones.filter((z) => z.key === null)];
     this.selectedZone = null;
   }
 
@@ -146,12 +191,14 @@ class AppState {
     } else {
       // Automatic zones follow their checkbox: removing one uncovers that field.
       this.selection[z.key] = false;
-      this.status = `${zoneDef(z.key).label} queda visible. Vuelve a marcarlo en «Qué tapar» si quieres taparlo.`;
+      this.status = `${zoneLabel(z.key, this.docOf(faceId))} queda visible. Vuelve a marcarlo en «Qué tapar» si quieres taparlo.`;
     }
     if (this.selectedZone === zoneId) this.selectedZone = null;
   }
 
   setTwoDocs(on: boolean) {
+    // A second ID usually comes from the same country as the first one.
+    if (on && !this.faces.d2a && !this.faces.d2r) this.docTypes[2] = this.docTypes[1];
     this.twoDocs = on;
     if (!on && FACE_META[this.active].doc === 2) this.active = 'd1a';
   }

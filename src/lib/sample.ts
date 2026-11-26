@@ -1,9 +1,10 @@
+import type { DocumentId } from './documents';
 import { createCanvas, ctx2d } from './image';
 
 /**
- * Draws a fictitious ID card used as an example. It follows the layout of the
- * Spanish DNI so the default zones line up, but it contains made-up data and
- * none of the official artwork.
+ * Draws fictitious ID cards used as examples. They follow the layout of each
+ * real document so the default zones line up, but they contain made-up data
+ * and none of the official artwork.
  */
 const W = 1712;
 const H = 1080;
@@ -55,7 +56,7 @@ function cardBase(ctx: Ctx, stops: string[]) {
   }
 }
 
-function anverso(): HTMLCanvasElement {
+function dniAnverso(): HTMLCanvasElement {
   const c = createCanvas(W, H);
   const ctx = ctx2d(c);
   cardBase(ctx, ['#f4e3c3', '#eef0e6', '#dbe9f0', '#f2dccb']);
@@ -162,7 +163,7 @@ function anverso(): HTMLCanvasElement {
   return c;
 }
 
-function reverso(): HTMLCanvasElement {
+function dniReverso(): HTMLCanvasElement {
   const c = createCanvas(W, H);
   const ctx = ctx2d(c);
   cardBase(ctx, ['#e3edf3', '#f1efe6', '#f3e2cf', '#e6eef2']);
@@ -220,6 +221,179 @@ function reverso(): HTMLCanvasElement {
   return c;
 }
 
-export function sampleCards(): { anverso: HTMLCanvasElement; reverso: HTMLCanvasElement } {
-  return { anverso: anverso(), reverso: reverso() };
+/** Text rotated 90° counter-clockwise, as printed along the card edges. */
+function verticalText(ctx: Ctx, t: string, fx: number, fy: number, size: number) {
+  ctx.save();
+  ctx.translate(fx * W, fy * H);
+  ctx.rotate(-Math.PI / 2);
+  text(ctx, t, 0, 0, size, { color: '#2b3440', weight: 600, font: MONO });
+  ctx.restore();
+}
+
+/** Same ellipse-and-shoulders silhouette used for portraits. */
+function portrait(ctx: Ctx, x: number, y: number, w: number, h: number, color: string) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.ellipse(x + w / 2, y + h * 0.38, w * 0.2, h * 0.19, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(x + w / 2, y + h * 1.02, w * 0.44, h * 0.38, 0, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+const frLabel = (ctx: Ctx, t: string, fx: number, fy: number) => text(ctx, t, fx, fy, 0.025, { color: '#2a3a6b', weight: 500 });
+const FR_VALUE = '#16202c';
+
+function cniAnverso(): HTMLCanvasElement {
+  const c = createCanvas(W, H);
+  const ctx = ctx2d(c);
+  cardBase(ctx, ['#eef4fa', '#f8fbfd', '#e3eef7', '#f2f6fb']);
+
+  // Header: tricolour block, title and a blue badge (no official emblems).
+  ctx.fillStyle = '#23338a';
+  ctx.fillRect(0.06 * W, 0.06 * H, 0.04 * W, 0.12 * H);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0.1 * W, 0.06 * H, 0.04 * W, 0.12 * H);
+  ctx.fillStyle = '#e1000f';
+  ctx.fillRect(0.14 * W, 0.06 * H, 0.04 * W, 0.12 * H);
+  text(ctx, "CARTE D'IDENTITÉ · SPÉCIMEN", 0.22, 0.125, 0.055, { color: '#23338a', weight: 800 });
+  text(ctx, 'SAMPLE IDENTITY CARD · DONNÉES FICTIVES', 0.22, 0.17, 0.028, { color: '#2a3a6b', weight: 600 });
+  ctx.fillStyle = '#23338a';
+  ctx.fillRect(0.82 * W, 0.06 * H, 0.11 * W, 0.12 * H);
+  text(ctx, 'FR', 0.851, 0.142, 0.06, { color: '#f6d34a', weight: 800 });
+
+  // Repeated prints: tiny expiry date on top, document number along the left edge.
+  text(ctx, '01.01.2033', 0.664, 0.03, 0.018, { color: '#2b3440', weight: 600 });
+  verticalText(ctx, 'AB12CD345', 0.022, 0.42, 0.022);
+
+  // Main photo and ghost portrait.
+  const px = 0.06 * W, py = 0.23 * H, pw = 0.31 * W, ph = 0.68 * H;
+  ctx.save();
+  roundedPath(ctx, px, py, pw, ph, 0.02 * H);
+  ctx.clip();
+  ctx.fillStyle = '#e6ebef';
+  ctx.fillRect(px, py, pw, ph);
+  portrait(ctx, px, py, pw, ph, '#6f7882');
+  ctx.restore();
+  ctx.save();
+  ctx.globalAlpha = 0.45;
+  portrait(ctx, 0.3 * W, 0.33 * H, 0.13 * W, 0.3 * H, '#7fb069');
+  ctx.restore();
+
+  frLabel(ctx, 'NOM / Surname', 0.4, 0.235);
+  text(ctx, 'DUPONT', 0.4, 0.29, 0.05, { color: FR_VALUE });
+  frLabel(ctx, 'Prénoms / Given names', 0.4, 0.345);
+  text(ctx, 'Camille, Marie', 0.4, 0.398, 0.048, { color: FR_VALUE, weight: 500 });
+
+  frLabel(ctx, 'SEXE / Sex', 0.4, 0.485);
+  text(ctx, 'F', 0.4, 0.53, 0.042, { color: FR_VALUE });
+  frLabel(ctx, 'NATIONALITÉ', 0.52, 0.485);
+  text(ctx, 'FRA', 0.52, 0.53, 0.042, { color: FR_VALUE });
+  frLabel(ctx, 'DATE DE NAISS.', 0.737, 0.485);
+  text(ctx, '01 01 1990', 0.737, 0.528, 0.045, { color: FR_VALUE });
+
+  frLabel(ctx, 'LIEU DE NAISSANCE / Place of birth', 0.4, 0.565);
+  text(ctx, 'LYON', 0.4, 0.605, 0.042, { color: FR_VALUE });
+  frLabel(ctx, "NOM D'USAGE / Alternate name", 0.4, 0.645);
+  text(ctx, 'MARTIN', 0.4, 0.687, 0.042, { color: FR_VALUE });
+
+  frLabel(ctx, 'N° DU DOCUMENT / Document No.', 0.4, 0.728);
+  text(ctx, 'AB12CD345', 0.4, 0.785, 0.06, { color: FR_VALUE, weight: 800 });
+  frLabel(ctx, "DATE D'EXPIR. / Expiry date", 0.737, 0.725);
+  text(ctx, '01 01 2033', 0.737, 0.765, 0.042, { color: FR_VALUE });
+
+  // Signature.
+  ctx.strokeStyle = '#1b2440';
+  ctx.lineWidth = 5;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  const sx = 0.455 * W, sy = 0.88 * H;
+  ctx.moveTo(sx, sy);
+  for (let i = 0; i <= 50; i++) {
+    const t = i / 50;
+    ctx.lineTo(sx + t * 0.17 * W, sy - Math.sin(t * 11) * 0.035 * H - t * 0.025 * H);
+  }
+  ctx.stroke();
+
+  // CAN.
+  text(ctx, '654321', 0.735, 0.885, 0.055, { color: FR_VALUE, weight: 700, font: MONO });
+
+  ctx.save();
+  ctx.translate(0.62 * W, 0.47 * H);
+  ctx.rotate(-0.33);
+  text(ctx, 'SPÉCIMEN', 0, 0, 0.085, { color: 'rgba(35, 51, 138, 0.16)', weight: 900 });
+  ctx.restore();
+  ctx.restore();
+  return c;
+}
+
+/** Deterministic pseudo-random pattern that looks like a 2D barcode. */
+function fakeMatrix(ctx: Ctx, x: number, y: number, size: number, cells: number) {
+  const cell = size / cells;
+  let seed = 1234567;
+  const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(x - cell, y - cell, size + 2 * cell, size + 2 * cell);
+  ctx.fillStyle = '#111111';
+  for (let r = 0; r < cells; r++) {
+    for (let col = 0; col < cells; col++) {
+      const finder = (r < 7 && col < 7) || (r < 7 && col >= cells - 7) || (r >= cells - 7 && col < 7);
+      const on = finder ? r % 6 === 0 || col % 6 === 0 || (r % 6 > 1 && r % 6 < 5 && col % 6 > 1 && col % 6 < 5) : rnd() > 0.5;
+      if (on) ctx.fillRect(x + col * cell, y + r * cell, Math.ceil(cell), Math.ceil(cell));
+    }
+  }
+}
+
+function cniReverso(): HTMLCanvasElement {
+  const c = createCanvas(W, H);
+  const ctx = ctx2d(c);
+  cardBase(ctx, ['#e8f1f8', '#f7fafc', '#e6eff7', '#f3f7fb']);
+
+  text(ctx, '01.01.2033', 0.284, 0.022, 0.018, { color: '#2b3440', weight: 600 });
+
+  // 2D-Doc style seal and chip.
+  fakeMatrix(ctx, 0.11 * W, 0.07 * H, 0.22 * H, 25);
+  const cx = 0.105 * W, cy = 0.34 * H, cw = 0.14 * W, ch = 0.21 * H;
+  const g = ctx.createLinearGradient(cx, cy, cx + cw, cy + ch);
+  g.addColorStop(0, '#e9c876');
+  g.addColorStop(1, '#a9832c');
+  ctx.fillStyle = g;
+  roundedPath(ctx, cx, cy, cw, ch, 0.03 * H);
+  ctx.fill();
+  verticalText(ctx, '123456789012', 0.06, 0.53, 0.026);
+
+  frLabel(ctx, 'TAILLE / Height', 0.275, 0.085);
+  text(ctx, '1,70 m', 0.275, 0.127, 0.042, { color: FR_VALUE });
+  frLabel(ctx, 'DATE DE DÉLIVRANCE / Date of issue', 0.425, 0.085);
+  text(ctx, '01 01 2023', 0.425, 0.127, 0.042, { color: FR_VALUE });
+  frLabel(ctx, 'ADRESSE / Address', 0.275, 0.185);
+  text(ctx, "1 RUE DE L'EXEMPLE", 0.275, 0.232, 0.036, { color: FR_VALUE, weight: 500 });
+  text(ctx, '69000 LYON', 0.275, 0.28, 0.036, { color: FR_VALUE, weight: 500 });
+  text(ctx, 'FRANCE', 0.275, 0.328, 0.036, { color: FR_VALUE, weight: 500 });
+
+  // Ghost portrait and repeated document number on the right edge.
+  ctx.save();
+  ctx.globalAlpha = 0.35;
+  ctx.fillStyle = '#dfe5ea';
+  ctx.fillRect(0.76 * W, 0.07 * H, 0.17 * W, 0.26 * H);
+  portrait(ctx, 0.76 * W, 0.07 * H, 0.17 * W, 0.26 * H, '#59636d');
+  ctx.restore();
+  verticalText(ctx, 'AB12CD345', 0.99, 0.42, 0.02);
+
+  // Stripe and machine readable zone (fictitious data).
+  ctx.fillStyle = '#23338a';
+  ctx.fillRect(0.05 * W, 0.6 * H, 0.3 * W, 0.012 * H);
+  ctx.fillStyle = '#e1000f';
+  ctx.fillRect(0.65 * W, 0.6 * H, 0.3 * W, 0.012 * H);
+  text(ctx, 'SPÉCIMEN SANS VALEUR', 0.39, 0.62, 0.032, { color: '#23338a', weight: 800 });
+  const mrz = ['IDFRAAB12CD3450<<<<<<<<<<<<<<<', '9001010F3301010FRA<<<<<<<<<<<0', 'DUPONT<<CAMILLE<MARIE<<<<<<<<<'];
+  mrz.forEach((line, i) => text(ctx, line, 0.06, 0.755 + i * 0.075, 0.068, { font: MONO, weight: 700, color: '#20252b' }));
+  ctx.restore();
+  return c;
+}
+
+export function sampleCards(id: DocumentId = 'dni-es'): { anverso: HTMLCanvasElement; reverso: HTMLCanvasElement } {
+  return id === 'cni-fr'
+    ? { anverso: cniAnverso(), reverso: cniReverso() }
+    : { anverso: dniAnverso(), reverso: dniReverso() };
 }

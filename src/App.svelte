@@ -46,7 +46,7 @@
       <span class="badge"><Icon name="code" size={13} /> Código abierto</span>
     </div>
     <h1>Protege tu DNI antes de enviarlo</h1>
-    <p>Tapa los datos que nadie necesita, añade una marca de agua con el destinatario y la fecha, y descarga un PDF o JPG listo para enviar.</p>
+    <p>Tapa los datos que nadie necesita, añade una marca de agua con el destinatario y la fecha, y descarga un PDF o JPG listo para enviar. Funciona con el DNI español y la carte d'identité francesa.</p>
   </section>
 
   <div class="layout" id="editor">
@@ -115,6 +115,8 @@
     grid-area: slots;
     position: sticky;
     top: 72px;
+    /* Keeps the country menu above the editor column. */
+    z-index: 4;
   }
   .col-editor {
     grid-area: editor;
