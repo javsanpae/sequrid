@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ---- Build the static site (runs on the build host's architecture) ----
-FROM --platform=$BUILDPLATFORM node:22-alpine AS build
+FROM --platform=$BUILDPLATFORM node:26-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
@@ -15,7 +15,7 @@ ENV VITE_APP_VERSION=$APP_VERSION \
 RUN npm run build
 
 # ---- Serve it with an unprivileged nginx: no backend, no storage ----
-FROM nginxinc/nginx-unprivileged:1.29-alpine
+FROM nginxinc/nginx-unprivileged:1.31-alpine
 ARG APP_VERSION=dev
 ARG SOURCE_URL=https://github.com/javsanpae/sequrid
 LABEL org.opencontainers.image.title="sequrid" \
