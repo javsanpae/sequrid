@@ -19,6 +19,12 @@ The released version is the one in the [`VERSION`](VERSION) file.
   search finds nothing.
 - Fictitious generic sample card to try the custom document.
 
+### Changed
+
+- The app starts with the custom document selected, so it works with any ID
+  from the first moment. Pick your country in the photos panel to get the
+  predefined zones of your document.
+
 ### Fixed
 
 - Missing comma in the Spanish, French and Italian answer to "Which documents

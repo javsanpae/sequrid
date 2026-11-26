@@ -70,7 +70,8 @@ class AppState {
   active = $state<FaceId>('d1f');
   twoDocs = $state(false);
   /** Country / document model of each ID. */
-  docTypes = $state<Record<DocNumber, DocumentId>>({ 1: 'dni-es', 2: 'dni-es' });
+  // Custom by default: it works with any ID; the user picks a country for predefined zones.
+  docTypes = $state<Record<DocNumber, DocumentId>>({ 1: 'custom', 2: 'custom' });
 
   usage = $state<UsageId>('other');
   recipient = $state('');
@@ -149,8 +150,9 @@ class AppState {
   }
 
   setFace(id: FaceId, image: HTMLCanvasElement) {
-    this.faces[id] = { image, rotation: 0, frame: { ...FULL_RECT }, zones: defaultZones(this.docOf(id), FACE_META[id].side) };
+    // Enable the second ID first: it inherits the first one's document, which decides the zones.
     if (FACE_META[id].doc === 2 && !this.twoDocs) this.setTwoDocs(true);
+    this.faces[id] = { image, rotation: 0, frame: { ...FULL_RECT }, zones: defaultZones(this.docOf(id), FACE_META[id].side) };
     this.active = id;
     this.selectedZone = null;
     this.zoom = 1;
