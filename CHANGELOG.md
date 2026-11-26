@@ -1,0 +1,128 @@
+# Changelog
+
+All notable changes to this project are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The released version is the one in the [`VERSION`](VERSION) file.
+
+## [Unreleased]
+
+## [0.3.0] - 2026-11-26
+
+### Added
+
+- The user interface is available in English, Spanish and French, with a
+  language selector in the header. The choice is remembered in the browser;
+  on the first visit the app follows the browser language and falls back to
+  English.
+- Search box in the country and document picker. The picker now groups
+  documents by country and has room for several (including older) models per
+  country.
+- `AGENTS.md` with project context for coding agents.
+- This changelog.
+
+### Changed
+
+- English is now the official language of the repository (documentation, code
+  comments and commit messages) and the default language of the interface.
+- Downloaded file names follow the interface language, e.g. `dni-protected.pdf`
+  in English and `dni-protegido.pdf` in Spanish.
+
+### Fixed
+
+- The Helm test pod no longer carries the app's selector labels, so the
+  NetworkPolicy (which denies all egress) no longer blocks `helm test`. When
+  `networkPolicy.ingressFrom` restricts traffic, allow the test pod as shown
+  in `values.yaml`.
+
+## [0.2.0] - 2026-11-26
+
+### Added
+
+- Country selector for each ID. The zones offered depend on the chosen
+  document.
+- Support for the French carte nationale d'identité (2021), with its own
+  fields: 2D-Doc seal, height, issue date, the vertically printed repeated
+  numbers and the ghost portraits.
+- IDs from different countries can be mixed in the same copy; the checklist
+  then uses neutral field names. Changing a country moves the automatic zones
+  and keeps the ones you drew, and a second ID starts with the first one's
+  country.
+- Fictitious French sample card to try the app.
+- Download names depend on the document (e.g. `cni-protegido.pdf` for the
+  French card).
+
+### Changed
+
+- The protection level only counts recommendations that exist on the
+  documents in use, and usage presets skip fields a document does not have.
+- CI reads the Node.js version from `.nvmrc` (Node.js 26), and the container
+  is built on `node:26-alpine`.
+- The image is served by `nginxinc/nginx-unprivileged:1.31-alpine` (was
+  1.29).
+- Development dependencies updated: Vite 8, Vitest 5,
+  `@sveltejs/vite-plugin-svelte` 7 and TypeScript 6.
+- GitHub Actions updated: `actions/checkout` 7, `docker/build-push-action` 7,
+  `docker/metadata-action` 6, `docker/login-action` 4 and `azure/setup-helm` 5.
+- Dependabot no longer proposes TypeScript 7, which `svelte-check` 4 does not
+  support yet.
+
+### Security
+
+- The nginx base image update to 1.31 brings in the upstream security fixes.
+
+## [0.1.1] - 2026-11-26
+
+### Added
+
+- Releases are driven by the `VERSION` file. When a change that bumps it is
+  merged into `main`, CI publishes the image (`X.Y.Z` and `X.Y`) and the Helm
+  chart with that version, tags the commit and creates a GitHub release with
+  the packaged chart. A version that is already released is never
+  overwritten.
+- Pull requests get a warning when `VERSION` matches an already released
+  version, and the chart is packaged with `VERSION` on every run.
+
+### Removed
+
+- Publishing by pushing `vX.Y.Z` git tags by hand.
+
+## [0.1.0] - 2026-11-26
+
+### Added
+
+- First release of Sequrid, a self-hosted web app to protect a photo of a
+  Spanish DNI (2021 model) before sending it. Everything runs in the browser.
+- Up to two IDs, front and back. Drop several photos at once and they fill the
+  free slots; photos can also be pasted or taken with the phone camera. A
+  sample DNI with fictitious data is included.
+- Usage presets (rental, job, sale, hotel, bank, public administration, other)
+  that suggest which fields to cover and the watermark text.
+- Automatic covering of 12 DNI fields (number, support number, date of birth,
+  signature, CAN, expiry, name, photo, address, place of birth, parents and
+  MRZ) or manual covering with your own zones, in black, pixelated or blurred.
+- Editor to move, resize and draw zones and frame the card, with 90° rotation,
+  zoom, a before/after view and keyboard shortcuts.
+- Tiled diagonal watermark with automatic (use · recipient · date) or custom
+  text, adjustable intensity, size and light or dark tone. Optional grayscale
+  copy.
+- Protection level based on the recommendations for the chosen use.
+- Downloads as an A4 PDF at real ID-1 size (85.6 × 54 mm) or enlarged, as a
+  JPG of one side or as a JPG with all sides, all without metadata.
+- Responsive layout with light and dark themes.
+- Strict Content Security Policy with `connect-src 'none'`: the page cannot
+  send anything over the network.
+- Multi-arch (amd64, arm64) Docker image that runs as a non-root user on a
+  read-only file system, a `docker-compose.yaml` and a Helm chart with
+  optional Ingress, HTTPRoute, NetworkPolicy, HorizontalPodAutoscaler and
+  PodDisruptionBudget.
+- CI with type checking, unit, end-to-end, Helm and smoke tests, and
+  publishing of the image and chart to `ghcr.io`.
+- Licensed under the GNU Affero General Public License v3.0 or later.
+
+[Unreleased]: https://github.com/javsanpae/sequrid/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/javsanpae/sequrid/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/javsanpae/sequrid/compare/v0.1.1...v0.2.0
+[0.1.1]: https://github.com/javsanpae/sequrid/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/javsanpae/sequrid/releases/tag/v0.1.0

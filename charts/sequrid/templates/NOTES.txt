@@ -1,18 +1,18 @@
-Sequrid {{ .Chart.AppVersion }} está desplegado. Todo el procesamiento ocurre en el navegador:
-el pod solo sirve archivos estáticos y no guarda nada.
+Sequrid {{ .Chart.AppVersion }} is deployed. All processing happens in the browser:
+the pod only serves static files and stores nothing.
 
 {{- if .Values.ingress.enabled }}
-Abre:
+Open:
 {{- range .Values.ingress.hosts }}
   http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}
 {{- end }}
 {{- else if .Values.httpRoute.enabled }}
-Abre:
+Open:
 {{- range .Values.httpRoute.hostnames }}
   https://{{ . }}
 {{- end }}
 {{- else }}
-Para probarlo en local:
+To try it locally:
   kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "sequrid.fullname" . }} 8080:{{ .Values.service.port }}
-  y abre http://localhost:8080
+  and open http://localhost:8080
 {{- end }}

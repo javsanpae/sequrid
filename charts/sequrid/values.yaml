@@ -100,11 +100,16 @@ podDisruptionBudget:
 # reason to open any outbound connection.
 networkPolicy:
   enabled: false
-  # Restrict who can reach the pod (empty = anyone).
+  # Restrict who can reach the pod (empty = anyone). When set, also allow the
+  # `helm test` pod (labelled app.kubernetes.io/component: test) or it fails.
   ingressFrom: []
   #  - namespaceSelector:
   #      matchLabels:
   #        kubernetes.io/metadata.name: ingress-nginx
+  #  - podSelector:
+  #      matchLabels:
+  #        app.kubernetes.io/instance: sequrid   # your release name
+  #        app.kubernetes.io/component: test
 
 nodeSelector: {}
 tolerations: []

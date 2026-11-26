@@ -29,6 +29,8 @@
     droplet: 'M12 3s6 6.5 6 11a6 6 0 01-12 0c0-4.5 6-11 6-11z',
     file: 'M6 3h8l4 4v14H6zM14 3v4h4',
     chevron: 'M6 9l6 6 6-6',
+    search: 'M11 4a7 7 0 100 14 7 7 0 000-14zM20 20l-4-4',
+    globe: 'M12 3a9 9 0 100 18 9 9 0 000-18zM3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9s1.3-6.4 3.8-9zM4.6 7.5h14.8M4.6 16.5h14.8',
   } as const;
   export type IconName = keyof typeof PATHS;
 </script>

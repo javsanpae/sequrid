@@ -1,8 +1,10 @@
 <script lang="ts">
   import { loadFiles, loadSample, pickFiles } from '../lib/files';
+  import { m } from '../lib/i18n/index.svelte';
   import { app, FACE_META, faceName, type Tool, type View } from '../lib/state.svelte';
   import Compare from './Compare.svelte';
   import Icon from './Icon.svelte';
+  import Rich from './Rich.svelte';
   import Segmented from './Segmented.svelte';
   import Stage from './Stage.svelte';
 
@@ -26,12 +28,6 @@
     if (files.length) void loadFiles(files, app.active);
   }
 
-  const hints: Record<Tool, string> = {
-    move: 'Arrastra una zona para moverla o tira de sus esquinas para cambiar su tamaño.',
-    draw: 'Arrastra sobre la imagen para tapar lo que quieras.',
-    frame: 'Arrastra las esquinas o los lados del marco hasta los bordes de la tarjeta. Las zonas se recolocan solas.',
-  };
-
   function setTool(t: Tool) {
     app.tool = t;
     app.selectedZone = null;
@@ -44,7 +40,7 @@
 <section
   class="card editor"
   class:over={dragOver}
-  aria-label="Editor"
+  aria-label={m().editor.label}
   ondragover={(e) => {
     e.preventDefault();
     dragOver = true;
@@ -56,48 +52,48 @@
 >
   <div class="toolbar">
     <Segmented
-      label="Vista"
+      label={m().editor.view}
       size="sm"
       bind:value={app.view}
       disabled={!face}
       options={[
-        { value: 'edit' as View, label: 'Editar', icon: 'edit' },
-        { value: 'compare' as View, label: 'Antes / después', icon: 'compare' },
+        { value: 'edit' as View, label: m().editor.edit, icon: 'edit' },
+        { value: 'compare' as View, label: m().editor.compare, icon: 'compare' },
       ]}
     />
     <Segmented
-      label="Herramienta"
+      label={m().editor.tool}
       size="sm"
       value={app.tool}
       onchange={setTool}
       disabled={!face || app.view === 'compare'}
       options={[
-        { value: 'move' as Tool, label: 'Mover', icon: 'move', title: 'Mover y ajustar zonas' },
-        { value: 'draw' as Tool, label: 'Dibujar', icon: 'pen', title: 'Dibuja un rectángulo para tapar lo que quieras' },
-        { value: 'frame' as Tool, label: 'Encuadre', icon: 'crop', title: 'Ajusta el marco a los bordes de la tarjeta' },
+        { value: 'move' as Tool, label: m().editor.move, icon: 'move', title: m().editor.moveTitle },
+        { value: 'draw' as Tool, label: m().editor.draw, icon: 'pen', title: m().editor.drawTitle },
+        { value: 'frame' as Tool, label: m().editor.frame, icon: 'crop', title: m().editor.frameTitle },
       ]}
     />
-    <div class="group" role="group" aria-label="Zoom">
-      <button type="button" class="btn ghost icon sm" aria-label="Alejar" disabled={!face || app.view === 'compare'} onclick={() => zoom(-1)}>
+    <div class="group" role="group" aria-label={m().editor.zoom}>
+      <button type="button" class="btn ghost icon sm" aria-label={m().editor.zoomOut} disabled={!face || app.view === 'compare'} onclick={() => zoom(-1)}>
         <Icon name="minus" size={16} />
       </button>
       <span class="zoom">{Math.round(app.zoom * 100)}%</span>
-      <button type="button" class="btn ghost icon sm" aria-label="Acercar" disabled={!face || app.view === 'compare'} onclick={() => zoom(1)}>
+      <button type="button" class="btn ghost icon sm" aria-label={m().editor.zoomIn} disabled={!face || app.view === 'compare'} onclick={() => zoom(1)}>
         <Icon name="plus" size={16} />
       </button>
-      <button type="button" class="btn ghost sm" disabled={!face} onclick={() => (app.zoom = 1)} title="Ajustar a la pantalla">
-        <Icon name="fit" size={16} /><span class="hide-xs">Ajustar</span>
+      <button type="button" class="btn ghost sm" disabled={!face} onclick={() => (app.zoom = 1)} title={m().editor.fitTitle}>
+        <Icon name="fit" size={16} /><span class="hide-xs">{m().editor.fit}</span>
       </button>
     </div>
     <div class="group end">
-      <button type="button" class="btn icon sm" aria-label="Girar 90 grados" title="Girar 90°" disabled={!face} onclick={() => app.rotate(app.active)}>
+      <button type="button" class="btn icon sm" aria-label={m().editor.rotate} title={m().editor.rotateTitle} disabled={!face} onclick={() => app.rotate(app.active)}>
         <Icon name="rotate" size={17} />
       </button>
       <button
         type="button"
         class="btn icon sm"
-        aria-label="Quitar la zona seleccionada"
-        title="Quitar la zona seleccionada (Supr)"
+        aria-label={m().editor.removeZone}
+        title={m().editor.removeZoneTitle}
         disabled={!face || !app.selectedZone}
         onclick={() => app.selectedZone && app.removeZone(app.active, app.selectedZone)}
       >
@@ -118,16 +114,16 @@
     {:else}
       <button type="button" class="drop" style:min-height="{Math.min(maxHeight, 380)}px" onclick={() => pickFiles(app.active)}>
         <span class="drop-icon"><Icon name="upload" size={26} /></span>
-        <strong>Sube o arrastra la foto del {FACE_META[app.active].side}</strong>
-        <span>JPG, PNG o WebP. En el móvil puedes hacer la foto directamente.</span>
-        <span class="drop-badge"><Icon name="lock" size={14} /> La imagen no sale de tu dispositivo</span>
+        <strong>{m().editor.dropTitle(FACE_META[app.active].side)}</strong>
+        <span>{m().editor.dropFormats}</span>
+        <span class="drop-badge"><Icon name="lock" size={14} /> {m().editor.dropPrivate}</span>
       </button>
       <div class="empty-actions">
-        <button type="button" class="link" onclick={loadSample}>o prueba con un documento de ejemplo</button>
+        <button type="button" class="link" onclick={loadSample}>{m().editor.trySample}</button>
       </div>
     {/if}
     {#if dragOver}
-      <div class="drop-veil" aria-hidden="true"><Icon name="upload" size={28} /> Suelta aquí las fotos</div>
+      <div class="drop-veil" aria-hidden="true"><Icon name="upload" size={28} /> {m().editor.dropHere}</div>
     {/if}
   </div>
 
@@ -135,21 +131,21 @@
     {#if face}
       <p class="hint">
         {#if app.view === 'compare'}
-          Estás viendo {faceName(app.active)}.
+          {m().editor.viewing(faceName(app.active, m()))}
         {:else}
-          {hints[app.tool]}
+          {m().editor.hints[app.tool]}
           {#if app.tool === 'move'}
-            <span class="keys">Con el lienzo seleccionado: <kbd>Tab</kbd> recorre las zonas, flechas para moverlas (<kbd>Mayús</kbd> + flechas las agranda), <kbd>Supr</kbd> elimina.</span>
+            <span class="keys"><Rich text={m().editor.keys} /></span>
           {/if}
         {/if}
       </p>
       <div class="actions">
-        <button type="button" class="link" onclick={() => pickFiles(app.active)}>Cambiar foto</button>
-        <button type="button" class="link" onclick={() => app.resetZones(app.active)}>Restablecer zonas</button>
-        <button type="button" class="link danger" onclick={() => app.removeFace(app.active)}>Quitar esta cara</button>
+        <button type="button" class="link" onclick={() => pickFiles(app.active)}>{m().editor.changePhoto}</button>
+        <button type="button" class="link" onclick={() => app.resetZones(app.active)}>{m().editor.resetZones}</button>
+        <button type="button" class="link danger" onclick={() => app.removeFace(app.active)}>{m().editor.removeFace}</button>
       </div>
     {/if}
-    <p class="status" role="status" aria-live="polite">{app.status}</p>
+    <p class="status" role="status" aria-live="polite">{app.status ? app.status(m()) : ''}</p>
   </div>
 </section>
 

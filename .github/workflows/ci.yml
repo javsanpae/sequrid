@@ -233,7 +233,7 @@ jobs:
         run: |
           owner="${GITHUB_REPOSITORY_OWNER,,}"
           notes="$(printf '%s\n' \
-            "Imagen: \`ghcr.io/${GITHUB_REPOSITORY,,}:${VERSION}\`" \
+            "Image: \`ghcr.io/${GITHUB_REPOSITORY,,}:${VERSION}\`" \
             "" \
             "Chart: \`helm install sequrid oci://ghcr.io/${owner}/charts/sequrid --version ${VERSION}\`")"
           gh release create "v$VERSION" "sequrid-${VERSION}.tgz" \

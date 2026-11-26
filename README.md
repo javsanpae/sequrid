@@ -1,36 +1,37 @@
 # Sequrid
 
-Protege tu DNI antes de enviarlo: tapa los datos que nadie necesita, añade una marca de agua con el destinatario y la fecha, y descarga un PDF o un JPG listo para mandar.
+Protect your ID card before sending it: cover the data nobody needs, add a watermark with the recipient and the date, and download a PDF or JPG ready to send.
 
-**Todo se procesa en tu navegador.** El servidor solo entrega archivos estáticos (HTML, JS y CSS); no hay backend, ni base de datos, ni subida de archivos. Es código abierto precisamente para que cualquiera pueda comprobarlo y servirlo por su cuenta.
+**Everything runs in your browser.** The server only delivers static files (HTML, JS and CSS); there is no backend, no database and no file upload. It is open source precisely so that anyone can check this and host it themselves.
 
-## Funcionalidades
+## Features
 
-- **Varios países**: DNI español (modelo 2021) y carte nationale d'identité francesa (desde 2021). Cada documento tiene su selector de país y las zonas se colocan sobre los datos de ese modelo.
-- **Hasta dos documentos** (anverso y reverso de cada uno), que pueden ser de países distintos. Arrastra varias fotos a la vez y se colocan solas en los huecos libres; también puedes pegarlas con <kbd>Ctrl</kbd>+<kbd>V</kbd> o hacer la foto desde el móvil.
-- **Para qué es la copia**: alquiler, trabajo, compraventa, hotel, banco, Administración u otro. Cada uso propone qué datos tapar y el texto de la marca de agua.
-- **Qué tapar**, en modo automático o manual (dibujas tú las zonas). En automático, las zonas dependen del documento:
-  - DNI: número, soporte, fecha de nacimiento, firma, CAN, validez, nombre, foto, domicilio, lugar de nacimiento, padres y MRZ.
-  - Carte d'identité: número (también los impresos en vertical), número de serie, fecha y lugar de nacimiento, firma, CAN, caducidad, expedición, nombres, foto y retratos secundarios, estatura, dirección, código 2D-Doc y MRZ.
-- **Cómo se tapa**: negro, pixelado o desenfoque (estos dos usan bloques grandes para que el texto no se pueda reconstruir).
-- **Editor**: mover y redimensionar zonas, dibujar zonas propias, encuadrar la tarjeta, girar 90°, zoom y vista antes/después. Con teclado: <kbd>Tab</kbd> recorre las zonas, flechas para moverlas, <kbd>Mayús</kbd>+flechas para agrandarlas y <kbd>Supr</kbd> para quitarlas.
-- **Marca de agua** en mosaico diagonal: texto automático (uso · destinatario · fecha) o propio, intensidad, tamaño y tono claro u oscuro. Opción de copia en blanco y negro.
-- **Nivel de protección** según lo recomendado para el uso elegido.
-- **Descarga** en PDF A4 a tamaño real (85,6 × 54 mm, como una fotocopia) o ampliado, JPG de una cara o JPG con todas. Las descargas no llevan metadatos (ni GPS, ni modelo de móvil).
-- Diseño adaptado a móvil, tema claro y oscuro, y un DNI de ejemplo con datos ficticios para probar.
+- **Several countries**: Spanish DNI (2021 model) and French carte nationale d'identité (2021 onwards). Each ID has its own country picker, with a search box and documents grouped by country (with room for several models per country), and the zones are placed over the data of that model.
+- **Up to two IDs** (front and back of each), which can be from different countries. Drop several photos at once and they fill the free slots; you can also paste them with <kbd>Ctrl</kbd>+<kbd>V</kbd> or take the photo with your phone.
+- **What the copy is for**: rental, job, sale, hotel, bank, public administration or other. Each use suggests which fields to cover and the watermark text.
+- **What to cover**, in automatic or manual mode (you draw the zones). In automatic mode, the zones depend on the document:
+  - DNI: number, support number, date of birth, signature, CAN, expiry date, name, photo, address, place of birth, parents and MRZ.
+  - Carte d'identité: number (including the ones printed vertically), serial number, date and place of birth, signature, CAN, expiry date, issue date, names, photo and ghost portraits, height, address, 2D-Doc seal and MRZ.
+- **How it is covered**: black, pixelated or blurred (the last two use large blocks so the text cannot be reconstructed).
+- **Editor**: move and resize zones, draw your own, frame the card, rotate 90°, zoom and before/after view. With the keyboard: <kbd>Tab</kbd> cycles through the zones, arrow keys move them, <kbd>Shift</kbd>+arrows resize them and <kbd>Delete</kbd> removes them.
+- **Watermark** tiled diagonally: automatic text (use · recipient · date) or your own, with adjustable intensity, size and light or dark tone. Optional black-and-white copy.
+- **Protection level** based on the recommendations for the chosen use.
+- **Download** as an A4 PDF at real size (85.6 × 54 mm, like a photocopy) or enlarged, a JPG of one side or a JPG with all of them. Downloads carry no metadata (no GPS, no phone model).
+- **Languages**: the interface is available in English, Spanish and French. Pick one with the language selector in the header; on the first visit it follows your browser language and falls back to English.
+- Mobile-friendly layout, light and dark themes, and sample cards with fictitious data to try it out.
 
-## Privacidad verificable
+## Verifiable privacy
 
-- Las fotos se leen con `createImageBitmap`, se dibujan en un `<canvas>` y se exportan con `canvas.toBlob`; el PDF lo genera un escritor propio de unas 150 líneas ([`src/lib/pdf.ts`](src/lib/pdf.ts)). No hay dependencias en tiempo de ejecución.
-- nginx envía una `Content-Security-Policy` con **`connect-src 'none'`** y `form-action 'none'`: el navegador bloquea cualquier `fetch`, XHR, WebSocket o envío de formularios desde la página. Aunque el código lo intentara, no podría mandar nada.
-- No se guarda nada: ni las fotos ni los ajustes. Al recargar, todo empieza de cero. Lo único que se recuerda (en `localStorage`) es si prefieres el tema claro u oscuro.
-- nginx tiene el log de accesos desactivado.
-- Haz la prueba: carga la página, activa el modo avión y úsala. Funciona igual.
-- Los tests e2e comprueban que, al cargar una foto, procesarla y descargar el PDF, la página no hace **ninguna** petición de red.
+- Photos are read with `createImageBitmap`, drawn on a `<canvas>` and exported with `canvas.toBlob`; the PDF is produced by a small writer of our own ([`src/lib/pdf.ts`](src/lib/pdf.ts)). There are no runtime dependencies.
+- nginx sends a `Content-Security-Policy` with **`connect-src 'none'`** and `form-action 'none'`: the browser blocks any `fetch`, XHR, WebSocket or form submission from the page. Even if the code tried, it could not send anything.
+- Nothing is stored: neither the photos nor the settings. Reloading starts from scratch. The only things remembered (in `localStorage`, on your device) are your theme (light or dark) and your interface language.
+- nginx has the access log turned off.
+- Try it: load the page, switch on airplane mode and use it. It works the same.
+- The e2e tests check that loading a photo, processing it and downloading the PDF makes **no** network requests at all.
 
-## Instalación
+## Installation
 
-La imagen se publica en `ghcr.io/javsanpae/sequrid` para `linux/amd64` y `linux/arm64`. Escucha en el puerto **8080**, se ejecuta como usuario sin privilegios (UID 101) y funciona con el sistema de archivos en solo lectura.
+The image is published as `ghcr.io/javsanpae/sequrid` for `linux/amd64` and `linux/arm64`. It listens on port **8080**, runs as an unprivileged user (UID 101) and works with a read-only file system.
 
 ### Docker Compose
 
@@ -38,7 +39,7 @@ La imagen se publica en `ghcr.io/javsanpae/sequrid` para `linux/amd64` y `linux/
 docker compose up -d
 ```
 
-Abre <http://localhost:8080>. Variables opcionales: `SEQURID_PORT` (puerto del host, 8080 por defecto) y `SEQURID_VERSION` (etiqueta de la imagen, `latest` por defecto). Para construir desde el código: `docker compose up -d --build`.
+Open <http://localhost:8080>. Optional variables: `SEQURID_PORT` (host port, 8080 by default) and `SEQURID_VERSION` (image tag, `latest` by default). To build from source: `docker compose up -d --build`.
 
 ### Docker
 
@@ -48,109 +49,133 @@ docker run -d --name sequrid -p 8080:8080 --read-only --tmpfs /tmp --cap-drop AL
 
 ### Kubernetes (Helm)
 
-El chart está en [`charts/sequrid`](charts/sequrid) y también se publica como OCI en cada versión:
+The chart lives in [`charts/sequrid`](charts/sequrid) and is also published as an OCI artifact with every release:
 
 ```bash
-helm install sequrid oci://ghcr.io/javsanpae/charts/sequrid --version 0.2.0 \
+helm install sequrid oci://ghcr.io/javsanpae/charts/sequrid --version 0.3.0 \
   --set ingress.enabled=true \
-  --set ingress.hosts[0].host=dni.example.com \
+  --set ingress.hosts[0].host=sequrid.example.com \
   --set ingress.hosts[0].paths[0].path=/ \
   --set ingress.hosts[0].paths[0].pathType=Prefix
 ```
 
-O desde el repositorio: `helm install sequrid ./charts/sequrid`.
+Or from the repository: `helm install sequrid ./charts/sequrid`.
 
-Opciones destacadas de [`values.yaml`](charts/sequrid/values.yaml):
+Notable options in [`values.yaml`](charts/sequrid/values.yaml):
 
-| Valor | Para qué |
+| Value | Purpose |
 | --- | --- |
-| `ingress.*` | Exponer con un Ingress (clase, anotaciones, TLS). |
-| `httpRoute.*` | Alternativa con Gateway API. |
-| `networkPolicy.enabled` | Permite tráfico entrante al puerto HTTP y **bloquea todo el tráfico saliente** del pod. |
-| `autoscaling.*`, `podDisruptionBudget.*` | Escalado y disponibilidad. |
-| `resources`, `nodeSelector`, `tolerations`, `affinity` | Lo habitual. |
+| `ingress.*` | Expose it with an Ingress (class, annotations, TLS). |
+| `httpRoute.*` | Gateway API alternative. |
+| `networkPolicy.enabled` | Allows incoming traffic on the HTTP port (optionally only from `networkPolicy.ingressFrom`) and **blocks all outgoing traffic** from the pod. |
+| `autoscaling.*`, `podDisruptionBudget.*` | Scaling and availability. |
+| `resources`, `nodeSelector`, `tolerations`, `affinity` | The usual. |
 
-Por defecto el pod corre sin root, sin capacidades, con `readOnlyRootFilesystem`, sin token de la API de Kubernetes y con un `emptyDir` en memoria para `/tmp`.
+By default the pod runs as non-root, with no capabilities, a `readOnlyRootFilesystem`, no Kubernetes API token and an in-memory `emptyDir` for `/tmp`.
 
-Detrás de un proxy inverso no hace falta nada especial: es un sitio estático. Usa HTTPS para que el navegador permita la cámara del móvil y todas las APIs.
+Nothing special is needed behind a reverse proxy: it is a static site. Use HTTPS so the browser allows the phone camera and every API.
 
-## Desarrollo
+## Development
 
-Requisitos: Node.js 26 (la versión está en [`.nvmrc`](.nvmrc); funciona desde la 20.19).
+Requirements: Node.js 26 (the version is in [`.nvmrc`](.nvmrc); 20.19 or later works).
 
 ```bash
 npm install
-npm run dev          # servidor de desarrollo en http://localhost:5173
+npm run dev          # development server at http://localhost:5173
 npm run check        # svelte-check + TypeScript
-npm test             # tests unitarios (Vitest)
-npm run test:e2e     # tests end-to-end (Playwright, escritorio y móvil)
-npm run build        # genera dist/
+npm test             # unit tests (Vitest)
+npm run test:e2e     # end-to-end tests (Playwright, desktop and mobile)
+npm run build        # builds dist/
 ```
 
-Para los e2e hace falta el navegador de Playwright (`npx playwright install chromium`). Con `E2E_BASE_URL=http://localhost:8080` se lanzan contra un contenedor ya arrancado en lugar de contra `vite preview`.
+The e2e tests need Playwright's browser (`npx playwright install chromium`). With `E2E_BASE_URL=http://localhost:8080` they run against an already running container instead of `vite preview`, and with `SCREENSHOTS=1` they save screenshots to `test-results/screens/`.
 
-### Estructura
+No Node.js on your machine? Everything also runs in Docker with the `node:26-alpine` and Playwright images; see [Without a local Node.js](AGENTS.md#without-a-local-nodejs) in `AGENTS.md`.
+
+### Structure
 
 ```
 src/
   lib/
-    documents.ts   documentos por país y sus zonas (coordenadas relativas a la tarjeta)
-    presets.ts     usos, qué se tapa en cada uno y nivel de protección
-    watermark.ts   texto y geometría de la marca de agua
-    effects.ts     pixelado, desenfoque y escala de grises sobre buffers RGBA
-    render.ts      composición final en canvas (recorte, zonas, B/N, marca)
-    pdf.ts         escritor de PDF A4 con imágenes JPEG
-    export.ts      descargas PDF/JPG
-    state.svelte.ts estado de la aplicación (Svelte 5 runes)
-  components/      interfaz (Svelte 5)
-tests/unit/        tests de la lógica pura
-e2e/               tests de navegador, incluida la comprobación de red
-nginx/             configuración del servidor y cabeceras de seguridad
-charts/sequrid/    chart de Helm
+    config.ts          source code URL and version shown in the interface
+    documents.ts       documents per country and their zones (coordinates relative to the card)
+    countries.ts       country names from the browser (Intl.DisplayNames)
+    document-search.ts picker grouping by country and accent-insensitive search
+    i18n/              interface texts (en, es, fr) and language selection
+    presets.ts         uses, what each one covers and protection level
+    state.svelte.ts    application state (Svelte 5 runes)
+    files.ts           loading photos into the slots and the sample cards
+    image.ts           image decoding (EXIF orientation), downscaling and canvas helpers
+    geometry.ts        rectangle math: move, resize, rotate, pixels
+    sample.ts          fictitious sample cards drawn on a canvas
+    watermark.ts       watermark text and geometry
+    effects.ts         pixelate, blur and grayscale on RGBA buffers
+    render.ts          final canvas composition (crop, zones, grayscale, watermark)
+    pdf.ts             A4 PDF writer with JPEG images
+    export.ts          PDF/JPG downloads
+  components/          user interface (Svelte 5)
+tests/unit/        tests of the pure logic
+e2e/               browser tests, including the network check
+nginx/             server configuration and security headers
+charts/sequrid/    Helm chart
 ```
 
-### Añadir un país o documento
+### Adding a country or document
 
-1. Define un `DocumentType` en [`src/lib/documents.ts`](src/lib/documents.ts) con sus zonas. Cada rectángulo indica en qué cara está y se expresa en fracciones del ancho y alto de la tarjeta. Usa las claves de `ZoneKey` para que los usos (alquiler, hotel…) funcionen sin tocar nada más.
-2. Añádelo a `DOCUMENTS` y su bandera a [`Flag.svelte`](src/components/Flag.svelte).
-3. Opcional: dibuja un ejemplo ficticio en [`src/lib/sample.ts`](src/lib/sample.ts) con los datos donde los pone el documento real.
-4. Los tests unitarios recorren todos los documentos y comprueban que las zonas son válidas.
+Only add documents whose layout you have checked against an official specimen.
+
+1. In [`src/lib/documents.ts`](src/lib/documents.ts), add the new id to the `DocumentId` union, define a `DocumentType` with its zones and metadata (`country`, `short`, `issuedFrom`, `issuedUntil` for models no longer issued, search `aliases`) and add it to `DOCUMENTS`. Each rectangle says which side it is on and is expressed as fractions of the card's width and height. Use the `ZoneKey` keys so the uses (rental, hotel…) work without touching anything else. `documents.ts` only holds geometry and identifiers.
+2. Add the display texts to `documents[id]` in every dictionary in [`src/lib/i18n/`](src/lib/i18n/) (`en`, `es`, `fr`): country, model name, sides and the label and hint of each of its zones. In the three languages, also update `settings.autoHelp` (it branches on the document ids) and the copy that lists the supported documents: `meta.description`, `hero.lead` and the FAQ item "Which documents are supported?", plus the static `<meta name="description">` in [`index.html`](index.html) and the features list in this README.
+3. Optional: draw its flag in [`Flag.svelte`](src/components/Flag.svelte). Countries without one get a badge with their ISO code.
+4. Draw a fictitious sample in [`src/lib/sample.ts`](src/lib/sample.ts), with made-up data where the real document has it and no official emblems, and return it from `sampleCards()`. Otherwise `sampleCards()` falls back to the DNI drawing, which does not match the new zones.
+5. Tests: the unit tests go through every document and check that the zones are valid; update the assertions that list the exact catalog in [`tests/unit/document-search.test.ts`](tests/unit/document-search.test.ts) (order, search results, current models) and [`tests/unit/presets.test.ts`](tests/unit/presets.test.ts) (protection totals), and add e2e coverage.
+
+[`AGENTS.md`](AGENTS.md) has the full checklist.
+
+## Contributing
+
+- The repository language is **English**: code, comments, documentation, commit messages and pull requests.
+- Add every user-facing change to [`CHANGELOG.md`](CHANGELOG.md) under `[Unreleased]`.
+- To release, bump [`VERSION`](VERSION) (see [Releasing a version](#releasing-a-version)).
+- [`AGENTS.md`](AGENTS.md) has project context for coding agents.
 
 ## CI/CD
 
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml):
 
-1. **version**: lee y valida el archivo [`VERSION`](VERSION) y decide si toca publicar versión.
-2. **test**: `svelte-check`, tests unitarios y build.
-3. **e2e**: Playwright en escritorio y móvil.
-4. **helm**: `helm lint`, `helm template` con todas las opciones activadas y `helm package` con la versión de `VERSION`.
-5. **image**: construye la imagen, hace un smoke test (salud, CSP, usuario sin root), repite los e2e contra el contenedor y la publica en `ghcr.io` para amd64 y arm64, con SBOM y procedencia. En las pull requests solo se construye. En `main` se publica siempre como `latest` y con el SHA; si hay versión nueva, también como `X.Y.Z` y `X.Y`.
-6. **release**: si hay versión nueva, publica el chart en `oci://ghcr.io/javsanpae/charts/sequrid`, crea la etiqueta `vX.Y.Z` y una release de GitHub con el chart adjunto.
+1. **version**: reads and validates the [`VERSION`](VERSION) file and decides whether to release.
+2. **test**: `svelte-check`, unit tests and build.
+3. **e2e**: Playwright on desktop and mobile.
+4. **helm**: `helm lint` (default and with every option enabled), `helm template` and `helm package` with the version in `VERSION`.
+5. **image**: builds the image, runs a smoke test (health, CSP, non-root user), reruns the e2e tests against the container and publishes it to `ghcr.io` for amd64 and arm64, with SBOM and provenance. Pull requests only build it. On `main` it is always published as `latest` and with the SHA; when there is a new version, also as `X.Y.Z` and `X.Y`.
+6. **release**: when there is a new version, publishes the chart to `oci://ghcr.io/javsanpae/charts/sequrid`, creates the `vX.Y.Z` tag and a GitHub release with the chart attached.
 
-### Publicar una versión
+### Releasing a version
 
-La versión vive en el archivo [`VERSION`](VERSION), que solo contiene el número (por ejemplo `0.1.1`). Es la única fuente de verdad: la imagen, el chart (`version` y `appVersion`) y la etiqueta de git la toman de ahí. Las versiones de `Chart.yaml` y `package.json` no se usan para publicar.
+The version lives in the [`VERSION`](VERSION) file, which only contains the number (for example `0.3.0`). It is the single source of truth: the image, the chart (`version` and `appVersion`) and the git tag take it from there. The versions in `Chart.yaml` and `package.json` are not used for publishing.
 
-1. En tu rama, sube el número de `VERSION` siguiendo [semver](https://semver.org/lang/es/).
-2. Fusiona la pull request en `main`.
-3. El CI ve que no existe la etiqueta `v<VERSION>` y publica la imagen, el chart y la release.
+1. On your branch, bump `VERSION` following [semver](https://semver.org/) and move the `[Unreleased]` entries in [`CHANGELOG.md`](CHANGELOG.md) to a section for the new version.
+2. Merge the pull request into `main`.
+3. CI sees that the `v<VERSION>` tag does not exist and publishes the image, the chart and the release.
 
-Si fusionas sin cambiar `VERSION`, no se publica ninguna versión nueva (solo `latest` y el SHA de la imagen); el CI avisa de ello en la pull request. Una versión ya publicada nunca se sobrescribe.
+If you merge without changing `VERSION`, no new version is released (only the `latest` and SHA image tags); CI warns about it on the pull request. A released version is never overwritten.
 
-La primera vez, el paquete de ghcr.io se crea como privado: cámbialo a público en la configuración del paquete en GitHub para que cualquiera pueda descargarlo.
+The first time, the ghcr.io package is created as private: make it public in the package settings on GitHub so anyone can pull it.
 
-## Licencia
+See [`CHANGELOG.md`](CHANGELOG.md) for the changes in each version.
 
-[GNU Affero General Public License v3.0 o posterior](LICENSE) (AGPL-3.0-or-later).
+## License
 
-Puedes usar, desplegar, modificar y comercializar Sequrid, también como servicio de pago, siempre que el resultado siga siendo código abierto con la misma licencia. A diferencia de la GPL, la AGPL cubre también el uso a través de la red: si ofreces una versión modificada a otras personas desde un servidor, tienes que darles acceso a su código fuente.
+[GNU Affero General Public License v3.0 or later](LICENSE) (AGPL-3.0-or-later).
 
-Para cumplirlo en un fork, apunta el enlace «Código fuente» de la interfaz a tu repositorio con el argumento de build `SOURCE_URL` (o `VITE_SOURCE_URL` en desarrollo):
+You can use, deploy, modify and sell Sequrid, including as a paid hosted service, as long as the result stays open source under the same license. Unlike the GPL, the AGPL also covers use over a network: if you offer a modified version to other people from a server, you must give them access to its source code.
+
+To comply in a fork, point the "Source code" link in the interface to your repository with the `SOURCE_URL` build argument (or `VITE_SOURCE_URL` in development):
 
 ```bash
-docker build --build-arg SOURCE_URL=https://github.com/tu-usuario/tu-fork -t mi-sequrid .
+docker build --build-arg SOURCE_URL=https://github.com/your-user/your-fork -t my-sequrid .
 ```
 
-## Aviso
+## Disclaimer
 
-Las posiciones de las zonas son aproximadas: revisa siempre la vista previa antes de enviar la copia. Esta herramienta no está afiliada a ningún organismo oficial. Si te han suplantado la identidad, en España puedes llamar gratis al 017 (INCIBE).
+Zone positions are approximate: always check the preview before sending the copy. This tool is not affiliated with any official body. If your identity has been stolen, in Spain you can call 017 (INCIBE) for free.

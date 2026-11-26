@@ -1,6 +1,8 @@
 <script lang="ts">
   import { SOURCE_URL } from '../lib/config';
+  import { m } from '../lib/i18n/index.svelte';
   import Icon from './Icon.svelte';
+  import LanguageSelect from './LanguageSelect.svelte';
 
   const prefersDark = () => window.matchMedia('(prefers-color-scheme: dark)').matches;
   const current = (): 'light' | 'dark' => {
@@ -22,22 +24,23 @@
 
 <header class="top">
   <div class="inner">
-    <a class="brand" href="#editor" aria-label="Sequrid, ir al editor">
+    <a class="brand" href="#editor" aria-label={m().header.home}>
       <span class="logo"><Icon name="shieldCheck" size={20} stroke={2.2} /></span>
       <span class="name">Sequrid</span>
     </a>
-    <nav aria-label="Secciones">
-      <a href="#editor">Editor</a>
-      <a href="#que-tapar">Qué tapar</a>
-      <a href="#privacidad">Privacidad</a>
-      <a href="#preguntas">Preguntas</a>
+    <nav aria-label={m().header.sections}>
+      <a href="#editor">{m().header.nav.editor}</a>
+      <a href="#what-to-cover">{m().header.nav.cover}</a>
+      <a href="#privacy">{m().header.nav.privacy}</a>
+      <a href="#faq">{m().header.nav.faq}</a>
     </nav>
     <div class="right">
-      <span class="pill" title="Ninguna foto sale de tu navegador"><Icon name="lock" size={14} /> <span>100% en tu dispositivo</span></span>
-      <a class="btn ghost icon" href={SOURCE_URL} target="_blank" rel="noopener noreferrer" aria-label="Código fuente" title="Código fuente">
+      <span class="pill" title={m().header.localTitle}><Icon name="lock" size={14} /> <span>{m().header.local}</span></span>
+      <a class="btn ghost icon" href={SOURCE_URL} target="_blank" rel="noopener noreferrer" aria-label={m().header.source} title={m().header.source}>
         <Icon name="code" size={18} />
       </a>
-      <button type="button" class="btn ghost icon" onclick={toggle} aria-label={theme === 'dark' ? 'Usar tema claro' : 'Usar tema oscuro'} title="Cambiar tema">
+      <LanguageSelect />
+      <button type="button" class="btn ghost icon" onclick={toggle} aria-label={theme === 'dark' ? m().header.light : m().header.dark} title={m().header.theme}>
         <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={18} />
       </button>
     </div>

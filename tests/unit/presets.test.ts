@@ -5,14 +5,15 @@ import {
   DOCUMENTS,
   documentKeys,
   documentType,
-  KEY_LABELS,
   ZONE_KEYS,
   zoneDef,
-  zoneLabel,
   zoneSides,
   zonesForSide,
 } from '../../src/lib/documents';
-import { protectionSummary, selectionFor, usage, USAGES } from '../../src/lib/presets';
+import { en } from '../../src/lib/i18n/en';
+import { es } from '../../src/lib/i18n/es';
+import { fr } from '../../src/lib/i18n/fr';
+import { protectionMessage, protectionSummary, selectionFor, usage, USAGES } from '../../src/lib/presets';
 
 describe.each(DOCUMENTS.map((d) => [d.id, d] as const))('%s zone catalog', (_, doc) => {
   it('has unique known keys and rects inside the card', () => {
@@ -20,11 +21,9 @@ describe.each(DOCUMENTS.map((d) => [d.id, d] as const))('%s zone catalog', (_, d
     expect(new Set(keys).size).toBe(keys.length);
     for (const z of doc.zones) {
       expect(ZONE_KEYS).toContain(z.key);
-      expect(z.label).not.toBe('');
-      expect(z.hint).not.toBe('');
       expect(z.rects.length).toBeGreaterThan(0);
       for (const r of z.rects) {
-        expect(['anverso', 'reverso']).toContain(r.side);
+        expect(['front', 'back']).toContain(r.side);
         expect(r.x).toBeGreaterThanOrEqual(0);
         expect(r.y).toBeGreaterThanOrEqual(0);
         expect(r.x + r.w).toBeLessThanOrEqual(1);
@@ -36,41 +35,34 @@ describe.each(DOCUMENTS.map((d) => [d.id, d] as const))('%s zone catalog', (_, d
   });
 
   it('has zones on both sides and the ID-1 card size', () => {
-    expect(zonesForSide('anverso', doc).length).toBeGreaterThan(0);
-    expect(zonesForSide('reverso', doc).length).toBeGreaterThan(0);
+    expect(zonesForSide('front', doc).length).toBeGreaterThan(0);
+    expect(zonesForSide('back', doc).length).toBeGreaterThan(0);
     expect(doc.widthMm).toBeCloseTo(85.6);
     expect(doc.heightMm).toBeCloseTo(53.98);
   });
 
   it('always lets you cover the riskiest data', () => {
-    for (const k of ['numero', 'nacimiento', 'firma', 'can', 'mrz', 'foto'] as const) expect(zoneDef(k, doc)).toBeDefined();
+    for (const k of ['number', 'birthDate', 'signature', 'can', 'mrz', 'photo'] as const) expect(zoneDef(k, doc)).toBeDefined();
   });
 });
 
 describe('documents', () => {
-  it('names every key', () => {
-    expect(Object.keys(KEY_LABELS).sort()).toEqual([...ZONE_KEYS].sort());
-  });
-
   it('keeps the Spanish DNI layout', () => {
-    expect(zonesForSide('reverso', DNI_ES).map((z) => z.key)).toEqual(['domicilio', 'lugar', 'padres', 'mrz']);
-    expect(zoneDef('sello', DNI_ES)).toBeUndefined();
-    expect(zoneLabel('numero', DNI_ES)).toBe('Número de DNI');
+    expect(zonesForSide('back', DNI_ES).map((z) => z.key)).toEqual(['address', 'birthPlace', 'parents', 'mrz']);
+    expect(zoneDef('seal', DNI_ES)).toBeUndefined();
   });
 
   it('describes the French card', () => {
     expect(documentType('cni-fr')).toBe(CNI_FR);
     expect(CNI_FR.short).toBe('CNI');
     // Place of birth is on the front of the French card, unlike the DNI.
-    expect(zoneSides(zoneDef('lugar', CNI_FR)!)).toEqual(['anverso']);
-    expect(zoneSides(zoneDef('foto', CNI_FR)!)).toEqual(['anverso', 'reverso']);
-    expect(zoneSides(zoneDef('sello', CNI_FR)!)).toEqual(['reverso']);
-    expect(zoneDef('padres', CNI_FR)).toBeUndefined();
+    expect(zoneSides(zoneDef('birthPlace', CNI_FR)!)).toEqual(['front']);
+    expect(zoneSides(zoneDef('photo', CNI_FR)!)).toEqual(['front', 'back']);
+    expect(zoneSides(zoneDef('seal', CNI_FR)!)).toEqual(['back']);
+    expect(zoneDef('parents', CNI_FR)).toBeUndefined();
   });
 
-  it('falls back to generic labels', () => {
-    expect(zoneLabel('sello', DNI_ES)).toBe(KEY_LABELS.sello);
-    expect(zoneLabel('sello')).toBe('Código 2D-Doc');
+  it('rejects unknown documents', () => {
     expect(() => documentType('xx' as never)).toThrow();
   });
 });
@@ -85,19 +77,20 @@ describe('usage presets', () => {
   });
 
   it('cover more for riskier uses', () => {
-    expect(usage('trabajo').cover.length).toBeGreaterThan(usage('alquiler').cover.length);
-    expect(usage('banco').cover).toEqual(['can']);
-    expect(usage('hotel').cover).not.toContain('soporte');
-    expect(usage('hotel').cover).not.toContain('domicilio');
+    expect(usage('job').cover.length).toBeGreaterThan(usage('rental').cover.length);
+    expect(usage('bank').cover).toEqual(['can']);
+    expect(usage('hotel').cover).not.toContain('serial');
+    expect(usage('hotel').cover).not.toContain('address');
+    expect(() => usage('xx' as never)).toThrow();
   });
 
   it('builds the checkbox selection from the recommendation', () => {
-    const sel = selectionFor('alquiler');
+    const sel = selectionFor('rental');
     expect(Object.keys(sel).sort()).toEqual([...ZONE_KEYS].sort());
     expect(sel.can).toBe(true);
-    expect(sel.nombre).toBe(false);
-    expect(sel.numero).toBe(false);
-    expect(selectionFor('trabajo').numero).toBe(true);
+    expect(sel.name).toBe(false);
+    expect(sel.number).toBe(false);
+    expect(selectionFor('job').number).toBe(true);
   });
 });
 
@@ -105,12 +98,12 @@ describe('protectionSummary', () => {
   const auto = { manual: false, manualZones: 0, watermark: true };
 
   it('only counts recommendations that exist on the documents in use', () => {
-    const es = protectionSummary('otro', selectionFor('otro'), { ...auto, available: documentKeys(DNI_ES) });
-    const fr = protectionSummary('otro', selectionFor('otro'), { ...auto, available: documentKeys(CNI_FR) });
-    expect(es.total).toBe(7);
-    expect(fr.total).toBe(8);
-    expect(fr.level).toBe('alta');
-    const both = protectionSummary('otro', selectionFor('otro'), {
+    const esDoc = protectionSummary('other', selectionFor('other'), { ...auto, available: documentKeys(DNI_ES) });
+    const frDoc = protectionSummary('other', selectionFor('other'), { ...auto, available: documentKeys(CNI_FR) });
+    expect(esDoc.total).toBe(7);
+    expect(frDoc.total).toBe(8);
+    expect(frDoc.level).toBe('high');
+    const both = protectionSummary('other', selectionFor('other'), {
       ...auto,
       available: [...new Set([...documentKeys(DNI_ES), ...documentKeys(CNI_FR)])],
     });
@@ -118,29 +111,36 @@ describe('protectionSummary', () => {
   });
 
   it('is high when following the recommendation with a watermark', () => {
-    const s = protectionSummary('otro', selectionFor('otro'), auto);
+    const s = protectionSummary('other', selectionFor('other'), auto);
     expect(s.covered).toBe(s.total);
     expect(s.score).toBe(1);
-    expect(s.level).toBe('alta');
-    expect(s.message).toContain(`${s.total} de ${s.total}`);
+    expect(s.level).toBe('high');
+    expect(protectionMessage(s, en)).toBe(`You have covered ${s.total} of ${s.total} recommended details for any use.`);
+    expect(protectionMessage(s, es)).toContain(`${s.total} de ${s.total} datos recomendados para cualquier uso`);
+    expect(protectionMessage(s, fr)).toContain(`${s.total} sur ${s.total}`);
   });
 
   it('drops without watermark or with fields uncovered', () => {
-    const sel = selectionFor('otro');
-    expect(protectionSummary('otro', sel, { ...auto, watermark: false }).level).toBe('media');
+    const sel = selectionFor('other');
+    expect(protectionSummary('other', sel, { ...auto, watermark: false }).level).toBe('medium');
     sel.can = false;
-    sel.firma = false;
+    sel.signature = false;
     sel.mrz = false;
-    sel.padres = false;
-    const s = protectionSummary('otro', sel, { ...auto, watermark: false });
-    expect(s.level).toBe('baja');
-    expect(s.message).toContain('Sin marca de agua');
+    sel.parents = false;
+    const s = protectionSummary('other', sel, { ...auto, watermark: false });
+    expect(s.level).toBe('low');
+    expect(protectionMessage(s, en)).toContain('Without a watermark');
+    expect(protectionMessage(s, es)).toContain('Sin marca de agua');
   });
 
   it('describes manual mode', () => {
-    const s = protectionSummary('otro', selectionFor('otro'), { manual: true, manualZones: 3, watermark: true });
-    expect(s.message).toContain('3 zonas dibujadas');
-    expect(s.level).toBe('media');
-    expect(protectionSummary('otro', selectionFor('otro'), { manual: true, manualZones: 0, watermark: false }).level).toBe('baja');
+    const s = protectionSummary('other', selectionFor('other'), { manual: true, manualZones: 3, watermark: true });
+    expect(s.level).toBe('medium');
+    expect(protectionMessage(s, en)).toContain('3 zones drawn');
+    expect(protectionMessage(s, es)).toContain('3 zonas dibujadas');
+    const one = protectionSummary('other', selectionFor('other'), { manual: true, manualZones: 1, watermark: false });
+    expect(one.level).toBe('low');
+    expect(protectionMessage(one, en)).toMatch(/1 zone drawn\..*Add the watermark\.$/);
+    expect(protectionMessage(one, fr)).toContain('1 zone dessinée');
   });
 });

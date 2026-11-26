@@ -56,7 +56,7 @@ function cardBase(ctx: Ctx, stops: string[]) {
   }
 }
 
-function dniAnverso(): HTMLCanvasElement {
+function dniFront(): HTMLCanvasElement {
   const c = createCanvas(W, H);
   const ctx = ctx2d(c);
   cardBase(ctx, ['#f4e3c3', '#eef0e6', '#dbe9f0', '#f2dccb']);
@@ -163,7 +163,7 @@ function dniAnverso(): HTMLCanvasElement {
   return c;
 }
 
-function dniReverso(): HTMLCanvasElement {
+function dniBack(): HTMLCanvasElement {
   const c = createCanvas(W, H);
   const ctx = ctx2d(c);
   cardBase(ctx, ['#e3edf3', '#f1efe6', '#f3e2cf', '#e6eef2']);
@@ -244,7 +244,7 @@ function portrait(ctx: Ctx, x: number, y: number, w: number, h: number, color: s
 const frLabel = (ctx: Ctx, t: string, fx: number, fy: number) => text(ctx, t, fx, fy, 0.025, { color: '#2a3a6b', weight: 500 });
 const FR_VALUE = '#16202c';
 
-function cniAnverso(): HTMLCanvasElement {
+function cniFront(): HTMLCanvasElement {
   const c = createCanvas(W, H);
   const ctx = ctx2d(c);
   cardBase(ctx, ['#eef4fa', '#f8fbfd', '#e3eef7', '#f2f6fb']);
@@ -344,7 +344,7 @@ function fakeMatrix(ctx: Ctx, x: number, y: number, size: number, cells: number)
   }
 }
 
-function cniReverso(): HTMLCanvasElement {
+function cniBack(): HTMLCanvasElement {
   const c = createCanvas(W, H);
   const ctx = ctx2d(c);
   cardBase(ctx, ['#e8f1f8', '#f7fafc', '#e6eff7', '#f3f7fb']);
@@ -392,8 +392,8 @@ function cniReverso(): HTMLCanvasElement {
   return c;
 }
 
-export function sampleCards(id: DocumentId = 'dni-es'): { anverso: HTMLCanvasElement; reverso: HTMLCanvasElement } {
+export function sampleCards(id: DocumentId = 'dni-es'): { front: HTMLCanvasElement; back: HTMLCanvasElement } {
   return id === 'cni-fr'
-    ? { anverso: cniAnverso(), reverso: cniReverso() }
-    : { anverso: dniAnverso(), reverso: dniReverso() };
+    ? { front: cniFront(), back: cniBack() }
+    : { front: dniFront(), back: dniBack() };
 }

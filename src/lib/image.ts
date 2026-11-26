@@ -3,7 +3,17 @@ export const MAX_SOURCE_SIDE = 2800;
 
 export const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif', 'image/bmp'];
 
-export class UnsupportedImageError extends Error {}
+/** Why a file could not be opened. The UI shows the matching `errors` message. */
+export type ImageErrorReason = 'notImage' | 'heic' | 'unreadable';
+
+export class UnsupportedImageError extends Error {
+  readonly reason: ImageErrorReason;
+  constructor(reason: ImageErrorReason) {
+    super(`Unsupported image: ${reason}`);
+    this.reason = reason;
+    this.name = 'UnsupportedImageError';
+  }
+}
 
 export function createCanvas(width: number, height: number): HTMLCanvasElement {
   const c = document.createElement('canvas');
@@ -14,7 +24,7 @@ export function createCanvas(width: number, height: number): HTMLCanvasElement {
 
 export function ctx2d(c: HTMLCanvasElement): CanvasRenderingContext2D {
   const ctx = c.getContext('2d', { willReadFrequently: false });
-  if (!ctx) throw new Error('Canvas 2D no disponible');
+  if (!ctx) throw new Error('Canvas 2D is not available');
   return ctx;
 }
 
@@ -44,18 +54,14 @@ async function decode(file: Blob): Promise<ImageBitmap | HTMLImageElement> {
  */
 export async function loadImageFile(file: File): Promise<HTMLCanvasElement> {
   if (file.type && !file.type.startsWith('image/')) {
-    throw new UnsupportedImageError('El archivo no es una imagen.');
+    throw new UnsupportedImageError('notImage');
   }
   let bitmap: ImageBitmap | HTMLImageElement;
   try {
     bitmap = await decode(file);
   } catch {
     const heic = /hei[cf]/i.test(file.type) || /\.hei[cf]$/i.test(file.name);
-    throw new UnsupportedImageError(
-      heic
-        ? 'Tu navegador no puede abrir fotos HEIC. Expórtala como JPG o cambia la cámara a "Más compatible".'
-        : 'No se ha podido leer la imagen. Prueba con un JPG, PNG o WebP.',
-    );
+    throw new UnsupportedImageError(heic ? 'heic' : 'unreadable');
   }
   const w = bitmap.width;
   const h = bitmap.height;
@@ -70,7 +76,7 @@ export async function loadImageFile(file: File): Promise<HTMLCanvasElement> {
 
 export function canvasToBlob(canvas: HTMLCanvasElement, type = 'image/jpeg', quality = 0.92): Promise<Blob> {
   return new Promise((resolve, reject) =>
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('No se pudo generar la imagen'))), type, quality),
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Could not encode the image'))), type, quality),
   );
 }
 

@@ -1,6 +1,9 @@
 <script lang="ts">
   import { app, FACE_META, faceHint, faceLabel, faceName, type DocNumber, type FaceId } from '../lib/state.svelte';
   import { loadSample, pickFiles } from '../lib/files';
+  import { m } from '../lib/i18n/index.svelte';
+  import { docText } from '../lib/i18n/text';
+  import Rich from './Rich.svelte';
   import CountrySelect from './CountrySelect.svelte';
   import Icon from './Icon.svelte';
   import Thumb from './Thumb.svelte';
@@ -17,18 +20,19 @@
 </script>
 
 <section class="card slots" aria-labelledby="slots-title">
-  <h2 id="slots-title" class="step"><span class="num">1</span>Fotos del documento</h2>
+  <h2 id="slots-title" class="step"><span class="num">1</span>{m().slots.title}</h2>
 
   <div class="docs">
     {#each docs as doc (doc)}
       <div class="doc">
-        <p class="doc-label">Documento {doc}</p>
+        <p class="doc-label">{m().slots.doc(doc)}</p>
         <CountrySelect
-          label="País del documento {doc}"
+          label={m().slots.country(doc)}
           value={app.docTypes[doc]}
           onchange={(id) => {
             app.setDocType(doc, id);
-            app.status = `Documento ${doc}: zonas colocadas para ${app.docOf(doc === 1 ? 'd1a' : 'd2a').name}.`;
+            const model = app.docOf(doc === 1 ? 'd1f' : 'd2f');
+            app.status = (t) => t.slots.countryChanged(doc, docText(t, model).name);
           }}
         />
         <div class="faces">
@@ -40,7 +44,7 @@
               class:active={app.active === id}
               class:filled={!!face}
               aria-pressed={app.active === id}
-              aria-label="{faceName(id)}: {face ? 'cargada, pulsa para editar' : 'vacía, pulsa para subir'}"
+              aria-label={m().slots.slot(faceName(id, m()), !!face)}
               onclick={() => onSlot(id)}
             >
               <span class="preview">
@@ -51,10 +55,10 @@
                 {/if}
               </span>
               <span class="meta">
-                <strong>{faceLabel(id)}</strong>
+                <strong>{faceLabel(id, m())}</strong>
                 <small>
                   {#if face}<span class="ok"><Icon name="check" size={12} stroke={3} /></span>{/if}
-                  {faceHint(id)}
+                  {faceHint(id, m())}
                 </small>
               </span>
             </button>
@@ -64,12 +68,12 @@
     {/each}
   </div>
 
-  <Toggle checked={app.twoDocs} onchange={(v) => app.setTwoDocs(v)}>Añadir un segundo documento</Toggle>
+  <Toggle checked={app.twoDocs} onchange={(v) => app.setTwoDocs(v)}>{m().slots.secondDoc}</Toggle>
 
   <button type="button" class="btn block" onclick={loadSample}>
-    <Icon name="sparkle" size={16} /> Probar con un ejemplo
+    <Icon name="sparkle" size={16} /> {m().slots.sample}
   </button>
-  <p class="tip">Arrastra varias fotos a la vez y se colocan solas en los huecos libres.{' '}<span class="paste">También puedes pegar con <kbd>Ctrl</kbd>+<kbd>V</kbd>.</span></p>
+  <p class="tip">{m().slots.tip}{' '}<span class="paste"><Rich text={m().slots.paste} /></span></p>
 </section>
 
 <style>
@@ -145,7 +149,7 @@
     align-items: center;
   }
   .ok {
-    color: var(--level-alta);
+    color: var(--level-high);
     display: inline-flex;
   }
   .tip {
