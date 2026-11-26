@@ -167,7 +167,7 @@ jobs:
           E2E_BASE_URL=http://localhost:8080 npx playwright test --project=desktop
           docker rm -f e2e
 
-      - uses: docker/metadata-action@v5
+      - uses: docker/metadata-action@v6
         id: meta
         with:
           images: ${{ env.IMAGE }}
